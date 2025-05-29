@@ -1,6 +1,6 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+![Banner image](https://github.com/binalyze/n8n-nodes-binalyze-air/blob/087c213f0290bd16f882034e5793f0d710b84379/assets/header-image.jpg)
 
-# n8n-nodes-starter
+# n8n-nodes-binalyze-air
 
 This repo contains example nodes to help you get started building your own custom integrations for [n8n](https://n8n.io). It includes the node linter and other dependencies.
 
