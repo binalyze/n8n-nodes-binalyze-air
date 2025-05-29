@@ -1,4 +1,4 @@
-![Banner image](https://github.com/binalyze/n8n-nodes-binalyze-air/blob/087c213f0290bd16f882034e5793f0d710b84379/assets/header-image.jpg)
+![Banner image](https://github.com/binalyze/n8n-nodes-binalyze-air/blob/main/assets/header-image.jpg)
 
 # n8n-nodes-binalyze-air
 
