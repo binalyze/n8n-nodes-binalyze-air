@@ -15,10 +15,6 @@ export class Organizations implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Binalyze AIR',
 		name: 'organizations',
-		icon: {
-			light: 'file:air-logo-text-black.svg',
-			dark: 'file:air-logo-text-white.svg',
-		} as const,
 		group: ['input'],
 		version: 1,
 		subtitle: 'Organizations: {{$parameter["operation"]}}',

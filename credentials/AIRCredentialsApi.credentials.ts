@@ -5,13 +5,13 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export class AIRCredentialsApi implements ICredentialType {
+export class AirCredentialsApi implements ICredentialType {
 	name = 'airCredentialsApi';
 	displayName = 'Binalyze AIR Credentials API';
 	documentationUrl = 'https://kb.binalyze.com'; //TODO: Add KB url once available
 	icon = {
-		light: 'file:air-logo-text-black.svg',
-		dark: 'file:air-logo-text-white.svg',
+		light: 'file:logo.black.svg',
+		dark: 'file:logo.white.svg',
 	} as const;
 	properties: INodeProperties[] = [
 		{
