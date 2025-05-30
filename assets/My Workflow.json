@@ -1,0 +1,79 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c6cc851e-0568-4ded-8f8a-f3bf13076bfb",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "requestOptions": {}
+      },
+      "type": "CUSTOM.httpBin",
+      "typeVersion": 1,
+      "position": [
+        20,
+        -260
+      ],
+      "id": "6d622553-e292-44fd-83ea-542ca6d11245",
+      "name": "HttpBin"
+    },
+    {
+      "parameters": {
+        "curlImport": "",
+        "httpVariantWarning": "",
+        "method": "GET",
+        "url": "",
+        "": "",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "ciscoSecureEndpointApi",
+        "provideSslCertificates": false,
+        "sendQuery": false,
+        "sendHeaders": false,
+        "sendBody": false,
+        "options": {},
+        "infoMessage": ""
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "5af2a8c6-2680-40eb-bbb1-520126388eb9",
+      "name": "Cisco Secure Endpoint HTTP Request",
+      "extendsCredential": "ciscoSecureEndpointApi"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Cisco Secure Endpoint HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "24a5ec5b-82ca-4c49-909a-4d63abad6e12",
+  "meta": {
+    "instanceId": "aa8d5a3e170eb69b684a436eff9571532c16387d8451c6a4cd90ba771981508b"
+  },
+  "id": "SAoYyrQuzkrYmarJ",
+  "tags": []
+}

@@ -186,7 +186,7 @@ start_n8n() {
     print_status "Press Ctrl+C to stop n8n"
 
     # Start n8n in the foreground
-    n8n start
+    N8N_LOG_LEVEL=debug n8n start
 }
 
 # Main execution

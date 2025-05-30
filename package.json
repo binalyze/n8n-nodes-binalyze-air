@@ -42,10 +42,12 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
+      "dist/credentials/AIRCredentialsApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/HttpBin/HttpBin.node.js",
+      "dist/nodes/Organizations/Organizations.node.js"
     ]
   },
   "devDependencies": {
