@@ -36,16 +36,16 @@ export const OrganizationsOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Get Many',
-				value: 'getAll',
-				description: 'Retrieve many organizations',
-				action: 'Get many organizations',
-			},
-			{
 				name: 'Get Organization',
 				value: 'get',
 				description: 'Retrieve a specific organization',
 				action: 'Get an organization',
+			},
+			{
+				name: 'Get Many',
+				value: 'getAll',
+				description: 'Retrieve many organizations',
+				action: 'Get many organizations',
 			},
 		],
 		default: 'getAll',
