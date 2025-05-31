@@ -5,6 +5,11 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
+export interface AirCredentials {
+	instanceUrl: string;
+	token: string;
+}
+
 export class AirCredentialsApi implements ICredentialType {
 	name = 'airCredentialsApi';
 	displayName = 'Binalyze AIR Credentials API';
