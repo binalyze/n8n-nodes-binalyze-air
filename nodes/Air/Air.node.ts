@@ -10,10 +10,13 @@ import {
 } from 'n8n-workflow';
 import { NodeConnectionType } from 'n8n-workflow';
 
-// Import the existing node classes
-import { Organizations } from '../../lib/Organizations/Organizations';
-import { Assets } from '../../lib/Assets/Assets';
-import { Incidents } from '../../lib/Incidents/Incidents';
+// Import operations and functions from resources
+import {
+	OrganizationsOperations,
+	getOrganizations,
+	getOrganizationsOptions,
+	executeOrganizations
+} from './resources/organizations';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
@@ -25,8 +28,8 @@ export class Air implements INodeType {
 		} as const,
 		group: ['input'],
 		version: 1,
-		subtitle: '{{$parameter["resource"]}}: {{$parameter["operation"]}}',
-		description: 'Manage organizations, assets, and incidents in Binalyze AIR',
+		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
+		description: 'Manage organizations in Binalyze AIR',
 		defaults: {
 			name: 'Binalyze AIR',
 		},
@@ -50,68 +53,25 @@ export class Air implements INodeType {
 						value: 'organizations',
 						description: 'Manage organizations',
 					},
-					{
-						name: 'Asset',
-						value: 'assets',
-						description: 'Manage assets',
-					},
-					{
-						name: 'Incident',
-						value: 'incidents',
-						description: 'Manage incidents',
-					},
 				],
 				default: 'organizations',
 			},
-			// Organizations properties
-			...(new Organizations().description.properties!.map((prop: any) => ({
-				...prop,
-				displayOptions: {
-					...prop.displayOptions,
-					show: {
-						resource: ['organizations'],
-						...prop.displayOptions?.show,
-					},
-				},
-			}))),
-			// Assets properties
-			...(new Assets().description.properties!.map((prop: any) => ({
-				...prop,
-				displayOptions: {
-					...prop.displayOptions,
-					show: {
-						resource: ['assets'],
-						...prop.displayOptions?.show,
-					},
-				},
-			}))),
-			// Incidents properties
-			...(new Incidents().description.properties!.map((prop: any) => ({
-				...prop,
-				displayOptions: {
-					...prop.displayOptions,
-					show: {
-						resource: ['incidents'],
-						...prop.displayOptions?.show,
-					},
-				},
-			}))),
+
+			...OrganizationsOperations,
 		],
 	};
 
 	methods = {
 		loadOptions: {
-			// Import load options methods from Organizations node
+			// Import load options methods from Organizations
 			async getOrganizations(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const organizationsNode = new Organizations();
-				return organizationsNode.methods.loadOptions.getOrganizations.call(this);
+				return getOrganizationsOptions.call(this);
 			},
 		},
 		listSearch: {
-			// Import list search methods from Organizations node for resource locators
+			// Import list search methods from Organizations for resource locators
 			async getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				const organizationsNode = new Organizations();
-				return organizationsNode.methods.listSearch.getOrganizations.call(this, filter);
+				return getOrganizations.call(this, filter);
 			},
 		},
 	};
@@ -119,20 +79,10 @@ export class Air implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const resource = this.getNodeParameter('resource', 0) as string;
 
-		// Delegate execution to the appropriate node based on resource
+		// Delegate execution to the appropriate function based on resource
 		switch (resource) {
-			case 'organizations': {
-				const organizationsNode = new Organizations();
-				return organizationsNode.execute.call(this);
-			}
-			case 'assets': {
-				const assetsNode = new Assets();
-				return assetsNode.execute.call(this);
-			}
-			case 'incidents': {
-				const incidentsNode = new Incidents();
-				return incidentsNode.execute.call(this);
-			}
+			case 'organizations':
+				return executeOrganizations.call(this);
 			default:
 				throw new ApplicationError(`Unknown resource: ${resource}`);
 		}
