@@ -17,6 +17,12 @@ import {
 	getOrganizationsOptions,
 	executeOrganizations
 } from './resources/organizations';
+import {
+	RepositoriesOperations,
+	getRepositories,
+	getRepositoriesOptions,
+	executeRepositories
+} from './resources/repositories';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
@@ -29,7 +35,7 @@ export class Air implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Manage organizations in Binalyze AIR',
+		description: 'Manage organizations and repositories in Binalyze AIR',
 		defaults: {
 			name: 'Binalyze AIR',
 		},
@@ -53,11 +59,17 @@ export class Air implements INodeType {
 						value: 'organizations',
 						description: 'Manage organizations',
 					},
+					{
+						name: 'Repository',
+						value: 'repositories',
+						description: 'Manage evidence repositories',
+					},
 				],
 				default: 'organizations',
 			},
 
 			...OrganizationsOperations,
+			...RepositoriesOperations,
 		],
 	};
 
@@ -67,11 +79,19 @@ export class Air implements INodeType {
 			async getOrganizations(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getOrganizationsOptions.call(this);
 			},
+			// Import load options methods from Repositories
+			async getRepositories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getRepositoriesOptions.call(this);
+			},
 		},
 		listSearch: {
 			// Import list search methods from Organizations for resource locators
 			async getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getOrganizations.call(this, filter);
+			},
+			// Import list search methods from Repositories for resource locators
+			async getRepositories(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getRepositories.call(this, filter);
 			},
 		},
 	};
@@ -83,6 +103,8 @@ export class Air implements INodeType {
 		switch (resource) {
 			case 'organizations':
 				return executeOrganizations.call(this);
+			case 'repositories':
+				return executeRepositories.call(this);
 			default:
 				throw new ApplicationError(`Unknown resource: ${resource}`);
 		}
