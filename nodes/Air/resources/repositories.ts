@@ -49,19 +49,52 @@ export const RepositoriesOperations: INodeProperties[] = [
 		default: 'get',
 	},
 	{
-		displayName: 'Repository Name',
-		name: 'repositoryName',
-		type: 'string',
-		required: true,
-		default: '',
-		placeholder: 'Enter repository name to search for',
+		displayName: 'Repository',
+		name: 'repositoryId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select a repository...',
 		displayOptions: {
 			show: {
 				resource: ['repositories'],
 				operation: ['get'],
 			},
 		},
-		description: 'The name of the evidence repository to find',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a repository...',
+				typeOptions: {
+					searchListMethod: 'getRepositories',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid repository ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter repository ID (numeric or GUID)',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter repository name',
+			},
+		],
+		required: true,
+		description: 'The repository to retrieve',
 	},
 	{
 		displayName: 'Organization ID',
@@ -334,6 +367,35 @@ export async function fetchAllRepositories(
 }
 
 /**
+ * Get a single repository by ID
+ */
+export async function getRepositoryById(
+	context: IExecuteFunctions,
+	credentials: any,
+	organizationId: number,
+	repositoryId: string
+): Promise<any | null> {
+	const queryParams: Record<string, string | number> = {
+		'filter[organizationIds]': organizationId,
+		'filter[id]': repositoryId,
+		pageSize: 1,
+	};
+
+	const options = buildRequestOptions(
+		credentials,
+		'GET',
+		'/api/public/evidences/repositories',
+		queryParams
+	);
+
+	const responseData = await context.helpers.httpRequest(options);
+	validateApiResponse(responseData, 'Failed to fetch repository');
+
+	const repositories = responseData.result?.entities || [];
+	return repositories.length > 0 ? repositories[0] : null;
+}
+
+/**
  * Get a single repository by name using searchTerm filter
  */
 export async function getRepositoryByName(
@@ -441,7 +503,7 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 
 			if (operation === 'get') {
 				const organizationId = this.getNodeParameter('organizationId', i) as number;
-				const repositoryName = this.getNodeParameter('repositoryName', i) as string;
+				const repositoryResource = this.getNodeParameter('repositoryId', i) as any;
 
 				// Validate organization ID
 				if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
@@ -450,14 +512,31 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 					});
 				}
 
-				// Validate repository name
-				if (!repositoryName || typeof repositoryName !== 'string' || repositoryName.trim() === '') {
-					throw new NodeOperationError(this.getNode(), 'Repository name is required and must be a non-empty string', {
+				let repository: any | null = null;
+
+				if (repositoryResource.mode === 'list' || repositoryResource.mode === 'id') {
+					// For both list and id modes, the value should be the repository ID
+					const repositoryId = repositoryResource.value;
+					if (!repositoryId || repositoryId.trim() === '') {
+						throw new NodeOperationError(this.getNode(), 'Repository ID cannot be empty', {
+							itemIndex: i,
+						});
+					}
+					repository = await getRepositoryById(this, credentials, organizationId, repositoryId);
+				} else if (repositoryResource.mode === 'name') {
+					// For name mode, search by name
+					const repositoryName = repositoryResource.value;
+					if (!repositoryName || typeof repositoryName !== 'string' || repositoryName.trim() === '') {
+						throw new NodeOperationError(this.getNode(), 'Repository name is required and must be a non-empty string', {
+							itemIndex: i,
+						});
+					}
+					repository = await getRepositoryByName(this, credentials, organizationId, repositoryName.trim());
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid repository selection mode', {
 						itemIndex: i,
 					});
 				}
-
-				const repository = await getRepositoryByName(this, credentials, organizationId, repositoryName.trim());
 
 				if (repository) {
 					returnData.push({
@@ -465,7 +544,7 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 						pairedItem: { item: i },
 					});
 				} else {
-					throw new NodeOperationError(this.getNode(), `No repository found with name: ${repositoryName}`, {
+					throw new NodeOperationError(this.getNode(), `No repository found with ${repositoryResource.mode}: ${repositoryResource.value}`, {
 						itemIndex: i,
 					});
 				}

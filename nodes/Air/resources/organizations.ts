@@ -81,12 +81,12 @@ export const OrganizationsOperations: INodeProperties[] = [
 					{
 						type: 'regex',
 						properties: {
-							regex: '[0-9]+',
-							errorMessage: 'Not a valid organization ID',
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid organization ID (must contain only letters, numbers, hyphens, and underscores)',
 						},
 					},
 				],
-				placeholder: 'Enter organization ID',
+				placeholder: 'Enter organization ID (numeric or GUID)',
 			},
 			{
 				displayName: 'By Name',
