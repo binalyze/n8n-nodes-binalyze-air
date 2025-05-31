@@ -34,13 +34,34 @@ export const RepositoriesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Get',
+				value: 'get',
+				description: 'Get a repository by name',
+				action: 'Get a repository',
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
-				description: 'Retrieve many repositories',
+				description: 'Get many repositories',
 				action: 'Get many repositories',
 			},
 		],
-		default: 'getAll',
+		default: 'get',
+	},
+	{
+		displayName: 'Repository Name',
+		name: 'repositoryName',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'Enter repository name to search for',
+		displayOptions: {
+			show: {
+				resource: ['repositories'],
+				operation: ['get'],
+			},
+		},
+		description: 'The name of the evidence repository to find',
 	},
 	{
 		displayName: 'Organization ID',
@@ -52,7 +73,7 @@ export const RepositoriesOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['repositories'],
-				operation: ['getAll'],
+				operation: ['get', 'getAll'],
 			},
 		},
 		description: 'The organization ID to filter repositories by (0 for default organization)',
@@ -312,6 +333,50 @@ export async function fetchAllRepositories(
 	return allRepositories;
 }
 
+/**
+ * Get a single repository by name using searchTerm filter
+ */
+export async function getRepositoryByName(
+	context: IExecuteFunctions,
+	credentials: any,
+	organizationId: number,
+	repositoryName: string
+): Promise<any | null> {
+	const queryParams: Record<string, string | number> = {
+		'filter[organizationIds]': organizationId,
+		'filter[searchTerm]': repositoryName,
+		pageSize: 100, // Get a reasonable page size to find the repository
+	};
+
+	const options = buildRequestOptions(
+		credentials,
+		'GET',
+		'/api/public/evidences/repositories',
+		queryParams
+	);
+
+	const responseData = await context.helpers.httpRequest(options);
+	validateApiResponse(responseData, 'Failed to fetch repository');
+
+	const repositories = responseData.result?.entities || [];
+
+	// Find exact match by name (case-insensitive)
+	const exactMatch = repositories.find((repo: any) =>
+		repo.name && repo.name.toLowerCase() === repositoryName.toLowerCase()
+	);
+
+	if (exactMatch) {
+		return exactMatch;
+	}
+
+	// If no exact match, return the first partial match
+	if (repositories.length > 0) {
+		return repositories[0];
+	}
+
+	return null;
+}
+
 // List search method for resource locator
 export async function getRepositories(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
@@ -374,7 +439,38 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 		try {
 			const operation = this.getNodeParameter('operation', i) as string;
 
-			if (operation === 'getAll') {
+			if (operation === 'get') {
+				const organizationId = this.getNodeParameter('organizationId', i) as number;
+				const repositoryName = this.getNodeParameter('repositoryName', i) as string;
+
+				// Validate organization ID
+				if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
+					throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number (0 or greater)', {
+						itemIndex: i,
+					});
+				}
+
+				// Validate repository name
+				if (!repositoryName || typeof repositoryName !== 'string' || repositoryName.trim() === '') {
+					throw new NodeOperationError(this.getNode(), 'Repository name is required and must be a non-empty string', {
+						itemIndex: i,
+					});
+				}
+
+				const repository = await getRepositoryByName(this, credentials, organizationId, repositoryName.trim());
+
+				if (repository) {
+					returnData.push({
+						json: repository,
+						pairedItem: { item: i },
+					});
+				} else {
+					throw new NodeOperationError(this.getNode(), `No repository found with name: ${repositoryName}`, {
+						itemIndex: i,
+					});
+				}
+
+			} else if (operation === 'getAll') {
 				const organizationId = this.getNodeParameter('organizationId', i) as number;
 				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
