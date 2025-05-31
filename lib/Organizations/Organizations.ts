@@ -8,6 +8,7 @@ import {
 	IHttpRequestMethods,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
+	INodeListSearchResult,
 } from 'n8n-workflow';
 import { NodeConnectionType } from 'n8n-workflow';
 
@@ -44,49 +45,60 @@ export class Organizations implements INodeType {
 						action: 'Get many organizations',
 					},
 					{
-						name: 'Get Organization by ID',
-						value: 'getById',
-						description: 'Retrieve a specific organization by ID',
-						action: 'Get organization by ID',
-					},
-					{
-						name: 'Get Organization by Name',
-						value: 'getByName',
-						description: 'Retrieve a specific organization by selecting from a list',
-						action: 'Get organization by name',
+						name: 'Get Organization',
+						value: 'get',
+						description: 'Retrieve a specific organization',
+						action: 'Get an organization',
 					},
 				],
 				default: 'getAll',
 			},
 			{
-				displayName: 'Organization ID',
+				displayName: 'Organization',
 				name: 'organizationId',
-				type: 'string',
-				required: true,
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				placeholder: 'Select an organization...',
 				displayOptions: {
 					show: {
-						operation: ['getById'],
+						operation: ['get'],
 					},
 				},
-				default: '',
-				placeholder: 'Enter organization ID',
-				description: 'The ID of the organization to retrieve',
-			},
-			{
-				displayName: 'Organization Name or ID',
-				name: 'organizationName',
-				type: 'options',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '[0-9]+',
+									errorMessage: 'Not a valid organization ID',
+								},
+							},
+						],
+						placeholder: 'Enter organization ID',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
+					},
+				],
 				required: true,
-				displayOptions: {
-					show: {
-						operation: ['getByName'],
-					},
-				},
-				typeOptions: {
-					loadOptionsMethod: 'getOrganizations',
-				},
-				default: '',
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				description: 'The organization to retrieve',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -233,6 +245,78 @@ export class Organizations implements INodeType {
 				}
 			},
 		},
+		listSearch: {
+			async getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				// Get credentials
+				const credentials = await this.getCredentials('airCredentialsApi');
+				const instanceUrl = credentials.instanceUrl as string;
+				const token = credentials.token as string;
+
+				const allOrganizations: any[] = [];
+				let currentPage = 1;
+				let hasMorePages = true;
+
+				try {
+					while (hasMorePages) {
+						// Prepare the HTTP request options to fetch organizations with pagination
+						const options: IHttpRequestOptions = {
+							method: 'GET',
+							url: `${instanceUrl}/api/public/organizations`,
+							headers: {
+								'Authorization': `Bearer ${token}`,
+								'Accept': 'application/json',
+								'Content-Type': 'application/json',
+							},
+							qs: {
+								pageNumber: currentPage,
+								pageSize: 100, // Use a larger page size to reduce API calls
+								sortBy: 'name', // Sort by name for better UX
+								sortType: 'ASC',
+								...(filter && { 'filter[searchTerm]': filter }),
+							},
+							json: true,
+						};
+
+						// Make the HTTP request
+						const responseData = await this.helpers.httpRequest(options);
+
+						// Check if the response indicates success
+						if (!responseData.success) {
+							throw new NodeOperationError(this.getNode(), 'Failed to fetch organizations');
+						}
+
+						// Extract entities from result.entities
+						const entities = responseData.result?.entities || [];
+						allOrganizations.push(...entities);
+
+						// Check if there are more pages
+						const { currentPage: responsePage, totalPageCount } = responseData.result;
+						hasMorePages = responsePage < totalPageCount;
+						currentPage++;
+					}
+
+					// Filter organizations by name if filter is provided
+					let filteredOrganizations = allOrganizations;
+					if (filter) {
+						const lowerFilter = filter.toLowerCase();
+						filteredOrganizations = allOrganizations.filter((organization: any) =>
+							organization.name?.toLowerCase().includes(lowerFilter)
+						);
+					}
+
+					// Format organizations for list search result
+					return {
+						results: filteredOrganizations.map((organization: any) => ({
+							name: organization.name,
+							value: organization._id.toString(),
+							url: `${instanceUrl}/organizations/${organization._id}`,
+						})),
+					};
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), `Failed to load organizations: ${error.message}`);
+				}
+			},
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -282,12 +366,20 @@ export class Organizations implements INodeType {
 					if (additionalFields.searchTerm) {
 						qs['filter[searchTerm]'] = additionalFields.searchTerm;
 					}
-				} else if (operation === 'getById') {
-					const organizationId = this.getNodeParameter('organizationId', i) as string;
-					endpoint = `/api/public/organizations/${organizationId}`;
-				} else if (operation === 'getByName') {
-					const organizationId = this.getNodeParameter('organizationName', i) as string;
-					endpoint = `/api/public/organizations/${organizationId}`;
+				} else if (operation === 'get') {
+					const organizationIdParam = this.getNodeParameter('organizationId', i) as { mode: string; value: string };
+
+					if (organizationIdParam.mode === 'list' || organizationIdParam.mode === 'id') {
+						// For list and id modes, the value is the organization ID
+						const organizationId = organizationIdParam.value;
+						endpoint = `/api/public/organizations/${organizationId}`;
+					} else if (organizationIdParam.mode === 'name') {
+						// For name mode, we need to search for the organization by name
+						const organizationName = organizationIdParam.value;
+						endpoint = '/api/public/organizations';
+						qs['filter[name]'] = organizationName;
+						qs.pageSize = 1; // We only want the first match
+					}
 				}
 
 				// Prepare the HTTP request options
@@ -326,22 +418,31 @@ export class Organizations implements INodeType {
 							pairedItem: i,
 						});
 					});
-				} else if (operation === 'getByName') {
-					// For getByName, the result should contain the single organization
-					// Check if result.entities exists and has data, otherwise use result directly
-					const organizationData = responseData.result?.entities?.[0] || responseData.result;
-					returnData.push({
-						json: organizationData,
-						pairedItem: i,
-					});
-				} else {
-					// For getById, the result should contain the single organization
-					// Check if result.entities exists and has data, otherwise use result directly
-					const organizationData = responseData.result?.entities?.[0] || responseData.result;
-					returnData.push({
-						json: organizationData,
-						pairedItem: i,
-					});
+				} else if (operation === 'get') {
+					const organizationIdParam = this.getNodeParameter('organizationId', i) as { mode: string; value: string };
+
+					if (organizationIdParam.mode === 'name') {
+						// For name mode, we get a filtered list, take the first match
+						const entities = responseData.result?.entities || [];
+						if (entities.length > 0) {
+							returnData.push({
+								json: entities[0],
+								pairedItem: i,
+							});
+						} else {
+							throw new NodeOperationError(this.getNode(), `Organization with name "${organizationIdParam.value}" not found`, {
+								itemIndex: i,
+							});
+						}
+					} else {
+						// For list and id modes, the result should contain the single organization
+						// Check if result.entities exists and has data, otherwise use result directly
+						const organizationData = responseData.result?.entities?.[0] || responseData.result;
+						returnData.push({
+							json: organizationData,
+							pairedItem: i,
+						});
+					}
 				}
 
 			} catch (error) {

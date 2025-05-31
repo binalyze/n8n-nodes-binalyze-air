@@ -5,6 +5,7 @@ import {
 	INodeTypeDescription,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
+	INodeListSearchResult,
 	ApplicationError,
 } from 'n8n-workflow';
 import { NodeConnectionType } from 'n8n-workflow';
@@ -104,6 +105,13 @@ export class Air implements INodeType {
 			async getOrganizations(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const organizationsNode = new Organizations();
 				return organizationsNode.methods.loadOptions.getOrganizations.call(this);
+			},
+		},
+		listSearch: {
+			// Import list search methods from Organizations node for resource locators
+			async getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				const organizationsNode = new Organizations();
+				return organizationsNode.methods.listSearch.getOrganizations.call(this, filter);
 			},
 		},
 	};

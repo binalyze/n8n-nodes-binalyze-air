@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-binalyze-air",
   "version": "1.0.0",
-  "description": "Binalyze AIR n8n nodes",
+  "description": "Complete implementation of Binalyze AIR for automating DFIR with n8n workflows.",
   "keywords": [
     "n8n-community-node-package",
     "binalyze",
@@ -15,14 +15,14 @@
     "investigation"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/binalyze/binalyze-air-n8n",
+  "homepage": "https://github.com/binalyze/n8n-nodes-binalyze-air",
   "author": {
     "name": "Binalyze",
     "email": "support@binalyze.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/binalyze/binalyze-air-n8n.git"
+    "url": "https://github.com/binalyze/n8n-nodes-binalyze-air.git"
   },
   "engines": {
     "node": ">=20.15"

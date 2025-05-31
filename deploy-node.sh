@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_NAME="binalyze-air-n8n"
+PROJECT_NAME="n8n-nodes-binalyze-air"
 N8N_CUSTOM_NODES_DIR="$HOME/.n8n/custom"
 N8N_NODE_MODULES_DIR="$HOME/.n8n/node_modules"
 PACKAGE_DIR="$N8N_CUSTOM_NODES_DIR/$PROJECT_NAME"
