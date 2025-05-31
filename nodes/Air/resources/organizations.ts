@@ -4,7 +4,6 @@ import {
 	NodeOperationError,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
-	INodeListSearchItems,
 	INodeListSearchResult,
 	INodeProperties,
 } from 'n8n-workflow';
@@ -18,6 +17,11 @@ import {
 	fetchAllOrganizations,
 	findOrganizationByName,
 	buildOrganizationQueryParams,
+	createListSearchResults,
+	createLoadOptions,
+	handleExecuteError,
+	processApiResponseEntities,
+	catchAndFormatError,
 } from './helpers';
 
 export const OrganizationsOperations: INodeProperties[] = [
@@ -186,26 +190,18 @@ export async function getOrganizations(this: ILoadOptionsFunctions, filter?: str
 		const credentials = await getAirCredentials(this);
 		const allOrganizations = await fetchAllOrganizations(this, credentials, filter);
 
-		// Process and filter organizations
-		const results: INodeListSearchItems[] = allOrganizations
-			.filter(isValidOrganization)
-			.map((organization: any) => ({
+		return createListSearchResults(
+			allOrganizations,
+			isValidOrganization,
+			(organization: any) => ({
 				name: organization.name,
 				value: extractOrganizationId(organization),
 				url: organization.url || '',
-			}))
-			// Apply client-side filtering for better search results
-			.filter((item: any) =>
-				!filter ||
-				item.name.toLowerCase().includes(filter.toLowerCase()) ||
-				item.value === filter
-			)
-			.sort((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-
-		return { results };
+			}),
+			filter
+		);
 	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-		throw new Error(`Failed to load organizations: ${errorMessage}`);
+		throw catchAndFormatError(error, 'load organizations');
 	}
 }
 
@@ -215,21 +211,21 @@ export async function getOrganizationsOptions(this: ILoadOptionsFunctions): Prom
 		const credentials = await getAirCredentials(this);
 		const allOrganizations = await fetchAllOrganizations(this, credentials);
 
-		// Filter out organizations without valid IDs before mapping
-		const validOrganizations = allOrganizations.filter(isValidOrganization);
+		return createLoadOptions(
+			allOrganizations,
+			isValidOrganization,
+			(organization) => {
+				const orgId = extractOrganizationId(organization);
+				const name = organization.name || `Organization ${orgId || 'Unknown'}`;
 
-		return validOrganizations.map((organization) => {
-			const orgId = extractOrganizationId(organization);
-			const name = organization.name || `Organization ${orgId || 'Unknown'}`;
-
-			return {
-				name,
-				value: orgId,
-			};
-		});
+				return {
+					name,
+					value: orgId,
+				};
+			}
+		);
 	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-		throw new Error(`Failed to load organizations: ${errorMessage}`);
+		throw catchAndFormatError(error, 'load organizations');
 	}
 }
 
@@ -261,16 +257,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				const entities = responseData.result?.entities || [];
 				const pagination = responseData.result?.pagination;
 
-				// Add pagination info to each item if available
-				entities.forEach((organization: any) => {
-					returnData.push({
-						json: {
-							...organization,
-							...(pagination && { _pagination: pagination }),
-						},
-						pairedItem: i,
-					});
-				});
+				processApiResponseEntities(entities, pagination, returnData, i);
 			} else if (operation === 'get') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				let organizationId: string;
@@ -333,22 +320,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 			}
 
 		} catch (error) {
-			if (this.continueOnFail()) {
-				returnData.push({
-					json: {
-						error: error instanceof Error ? error.message : 'Unknown error occurred',
-						errorDetails: error instanceof NodeOperationError ? {
-							type: 'NodeOperationError',
-							cause: error.cause,
-						} : undefined,
-					},
-					pairedItem: i,
-				});
-			} else {
-				throw error instanceof NodeOperationError ? error : new NodeOperationError(this.getNode(), error as Error, {
-					itemIndex: i,
-				});
-			}
+			handleExecuteError(this, error, i, returnData);
 		}
 	}
 

@@ -4,7 +4,6 @@ import {
 	NodeOperationError,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
-	INodeListSearchItems,
 	INodeListSearchResult,
 	INodeProperties,
 } from 'n8n-workflow';
@@ -13,6 +12,13 @@ import {
 	getAirCredentials,
 	buildRequestOptions,
 	validateApiResponse,
+	extractEntityId,
+	isValidEntity,
+	createListSearchResults,
+	createLoadOptions,
+	handleExecuteError,
+	processApiResponseEntities,
+	catchAndFormatError,
 } from './helpers';
 
 export const RepositoriesOperations: INodeProperties[] = [
@@ -67,13 +73,6 @@ export const RepositoriesOperations: INodeProperties[] = [
 			},
 		},
 		options: [
-			{
-				displayName: 'All Organizations',
-				name: 'allOrganizations',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to include repositories from all organizations',
-			},
 			{
 				displayName: 'Host Filter',
 				name: 'host',
@@ -245,9 +244,6 @@ export function buildRepositoryQueryParams(organizationId: number, additionalFie
 	if (additionalFields.host) {
 		queryParams['filter[host]'] = additionalFields.host;
 	}
-	if (additionalFields.allOrganizations !== undefined) {
-		queryParams['filter[allOrganizations]'] = additionalFields.allOrganizations ? 'true' : 'false';
-	}
 
 	return queryParams;
 }
@@ -256,30 +252,14 @@ export function buildRepositoryQueryParams(organizationId: number, additionalFie
  * Validate that a repository has essential fields
  */
 export function isValidRepository(repository: any): boolean {
-	if (!repository) return false;
-
-	// Check for essential repository fields
-	const hasId = repository._id || repository.id;
-	const hasName = repository.name;
-	const hasType = repository.type;
-
-	return !!(hasId && hasName && hasType);
+	return isValidEntity(repository, ['name', 'type']);
 }
 
 /**
  * Extract repository ID from repository object
  */
 export function extractRepositoryId(repository: any): string {
-	const repoId = repository._id ?? repository.id ?? repository.repositoryId ?? repository.Id;
-
-	if (repoId === undefined || repoId === null || repoId === '' || repoId === 0) {
-		throw new Error(
-			`Repository has no valid ID. ID value: ${repoId}, ID type: ${typeof repoId}. ` +
-			`Available fields: ${Object.keys(repository).join(', ')}`
-		);
-	}
-
-	return String(repoId);
+	return extractEntityId(repository, 'repository');
 }
 
 /**
@@ -341,26 +321,18 @@ export async function getRepositories(this: ILoadOptionsFunctions, filter?: stri
 		const organizationId = 0; // Default to all organizations
 		const allRepositories = await fetchAllRepositories(this, credentials, organizationId, filter);
 
-		// Process and filter repositories
-		const results: INodeListSearchItems[] = allRepositories
-			.filter(isValidRepository)
-			.map((repository: any) => ({
+		return createListSearchResults(
+			allRepositories,
+			isValidRepository,
+			(repository: any) => ({
 				name: `${repository.name} (${repository.type})`,
 				value: extractRepositoryId(repository),
 				url: repository.url || '',
-			}))
-			// Apply client-side filtering for better search results
-			.filter((item: any) =>
-				!filter ||
-				item.name.toLowerCase().includes(filter.toLowerCase()) ||
-				item.value === filter
-			)
-			.sort((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-
-		return { results };
+			}),
+			filter
+		);
 	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-		throw new Error(`Failed to load repositories: ${errorMessage}`);
+		throw catchAndFormatError(error, 'load repositories');
 	}
 }
 
@@ -372,22 +344,22 @@ export async function getRepositoriesOptions(this: ILoadOptionsFunctions): Promi
 		const organizationId = 0;
 		const allRepositories = await fetchAllRepositories(this, credentials, organizationId);
 
-		// Filter out repositories without valid IDs before mapping
-		const validRepositories = allRepositories.filter(isValidRepository);
+		return createLoadOptions(
+			allRepositories,
+			isValidRepository,
+			(repository) => {
+				const repoId = extractRepositoryId(repository);
+				const name = repository.name || `Repository ${repoId || 'Unknown'}`;
+				const type = repository.type ? ` (${repository.type})` : '';
 
-		return validRepositories.map((repository) => {
-			const repoId = extractRepositoryId(repository);
-			const name = repository.name || `Repository ${repoId || 'Unknown'}`;
-			const type = repository.type ? ` (${repository.type})` : '';
-
-			return {
-				name: `${name}${type}`,
-				value: repoId,
-			};
-		});
+				return {
+					name: `${name}${type}`,
+					value: repoId,
+				};
+			}
+		);
 	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-		throw new Error(`Failed to load repositories: ${errorMessage}`);
+		throw catchAndFormatError(error, 'load repositories');
 	}
 }
 
@@ -428,34 +400,10 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 				const entities = responseData.result?.entities || [];
 				const pagination = responseData.result?.pagination;
 
-				// Add pagination info to each item if available
-				entities.forEach((repository: any) => {
-					returnData.push({
-						json: {
-							...repository,
-							...(pagination && { _pagination: pagination }),
-						},
-						pairedItem: i,
-					});
-				});
+				processApiResponseEntities(entities, pagination, returnData, i);
 			}
 		} catch (error) {
-			if (this.continueOnFail()) {
-				returnData.push({
-					json: {
-						error: error instanceof Error ? error.message : 'Unknown error occurred',
-						errorDetails: error instanceof NodeOperationError ? {
-							type: 'NodeOperationError',
-							cause: error.cause,
-						} : undefined,
-					},
-					pairedItem: i,
-				});
-			} else {
-				throw error instanceof NodeOperationError ? error : new NodeOperationError(this.getNode(), error as Error, {
-					itemIndex: i,
-				});
-			}
+			handleExecuteError(this, error, i, returnData);
 		}
 	}
 

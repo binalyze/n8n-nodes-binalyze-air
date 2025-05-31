@@ -3,6 +3,11 @@ import {
 	ILoadOptionsFunctions,
 	IHttpRequestOptions,
 	IHttpRequestMethods,
+	INodePropertyOptions,
+	INodeListSearchItems,
+	INodeListSearchResult,
+	INodeExecutionData,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 export interface AirCredentials {
@@ -91,6 +96,127 @@ export function validateApiResponse(responseData: ApiResponse, context?: string)
 		const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
 		throw new Error(fullMessage);
 	}
+}
+
+/**
+ * Generic function to extract entity ID from entity object with comprehensive field checking
+ */
+export function extractEntityId(entity: any, entityType: string = 'entity'): string {
+	const entityId = entity._id ?? entity.id ?? entity[`${entityType}Id`] ?? entity.Id;
+
+	if (entityId === undefined || entityId === null || entityId === '' || entityId === 0) {
+		throw new Error(
+			`${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has no valid ID. ID value: ${entityId}, ID type: ${typeof entityId}. ` +
+			`Available fields: ${Object.keys(entity).join(', ')}`
+		);
+	}
+
+	return String(entityId);
+}
+
+/**
+ * Generic function to validate that an entity has a valid ID and required fields
+ */
+export function isValidEntity(entity: any, requiredFields: string[] = ['name']): boolean {
+	if (!entity) return false;
+
+	try {
+		extractEntityId(entity);
+		return requiredFields.every(field => !!entity[field]);
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Generic function to create list search results for n8n resource locators
+ */
+export function createListSearchResults(
+	entities: any[],
+	validationFn: (entity: any) => boolean,
+	mapFn: (entity: any) => INodeListSearchItems,
+	filter?: string
+): INodeListSearchResult {
+	const results: INodeListSearchItems[] = entities
+		.filter(validationFn)
+		.map(mapFn)
+		// Apply client-side filtering for better search results
+		.filter((item: any) =>
+			!filter ||
+			item.name.toLowerCase().includes(filter.toLowerCase()) ||
+			item.value === filter
+		)
+		.sort((a: any, b: any) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+
+	return { results };
+}
+
+/**
+ * Generic function to create load options for n8n dropdowns
+ */
+export function createLoadOptions(
+	entities: any[],
+	validationFn: (entity: any) => boolean,
+	mapFn: (entity: any) => INodePropertyOptions
+): INodePropertyOptions[] {
+	return entities
+		.filter(validationFn)
+		.map(mapFn);
+}
+
+/**
+ * Generic function to handle execute operation errors with consistent error handling
+ */
+export function handleExecuteError(
+	context: IExecuteFunctions,
+	error: any,
+	itemIndex: number,
+	returnData: INodeExecutionData[]
+): void {
+	if (context.continueOnFail()) {
+		returnData.push({
+			json: {
+				error: error instanceof Error ? error.message : 'Unknown error occurred',
+				errorDetails: error instanceof NodeOperationError ? {
+					type: 'NodeOperationError',
+					cause: error.cause,
+				} : undefined,
+			},
+			pairedItem: itemIndex,
+		});
+	} else {
+		throw error instanceof NodeOperationError ? error : new NodeOperationError(context.getNode(), error as Error, {
+			itemIndex,
+		});
+	}
+}
+
+/**
+ * Generic function to process API response entities with pagination
+ */
+export function processApiResponseEntities(
+	entities: any[],
+	pagination: any,
+	returnData: INodeExecutionData[],
+	itemIndex: number
+): void {
+	entities.forEach((entity: any) => {
+		returnData.push({
+			json: {
+				...entity,
+				...(pagination && { _pagination: pagination }),
+			},
+			pairedItem: itemIndex,
+		});
+	});
+}
+
+/**
+ * Generic function to catch and format errors for load/search functions
+ */
+export function catchAndFormatError(error: any, operation: string): Error {
+	const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+	return new Error(`Failed to ${operation}: ${errorMessage}`);
 }
 
 /**
