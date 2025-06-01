@@ -10,7 +10,24 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 ## Features
 
-The Binalyze AIR node provides access to three main resource categories with comprehensive operations:
+The Binalyze AIR node provides access to four main resource categories with comprehensive operations:
+
+### 🏷️ Auto Asset Tags
+
+Manage automated asset tagging rules and processes:
+
+- **Get** - Retrieve details of a specific auto asset tag by ID
+- **Get Many** - Retrieve multiple auto asset tags with filtering and pagination
+- **Start Tagging** - Initiate automated tagging processes on filtered endpoints
+
+**Auto Asset Tag Features:**
+- Platform-specific conditions for Linux, Windows, and macOS systems
+- Complex condition logic with AND/OR operators
+- Support for various condition types: hostname, IP address, subnet, osquery, process, file, directory
+- Flexible condition operators: running, exist, is, contains, starts-with, ends-with, in-range, has-result, not-running, not-exist, has-no-result
+- Scheduled tagging operations with immediate or scheduled execution
+- Advanced endpoint filtering for targeted tagging operations
+- Organization-scoped access with configurable organization ID filtering (default: 0 for all organizations)
 
 ### 🏢 Organizations
 
@@ -179,6 +196,7 @@ npm run lintfix
 ```
 
 Test your node locally by following the [n8n local testing guide](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/).
+
 
 ## Support and Documentation
 

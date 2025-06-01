@@ -4955,7 +4955,8 @@
 									"    pm.response.to.have.status(200);",
 									"});"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -4975,12 +4976,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/{{apiPrefix}}/auto-asset-tag",
+							"raw": "{{baseUrl}}/api/public/auto-asset-tag?filter[organizationIds]=0",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"{{apiPrefix}}",
+								"api",
+								"public",
 								"auto-asset-tag"
 							],
 							"query": [
@@ -5017,6 +5019,11 @@
 									"key": "filter[searchTerm]",
 									"value": "",
 									"disabled": true
+								},
+								{
+									"key": "filter[organizationIds]",
+									"value": "0",
+									"description": "Required"
 								}
 							]
 						},
@@ -27816,6 +27823,10 @@
 		},
 		{
 			"key": "policyIds",
+			"value": ""
+		},
+		{
+			"key": "organizationId",
 			"value": ""
 		}
 	]

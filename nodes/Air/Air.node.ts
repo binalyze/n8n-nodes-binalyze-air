@@ -29,6 +29,12 @@ import {
 	getUsersOptions,
 	executeUsers
 } from './resources/users';
+import {
+	AutoAssetTagsOperations,
+	getAutoAssetTags,
+	getAutoAssetTagsOptions,
+	executeAutoAssetTags
+} from './resources/autoassettags';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
@@ -41,7 +47,7 @@ export class Air implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Manage organizations, repositories, and users in Binalyze AIR',
+		description: 'Manage organizations, repositories, users, and auto asset tags in Binalyze AIR',
 		defaults: {
 			name: 'Binalyze AIR',
 		},
@@ -61,6 +67,11 @@ export class Air implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Auto Asset Tag',
+						value: 'autoassettags',
+						description: 'Manage auto asset tags',
+					},
+					{
 						name: 'Organization',
 						value: 'organizations',
 						description: 'Manage organizations',
@@ -79,6 +90,7 @@ export class Air implements INodeType {
 				default: 'organizations',
 			},
 
+			...AutoAssetTagsOperations,
 			...OrganizationsOperations,
 			...RepositoriesOperations,
 			...UsersOperations,
@@ -87,6 +99,10 @@ export class Air implements INodeType {
 
 	methods = {
 		loadOptions: {
+			// Import load options methods from Auto Asset Tags
+			async getAutoAssetTags(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getAutoAssetTagsOptions.call(this);
+			},
 			// Import load options methods from Organizations
 			async getOrganizations(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getOrganizationsOptions.call(this);
@@ -101,6 +117,10 @@ export class Air implements INodeType {
 			},
 		},
 		listSearch: {
+			// Import list search methods from Auto Asset Tags for resource locators
+			async getAutoAssetTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getAutoAssetTags.call(this, filter);
+			},
 			// Import list search methods from Organizations for resource locators
 			async getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getOrganizations.call(this, filter);
@@ -121,6 +141,8 @@ export class Air implements INodeType {
 
 		// Delegate execution to the appropriate function based on resource
 		switch (resource) {
+			case 'autoassettags':
+				return executeAutoAssetTags.call(this);
 			case 'organizations':
 				return executeOrganizations.call(this);
 			case 'repositories':
