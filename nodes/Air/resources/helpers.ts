@@ -23,6 +23,18 @@ export interface PaginationInfo {
 	filters?: any[];
 }
 
+/**
+ * Simplified pagination info interface without sortables and filters
+ */
+export interface SimplifiedPaginationInfo {
+	totalEntityCount: number;
+	currentPage: number;
+	pageSize: number;
+	previousPage: number;
+	totalPageCount: number;
+	nextPage: number;
+}
+
 export interface ApiResponse {
 	success: boolean;
 	result?: {
@@ -123,6 +135,60 @@ export function extractEntityId(entity: any, entityType: string = 'entity'): str
 	}
 
 	return String(entityId);
+}
+
+/**
+ * Validate and normalize an ID value that can be a number, string, or GUID
+ * Returns null if the ID is invalid, otherwise returns the normalized string representation
+ */
+export function validateAndNormalizeId(id: any): string | null {
+	// Handle null, undefined, or empty values
+	if (id === null || id === undefined) {
+		return null;
+	}
+
+	// Convert to string and trim if it's a string
+	const stringId = String(id).trim();
+
+	// Check if the resulting string is empty
+	if (stringId === '') {
+		return null;
+	}
+
+	// Check if it's a valid number (including 0 and negative numbers for some IDs)
+	const numericId = Number(stringId);
+	if (!isNaN(numericId)) {
+		return stringId;
+	}
+
+	// Check if it's a valid GUID/UUID pattern (basic validation)
+	const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+	if (guidPattern.test(stringId)) {
+		return stringId;
+	}
+
+	// Check if it's a valid alphanumeric ID (letters, numbers, hyphens, underscores)
+	const alphanumericPattern = /^[a-zA-Z0-9-_]+$/;
+	if (alphanumericPattern.test(stringId)) {
+		return stringId;
+	}
+
+	// If none of the above patterns match, consider it invalid
+	return null;
+}
+
+/**
+ * Validate that an ID is not empty/null and return normalized string
+ * Throws an error if the ID is invalid
+ */
+export function requireValidId(id: any, fieldName: string = 'ID'): string {
+	const normalizedId = validateAndNormalizeId(id);
+
+	if (normalizedId === null) {
+		throw new Error(`${fieldName} cannot be empty or invalid. Received: ${id} (type: ${typeof id})`);
+	}
+
+	return normalizedId;
 }
 
 /**
@@ -278,6 +344,52 @@ export function extractPaginationInfo(result: any): PaginationInfo | null {
 	}
 
 	return null;
+}
+
+/**
+ * Extract simplified pagination information from API result object (without sortables and filters)
+ */
+export function extractSimplifiedPaginationInfo(result: any): SimplifiedPaginationInfo | null {
+	if (!result) return null;
+
+	// Check if pagination properties exist in the result
+	if (result.totalEntityCount !== undefined) {
+		return {
+			totalEntityCount: result.totalEntityCount,
+			currentPage: result.currentPage,
+			pageSize: result.pageSize,
+			previousPage: result.previousPage,
+			totalPageCount: result.totalPageCount,
+			nextPage: result.nextPage,
+		};
+	}
+
+	return null;
+}
+
+/**
+ * Process API response entities with simplified pagination info included in each entity's JSON
+ * This approach includes simplified pagination info (without sortables/filters) within each entity
+ */
+export function processApiResponseEntitiesWithSimplifiedPagination(
+	entities: any[],
+	paginationData: SimplifiedPaginationInfo | null,
+	returnData: INodeExecutionData[],
+	itemIndex: number
+): void {
+	entities.forEach((entity: any) => {
+		const jsonData = { ...entity };
+
+		// Include simplified pagination info in the entity's JSON if available
+		if (paginationData) {
+			jsonData._pagination = paginationData;
+		}
+
+		returnData.push({
+			json: jsonData,
+			pairedItem: itemIndex,
+		});
+	});
 }
 
 /**

@@ -17,9 +17,9 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	processApiResponseEntitiesClean,
-	createPaginationInfoItem,
-	extractPaginationInfo,
+	extractSimplifiedPaginationInfo,
+	processApiResponseEntitiesWithSimplifiedPagination,
+	requireValidId,
 	catchAndFormatError,
 } from './helpers';
 
@@ -516,9 +516,10 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				validateApiResponse(responseData);
 
 				const entities = responseData.result?.entities || [];
+				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
 
-				// Process entities without adding pagination to each one
-				processApiResponseEntitiesClean(entities, returnData, i);
+				// Process entities with simplified pagination attached to each entity
+				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			} else if (operation === 'get') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				let organizationId: string;
@@ -538,8 +539,10 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				}
 
 				// Validate organization ID
-				if (!organizationId || organizationId.trim() === '') {
-					throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
 						itemIndex: i,
 					});
 				}
@@ -597,8 +600,10 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				}
 
 				// Validate organization ID
-				if (!organizationId || organizationId.trim() === '') {
-					throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
 						itemIndex: i,
 					});
 				}
@@ -617,9 +622,10 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				validateApiResponse(responseData);
 
 				const entities = responseData.result?.entities || [];
+				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
 
-				// Process entities without adding pagination to each one
-				processApiResponseEntitiesClean(entities, returnData, i);
+				// Process entities with simplified pagination attached to each entity
+				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			} else if (operation === 'addTags') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				const tags = this.getNodeParameter('tags', i) as string;
@@ -641,8 +647,10 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				}
 
 				// Validate organization ID
-				if (!organizationId || organizationId.trim() === '') {
-					throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
 						itemIndex: i,
 					});
 				}
@@ -694,8 +702,10 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				}
 
 				// Validate organization ID
-				if (!organizationId || organizationId.trim() === '') {
-					throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
 						itemIndex: i,
 					});
 				}

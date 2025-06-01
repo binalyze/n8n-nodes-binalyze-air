@@ -17,9 +17,9 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	processApiResponseEntitiesClean,
-	createPaginationInfoItem,
-	extractPaginationInfo,
+	extractSimplifiedPaginationInfo,
+	processApiResponseEntitiesWithSimplifiedPagination,
+	requireValidId,
 	catchAndFormatError,
 } from './helpers';
 
@@ -519,12 +519,14 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 				if (repositoryResource.mode === 'list' || repositoryResource.mode === 'id') {
 					// For both list and id modes, the value should be the repository ID
 					const repositoryId = repositoryResource.value;
-					if (!repositoryId || repositoryId.trim() === '') {
-						throw new NodeOperationError(this.getNode(), 'Repository ID cannot be empty', {
+					try {
+						const validatedRepositoryId = requireValidId(repositoryId, 'Repository ID');
+						repository = await getRepositoryById(this, credentials, organizationId, validatedRepositoryId);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
 						});
 					}
-					repository = await getRepositoryById(this, credentials, organizationId, repositoryId);
 				} else if (repositoryResource.mode === 'name') {
 					// For name mode, search by name
 					const repositoryName = repositoryResource.value;
@@ -575,15 +577,10 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 				validateApiResponse(responseData);
 
 				const entities = responseData.result?.entities || [];
+				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
 
-				// Process entities without adding pagination to each one
-				processApiResponseEntitiesClean(entities, returnData, i);
-
-				// Extract pagination info using the new helper function
-				const paginationData = extractPaginationInfo(responseData.result);
-				if (paginationData) {
-					returnData.push(createPaginationInfoItem(paginationData, i));
-				}
+				// Process entities with simplified pagination attached to each entity
+				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			}
 		} catch (error) {
 			handleExecuteError(this, error, i, returnData);
