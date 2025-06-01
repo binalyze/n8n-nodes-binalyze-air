@@ -197,6 +197,14 @@ npm run lintfix
 
 Test your node locally by following the [n8n local testing guide](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/).
 
+## Recent Updates
+
+### Auto Asset Tags Organization ID Filter for Get Operation
+- **Added**: Organization ID parameter to Auto Asset Tags "Get" operation
+- **Feature**: Users can now filter auto asset tags by organization when using "By ID" and "By Name" modes
+- **Limitation**: "From List" mode shows all organizations (ID 0) due to n8n framework limitations during dropdown population
+- **Usage**: Set Organization ID to filter results in "By ID" and "By Name" modes, or use 0 for all organizations
+- **Alignment**: Now matches the Organization ID filtering pattern used in other resources
 
 ## Support and Documentation
 

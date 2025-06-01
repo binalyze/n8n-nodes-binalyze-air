@@ -47,12 +47,6 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 				description: 'Retrieve many auto asset tags',
 				action: 'Get many auto asset tags',
 			},
-			{
-				name: 'Start Tagging',
-				value: 'startTagging',
-				description: 'Start auto asset tagging process',
-				action: 'Start auto asset tagging',
-			},
 		],
 		default: 'getAll',
 	},
@@ -105,37 +99,21 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 		description: 'The auto asset tag to work with',
 	},
 	{
-		displayName: 'Filter',
-		name: 'filter',
-		type: 'json',
-		default: '{\n  "organizationIds": [0],\n  "searchTerm": "",\n  "managedStatus": ["managed"],\n  "isolationStatus": [],\n  "platform": [],\n  "onlineStatus": [],\n  "tags": []\n}',
+		displayName: 'Organization ID',
+		name: 'organizationId',
+		type: 'number',
+		required: true,
+		default: 0,
+		placeholder: 'Enter organization ID',
 		displayOptions: {
 			show: {
 				resource: ['autoassettags'],
-				operation: ['startTagging'],
+				operation: ['get'],
 			},
 		},
-		required: true,
-		description: 'Filter criteria for endpoints to tag',
+		description: 'The organization ID to filter auto asset tags by (0 for all organizations)',
 		typeOptions: {
-			alwaysOpenEditWindow: true,
-		},
-	},
-	{
-		displayName: 'Scheduler Config',
-		name: 'schedulerConfig',
-		type: 'json',
-		default: '{\n  "when": "now"\n}',
-		displayOptions: {
-			show: {
-				resource: ['autoassettags'],
-				operation: ['startTagging'],
-			},
-		},
-		required: true,
-		description: 'Scheduler configuration for the tagging operation',
-		typeOptions: {
-			alwaysOpenEditWindow: true,
+			minValue: 0,
 		},
 	},
 	{
@@ -245,6 +223,7 @@ export function isValidAutoAssetTag(tag: any): boolean {
 export async function fetchAllAutoAssetTags(
 	context: ILoadOptionsFunctions | IExecuteFunctions,
 	credentials: AirCredentials,
+	organizationId: number = 0,
 	searchFilter?: string,
 	pageSize: number = 100
 ): Promise<any[]> {
@@ -256,7 +235,7 @@ export async function fetchAllAutoAssetTags(
 		const queryParams: Record<string, string | number> = {
 			pageNumber: currentPage,
 			pageSize,
-			'filter[organizationIds]': 0,
+			'filter[organizationIds]': organizationId,
 		};
 
 		if (searchFilter) {
@@ -290,12 +269,13 @@ export async function fetchAllAutoAssetTags(
 export async function findAutoAssetTagByName(
 	context: IExecuteFunctions,
 	credentials: AirCredentials,
+	organizationId: number,
 	tagName: string
 ): Promise<any | null> {
 	try {
 		// Use a smaller page size for name search to optimize performance
 		const queryParams: Record<string, string | number> = {
-			'filter[organizationIds]': 0,
+			'filter[organizationIds]': organizationId,
 			'filter[searchTerm]': tagName,
 			pageSize: 100, // Get a reasonable page size to find the tag
 		};
@@ -353,10 +333,29 @@ export function buildAutoAssetTagQueryParams(additionalFields: any): Record<stri
 	return queryParams;
 }
 
+/**
+ * Helper function to get organization ID from context if available
+ * Note: For "From List" mode in resource locator, n8n doesn't provide access to current node parameters
+ * during the dropdown population, so this will fall back to organizationId 0 (all organizations)
+ */
+function getOrganizationIdFromContext(context: ILoadOptionsFunctions | IExecuteFunctions): number {
+	try {
+		// This will only work during execution, not during dropdown population
+		if ('getNodeParameter' in context && typeof (context as any).getNodeParameter === 'function') {
+			return (context as IExecuteFunctions).getNodeParameter('organizationId', 0) as number;
+		}
+	} catch (error) {
+		// If we can't get the parameter (e.g., during dropdown loading), fall back to default
+	}
+	return 0; // Default to all organizations
+}
+
 export async function getAutoAssetTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const tags = await fetchAllAutoAssetTags(this, credentials, filter);
+		// Try to get organizationId from context, fallback to 0 for all organizations
+		const organizationId = getOrganizationIdFromContext(this);
+		const tags = await fetchAllAutoAssetTags(this, credentials, organizationId, filter);
 
 		return createListSearchResults(
 			tags,
@@ -376,7 +375,7 @@ export async function getAutoAssetTags(this: ILoadOptionsFunctions, filter?: str
 export async function getAutoAssetTagsOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const tags = await fetchAllAutoAssetTags(this, credentials);
+		const tags = await fetchAllAutoAssetTags(this, credentials, 0);
 
 		return createLoadOptions(
 			tags,
@@ -445,7 +444,7 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 								});
 							}
 							try {
-								const foundTag = await findAutoAssetTagByName(this, credentials, tagName.trim());
+								const foundTag = await findAutoAssetTagByName(this, credentials, this.getNodeParameter('organizationId', i) as number, tagName.trim());
 								if (!foundTag) {
 									throw new NodeOperationError(this.getNode(), `No auto asset tag found with name: ${tagName}`, {
 										itemIndex: i,
@@ -472,26 +471,6 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 
 						returnData.push({
 							json: getResponse.result,
-							pairedItem: { item: i },
-						});
-						break;
-
-					case 'startTagging':
-						const filter = this.getNodeParameter('filter', i) as string;
-						const schedulerConfig = this.getNodeParameter('schedulerConfig', i) as string;
-
-						const startTaggingData = {
-							filter: JSON.parse(filter),
-							schedulerConfig: JSON.parse(schedulerConfig),
-						};
-
-						const startTaggingOptions = buildRequestOptions(credentials, 'POST', '/api/public/auto-asset-tag/start-tagging');
-						startTaggingOptions.body = startTaggingData;
-						const startTaggingResponse = await this.helpers.httpRequest(startTaggingOptions);
-						validateApiResponse(startTaggingResponse, 'Failed to start tagging');
-
-						returnData.push({
-							json: startTaggingResponse.result,
 							pairedItem: { item: i },
 						});
 						break;
