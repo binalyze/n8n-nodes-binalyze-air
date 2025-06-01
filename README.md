@@ -2,7 +2,98 @@
 
 # n8n-nodes-binalyze-air
 
-This repo contains Binalyze AIR nodes to help you get started building your own custom integrations for [Binalyze AIR](https://binalyze.com) with n8n.
+This package provides comprehensive n8n node integration for [Binalyze AIR](https://binalyze.com), enabling you to automate and integrate AIR's digital investigation and incident response capabilities directly into your n8n workflows.
+
+## What is Binalyze AIR?
+
+Binalyze AIR is a comprehensive digital investigation and incident response platform that enables organizations to collect, analyze, and manage digital evidence from endpoints, cloud services, and mobile devices. This n8n integration allows you to programmatically interact with AIR's core resources and automate investigation workflows.
+
+## Features
+
+The Binalyze AIR node provides access to three main resource categories with comprehensive operations:
+
+### 🏢 Organizations
+
+Manage organizations within your AIR instance:
+
+- **Get Organization** - Retrieve details of a specific organization by ID or name
+- **Get Many Organizations** - Retrieve multiple organizations with filtering and pagination
+- **Create Organization** - Create new organizations with contact information and settings
+- **Get Users** - Retrieve users assigned to a specific organization
+- **Add Tags** - Add metadata tags to organizations for better categorization
+- **Remove Tags** - Remove existing tags from organizations
+
+**Organization Features:**
+- Support for shareable deployment configuration
+- Contact person management
+- Tag-based organization for improved searchability
+- Flexible identification by ID or name
+
+### 👤 Users
+
+Manage user accounts and permissions:
+
+- **Get User** - Retrieve details of a specific user by ID, username, or email
+- **Get Many Users** - Retrieve multiple users with advanced filtering options
+
+**User Management Features:**
+- Filter users by organization membership
+- Role-based filtering capabilities
+- Search by username or email address
+- Include users not assigned to any organization
+- Sorting by creation date or username
+- Pagination support for large user bases
+
+### 📁 Evidence Repositories
+
+Manage evidence storage and repositories:
+
+- **Get Repository** - Retrieve details of a specific evidence repository by ID or name
+- **Get Many Repositories** - Retrieve multiple repositories with comprehensive filtering
+
+**Repository Management Features:**
+- Organization-scoped repository access
+- Filter repositories by host, path, or name
+- Search repositories with partial name matching
+- Sort repositories by creation date, host, name, path, or type
+- Pagination support for large repository collections
+- Support for different repository types and configurations
+
+## Authentication
+
+The node uses API token-based authentication with the following requirements:
+
+- **AIR Instance URL** - The base URL of your Binalyze AIR instance (e.g., `https://air-demo.binalyze.com`)
+- **AIR API Token** - A valid API token generated from your AIR instance's Integrations > API Tokens section
+
+## Resource Locators
+
+All resources support flexible identification methods:
+
+- **From List** - Select from a searchable dropdown of available items
+- **By ID** - Direct identification using numeric or GUID identifiers
+- **By Name/Username** - Human-readable identification using names or usernames
+
+## Advanced Features
+
+### Pagination Support
+All "Get Many" operations support configurable pagination:
+- Customizable page size (default: 10 items per page)
+- Page number selection for navigation
+- Efficient handling of large datasets
+
+### Filtering and Sorting
+Comprehensive filtering options across all resources:
+- **Organizations**: Sort by creation date or name
+- **Users**: Filter by roles, organization membership, sort by creation date or username
+- **Repositories**: Filter by host, path, search term, sort by multiple attributes
+
+### Error Handling
+Robust error handling with detailed error messages for:
+- Invalid credentials or instance URLs
+- Missing or invalid resource identifiers
+- API rate limits and connectivity issues
+- Data validation errors
 
 ## Prerequisites
 
@@ -16,29 +107,85 @@ You need the following installed on your development machine:
   ```
 * Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
 
-## Using this starter
+## Installation
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+To use this node in your n8n instance:
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
+1. Install the package:
+   ```bash
+   npm install n8n-nodes-binalyze-air
    ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
+
+2. Restart your n8n instance to load the new node.
+
+3. Configure your Binalyze AIR credentials in n8n:
+   - Go to Settings > Credentials
+   - Add new credential for "Binalyze AIR Credentials API"
+   - Enter your AIR instance URL and API token
+
+## Usage Examples
+
+### Basic Organization Management
+- Retrieve all organizations and their details
+- Create new organizations for different investigation teams
+- Manage organization tags for better categorization
+
+### User Administration
+- Get user lists filtered by specific organizations
+- Retrieve user details for access management
+- Monitor user assignments across organizations
+
+### Evidence Repository Operations
+- List all repositories within an organization
+- Search for specific repositories by name or path
+- Monitor repository status and configurations
+
+## Development
+
+For detailed guidance on creating and publishing nodes, refer to the [n8n documentation](https://docs.n8n.io/integrations/creating-nodes/).
+
+### Development Setup
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/binalyze/n8n-nodes-binalyze-air.git
    ```
-3. Run `npm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `npm lint` to check for errors or `npm lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
 
-## More information
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+3. Build the project:
+   ```bash
+   npm run build
+   ```
+
+4. Link for local development:
+   ```bash
+   npm link
+   ```
+
+### Testing
+
+Run linting to check for errors:
+```bash
+npm run lint
+```
+
+Auto-fix linting errors when possible:
+```bash
+npm run lintfix
+```
+
+Test your node locally by following the [n8n local testing guide](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/).
+
+## Support and Documentation
+
+- [Binalyze AIR Documentation](https://kb.binalyze.com)
+- [n8n Documentation](https://docs.n8n.io)
+- [Node Development Guide](https://docs.n8n.io/integrations/creating-nodes/)
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+[MIT](https://github.com/binalyze/n8n-nodes-binalyze-air/blob/master/LICENSE.md)
