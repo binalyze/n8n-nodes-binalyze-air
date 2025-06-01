@@ -23,6 +23,12 @@ import {
 	getRepositoriesOptions,
 	executeRepositories
 } from './resources/repositories';
+import {
+	UsersOperations,
+	getUsers,
+	getUsersOptions,
+	executeUsers
+} from './resources/users';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
@@ -35,7 +41,7 @@ export class Air implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Manage organizations and repositories in Binalyze AIR',
+		description: 'Manage organizations, repositories, and users in Binalyze AIR',
 		defaults: {
 			name: 'Binalyze AIR',
 		},
@@ -64,12 +70,18 @@ export class Air implements INodeType {
 						value: 'repositories',
 						description: 'Manage evidence repositories',
 					},
+					{
+						name: 'User',
+						value: 'users',
+						description: 'Manage users',
+					},
 				],
 				default: 'organizations',
 			},
 
 			...OrganizationsOperations,
 			...RepositoriesOperations,
+			...UsersOperations,
 		],
 	};
 
@@ -83,6 +95,10 @@ export class Air implements INodeType {
 			async getRepositories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getRepositoriesOptions.call(this);
 			},
+			// Import load options methods from Users
+			async getUsers(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getUsersOptions.call(this);
+			},
 		},
 		listSearch: {
 			// Import list search methods from Organizations for resource locators
@@ -92,6 +108,10 @@ export class Air implements INodeType {
 			// Import list search methods from Repositories for resource locators
 			async getRepositories(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getRepositories.call(this, filter);
+			},
+			// Import list search methods from Users for resource locators
+			async getUsers(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getUsers.call(this, filter);
 			},
 		},
 	};
@@ -105,6 +125,8 @@ export class Air implements INodeType {
 				return executeOrganizations.call(this);
 			case 'repositories':
 				return executeRepositories.call(this);
+			case 'users':
+				return executeUsers.call(this);
 			default:
 				throw new ApplicationError(`Unknown resource: ${resource}`);
 		}
