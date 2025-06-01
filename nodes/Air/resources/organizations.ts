@@ -36,16 +36,34 @@ export const OrganizationsOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Get Organization',
-				value: 'get',
-				description: 'Retrieve a specific organization',
-				action: 'Get an organization',
+				name: 'Add Tags',
+				value: 'addTags',
+				description: 'Add tags to an organization',
+				action: 'Add tags to an organization',
 			},
 			{
 				name: 'Get Many',
 				value: 'getAll',
 				description: 'Retrieve many organizations',
 				action: 'Get many organizations',
+			},
+			{
+				name: 'Get Organization',
+				value: 'get',
+				description: 'Retrieve a specific organization',
+				action: 'Get an organization',
+			},
+			{
+				name: 'Get Users',
+				value: 'getUsers',
+				description: 'Retrieve users assigned to an organization',
+				action: 'Get users of an organization',
+			},
+			{
+				name: 'Remove Tags',
+				value: 'removeTags',
+				description: 'Remove tags from an organization',
+				action: 'Remove tags from an organization',
 			},
 		],
 		default: 'getAll',
@@ -59,7 +77,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['get'],
+				operation: ['get', 'getUsers', 'addTags', 'removeTags'],
 			},
 		},
 		modes: [
@@ -99,6 +117,21 @@ export const OrganizationsOperations: INodeProperties[] = [
 		description: 'The organization to retrieve',
 	},
 	{
+		displayName: 'Tags',
+		name: 'tags',
+		type: 'string',
+		default: '',
+		placeholder: 'tag1, tag2, tag3',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['addTags', 'removeTags'],
+			},
+		},
+		required: true,
+		description: 'Comma-separated list of tags to add or remove',
+	},
+	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',
@@ -107,7 +140,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['getAll'],
+				operation: ['getAll', 'getUsers'],
 			},
 		},
 		options: [
@@ -117,6 +150,11 @@ export const OrganizationsOperations: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Filter organizations by exact name match',
+				displayOptions: {
+					show: {
+						'/operation': ['getAll'],
+					},
+				},
 			},
 			{
 				displayName: 'Page Number',
@@ -144,6 +182,11 @@ export const OrganizationsOperations: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Search organizations by name (supports partial matches)',
+				displayOptions: {
+					show: {
+						'/operation': ['getAll'],
+					},
+				},
 			},
 			{
 				displayName: 'Sort By',
@@ -159,6 +202,20 @@ export const OrganizationsOperations: INodeProperties[] = [
 					{
 						name: 'Name',
 						value: 'name',
+						displayOptions: {
+							show: {
+								'/operation': ['getAll'],
+							},
+						},
+					},
+					{
+						name: 'Username',
+						value: 'username',
+						displayOptions: {
+							show: {
+								'/operation': ['getUsers'],
+							},
+						},
 					},
 				],
 			},
@@ -364,6 +421,28 @@ export function buildOrganizationQueryParams(additionalFields: any): Record<stri
 	return queryParams;
 }
 
+/**
+ * Build query parameters for organization users operations
+ */
+export function buildOrganizationUsersQueryParams(additionalFields: any): Record<string, string | number> {
+	const queryParams: Record<string, string | number> = {};
+
+	if (additionalFields.pageNumber) {
+		queryParams.pageNumber = additionalFields.pageNumber;
+	}
+	if (additionalFields.pageSize) {
+		queryParams.pageSize = additionalFields.pageSize;
+	}
+	if (additionalFields.sortBy) {
+		queryParams.sortBy = additionalFields.sortBy;
+	}
+	if (additionalFields.sortType) {
+		queryParams.sortType = additionalFields.sortType;
+	}
+
+	return queryParams;
+}
+
 // List search method for resource locator
 export async function getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
@@ -495,6 +574,173 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 				returnData.push({
 					json: organizationData,
+					pairedItem: i,
+				});
+			} else if (operation === 'getUsers') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				// Validate organization ID
+				if (!organizationId || organizationId.trim() === '') {
+					throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+				const queryParams = buildOrganizationUsersQueryParams(additionalFields);
+
+				const options = buildRequestOptions(
+					credentials,
+					'GET',
+					`/api/public/organizations/${organizationId}/users`,
+					queryParams
+				);
+
+				const responseData = await this.helpers.httpRequest(options);
+				validateApiResponse(responseData);
+
+				const entities = responseData.result?.entities || [];
+				// For organization users endpoint, pagination info is directly in result, not in result.pagination
+				const paginationInfo = responseData.result ? {
+					totalEntityCount: responseData.result.totalEntityCount,
+					currentPage: responseData.result.currentPage,
+					pageSize: responseData.result.pageSize,
+					totalPageCount: responseData.result.totalPageCount,
+					previousPage: responseData.result.previousPage,
+					nextPage: responseData.result.nextPage,
+					sortables: responseData.result.sortables,
+					filters: responseData.result.filters,
+				} : undefined;
+
+				// Process each user entity with pagination info
+				entities.forEach((entity: any) => {
+					returnData.push({
+						json: {
+							...entity,
+							...(paginationInfo && { _pagination: paginationInfo }),
+						},
+						pairedItem: i,
+					});
+				});
+			} else if (operation === 'addTags') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				const tags = this.getNodeParameter('tags', i) as string;
+
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				// Validate organization ID
+				if (!organizationId || organizationId.trim() === '') {
+					throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				// Parse and validate tags
+				const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+				if (tagList.length === 0) {
+					throw new NodeOperationError(this.getNode(), 'At least one tag must be provided', {
+						itemIndex: i,
+					});
+				}
+
+				const options = buildRequestOptions(
+					credentials,
+					'PATCH',
+					`/api/public/organizations/${organizationId}/tags`
+				);
+
+				// Add the request body
+				options.body = {
+					tags: tagList,
+				};
+
+				const responseData = await this.helpers.httpRequest(options);
+				validateApiResponse(responseData);
+
+				returnData.push({
+					json: responseData.result,
+					pairedItem: i,
+				});
+			} else if (operation === 'removeTags') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				const tags = this.getNodeParameter('tags', i) as string;
+
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				// Validate organization ID
+				if (!organizationId || organizationId.trim() === '') {
+					throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				// Parse and validate tags
+				const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+				if (tagList.length === 0) {
+					throw new NodeOperationError(this.getNode(), 'At least one tag must be provided', {
+						itemIndex: i,
+					});
+				}
+
+				const options = buildRequestOptions(
+					credentials,
+					'DELETE',
+					`/api/public/organizations/${organizationId}/tags`
+				);
+
+				// Add the request body
+				options.body = {
+					tags: tagList,
+				};
+
+				const responseData = await this.helpers.httpRequest(options);
+				validateApiResponse(responseData);
+
+				returnData.push({
+					json: responseData.result,
 					pairedItem: i,
 				});
 			}
