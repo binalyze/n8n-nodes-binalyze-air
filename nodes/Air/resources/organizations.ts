@@ -46,6 +46,12 @@ export const OrganizationsOperations: INodeProperties[] = [
 				action: 'Add tags to an organization',
 			},
 			{
+				name: 'Create',
+				value: 'create',
+				description: 'Create a new organization',
+				action: 'Create an organization',
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
 				description: 'Retrieve many organizations',
@@ -136,6 +142,98 @@ export const OrganizationsOperations: INodeProperties[] = [
 		description: 'Comma-separated list of tags to add or remove',
 	},
 	{
+		displayName: 'Organization Name',
+		name: 'name',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter organization name',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['create'],
+			},
+		},
+		required: true,
+		description: 'Name of the organization (1-50 characters)',
+		typeOptions: {
+			validation: [
+				{
+					type: 'regex',
+					properties: {
+						regex: '^(?!\\s*$).{1,50}$',
+						errorMessage: 'Organization name must be 1-50 characters and cannot be empty or only whitespace',
+					},
+				},
+			],
+		},
+	},
+	{
+		displayName: 'Shareable Deployment Enabled',
+		name: 'shareableDeploymentEnabled',
+		type: 'boolean',
+		default: false,
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['create'],
+			},
+		},
+		required: true,
+		description: 'Whether shareable deployment is enabled for this organization',
+	},
+	{
+		displayName: 'Contact Name',
+		name: 'contactName',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter contact name',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['create'],
+			},
+		},
+		required: true,
+		description: 'Name of the contact person for this organization',
+		typeOptions: {
+			validation: [
+				{
+					type: 'regex',
+					properties: {
+						regex: '^(?!\\s*$).+$',
+						errorMessage: 'Contact name cannot be empty or only whitespace',
+					},
+				},
+			],
+		},
+	},
+	{
+		displayName: 'Contact Email',
+		name: 'contactEmail',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter contact email',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['create'],
+			},
+		},
+		required: true,
+		description: 'Email address of the contact person',
+		typeOptions: {
+			validation: [
+				{
+					type: 'regex',
+					properties: {
+						regex: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
+						errorMessage: 'Please enter a valid email address',
+					},
+				},
+			],
+		},
+	},
+	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',
@@ -144,10 +242,49 @@ export const OrganizationsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['getAll', 'getUsers'],
+				operation: ['getAll', 'getUsers', 'create'],
 			},
 		},
 		options: [
+			{
+				displayName: 'Contact Mobile',
+				name: 'contactMobile',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact mobile',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
+					},
+				},
+				description: 'Mobile number of the contact person',
+			},
+			{
+				displayName: 'Contact Phone',
+				name: 'contactPhone',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact phone',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
+					},
+				},
+				description: 'Phone number of the contact person',
+			},
+			{
+				displayName: 'Contact Title',
+				name: 'contactTitle',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact title',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
+					},
+				},
+				description: 'Title of the contact person',
+			},
 			{
 				displayName: 'Name Filter',
 				name: 'nameFilter',
@@ -159,6 +296,19 @@ export const OrganizationsOperations: INodeProperties[] = [
 						'/operation': ['getAll'],
 					},
 				},
+			},
+			{
+				displayName: 'Note',
+				name: 'note',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter a note about this organization',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
+					},
+				},
+				description: 'Additional notes about the organization',
 			},
 			{
 				displayName: 'Page Number',
@@ -742,6 +892,76 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 				const responseData = await this.helpers.httpRequest(options);
 				validateApiResponse(responseData);
+
+				// Process organization result to add computed properties
+				const processedResult = responseData.result ? processOrganizationEntity(responseData.result, credentials.instanceUrl) : responseData.result;
+
+				returnData.push({
+					json: processedResult,
+					pairedItem: i,
+				});
+			} else if (operation === 'create') {
+				const name = this.getNodeParameter('name', i) as string;
+				const shareableDeploymentEnabled = this.getNodeParameter('shareableDeploymentEnabled', i) as boolean;
+				const contactName = this.getNodeParameter('contactName', i) as string;
+				const contactEmail = this.getNodeParameter('contactEmail', i) as string;
+				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+
+				// Validate required fields
+				const trimmedName = name.trim();
+				if (!trimmedName) {
+					throw new NodeOperationError(this.getNode(), 'Organization name cannot be empty or whitespace', {
+						itemIndex: i,
+					});
+				}
+
+				const trimmedContactName = contactName.trim();
+				if (!trimmedContactName) {
+					throw new NodeOperationError(this.getNode(), 'Contact name cannot be empty or whitespace', {
+						itemIndex: i,
+					});
+				}
+
+				const trimmedContactEmail = contactEmail.trim();
+				if (!trimmedContactEmail) {
+					throw new NodeOperationError(this.getNode(), 'Contact email cannot be empty or whitespace', {
+						itemIndex: i,
+					});
+				}
+
+				// Basic email validation
+				const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+				if (!emailRegex.test(trimmedContactEmail)) {
+					throw new NodeOperationError(this.getNode(), 'Contact email must be a valid email address', {
+						itemIndex: i,
+					});
+				}
+
+				// Build the request body
+				const requestBody: any = {
+					name: trimmedName,
+					shareableDeploymentEnabled,
+					contact: {
+						name: trimmedContactName,
+						title: additionalFields.contactTitle?.trim() || '',
+						phone: additionalFields.contactPhone?.trim() || '',
+						mobile: additionalFields.contactMobile?.trim() || '',
+						email: trimmedContactEmail,
+					},
+					note: additionalFields.note?.trim() || '',
+				};
+
+				const options = buildRequestOptions(
+					credentials,
+					'POST',
+					'/api/public/organizations'
+				);
+
+				// Add the request body
+				options.body = requestBody;
+
+				const responseData = await this.helpers.httpRequest(options);
+				validateApiResponse(responseData, 'Failed to create organization');
 
 				// Process organization result to add computed properties
 				const processedResult = responseData.result ? processOrganizationEntity(responseData.result, credentials.instanceUrl) : responseData.result;
