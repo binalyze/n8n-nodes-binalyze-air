@@ -17,7 +17,8 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	processApiResponseEntities,
+	processApiResponseEntitiesClean,
+	createPaginationInfoItem,
 	catchAndFormatError,
 } from './helpers';
 
@@ -514,9 +515,15 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				validateApiResponse(responseData);
 
 				const entities = responseData.result?.entities || [];
-				const pagination = responseData.result?.pagination;
 
-				processApiResponseEntities(entities, pagination, returnData, i);
+				// Process entities without adding pagination to each one
+				processApiResponseEntitiesClean(entities, returnData, i);
+
+				// If pagination info exists, add it as a separate item
+				const paginationData = responseData.result?.pagination;
+				if (paginationData) {
+					returnData.push(createPaginationInfoItem(paginationData, i));
+				}
 			} else if (operation === 'get') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				let organizationId: string;
@@ -615,28 +622,28 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				validateApiResponse(responseData);
 
 				const entities = responseData.result?.entities || [];
-				// For organization users endpoint, pagination info is directly in result, not in result.pagination
-				const paginationInfo = responseData.result ? {
-					totalEntityCount: responseData.result.totalEntityCount,
-					currentPage: responseData.result.currentPage,
-					pageSize: responseData.result.pageSize,
-					totalPageCount: responseData.result.totalPageCount,
-					previousPage: responseData.result.previousPage,
-					nextPage: responseData.result.nextPage,
-					sortables: responseData.result.sortables,
-					filters: responseData.result.filters,
-				} : undefined;
 
-				// Process each user entity with pagination info
-				entities.forEach((entity: any) => {
-					returnData.push({
-						json: {
-							...entity,
-							...(paginationInfo && { _pagination: paginationInfo }),
-						},
-						pairedItem: i,
-					});
-				});
+				// Process entities without adding pagination to each one
+				processApiResponseEntitiesClean(entities, returnData, i);
+
+				// For organization users endpoint, pagination info is directly in result, not in result.pagination
+				if (responseData.result) {
+					const paginationInfo = {
+						totalEntityCount: responseData.result.totalEntityCount,
+						currentPage: responseData.result.currentPage,
+						pageSize: responseData.result.pageSize,
+						totalPageCount: responseData.result.totalPageCount,
+						previousPage: responseData.result.previousPage,
+						nextPage: responseData.result.nextPage,
+						sortables: responseData.result.sortables,
+						filters: responseData.result.filters,
+					};
+
+					// Only add pagination info if it contains meaningful data
+					if (paginationInfo.totalEntityCount !== undefined) {
+						returnData.push(createPaginationInfoItem(paginationInfo, i));
+					}
+				}
 			} else if (operation === 'addTags') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				const tags = this.getNodeParameter('tags', i) as string;

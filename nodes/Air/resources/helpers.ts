@@ -209,6 +209,45 @@ export function processApiResponseEntities(
 }
 
 /**
+ * Process API response entities without adding pagination to each entity
+ * This is the preferred method for most cases where pagination shouldn't pollute individual entities
+ */
+export function processApiResponseEntitiesClean(
+	entities: any[],
+	returnData: INodeExecutionData[],
+	itemIndex: number
+): void {
+	entities.forEach((entity: any) => {
+		returnData.push({
+			json: entity,
+			pairedItem: itemIndex,
+		});
+	});
+}
+
+/**
+ * Create a single pagination info item that can be added to the response
+ * This allows pagination information to be available without attaching it to each entity
+ */
+export function createPaginationInfoItem(
+	paginationData: any,
+	itemIndex: number
+): INodeExecutionData {
+	return {
+		json: {
+			_paginationInfo: {
+				...paginationData,
+				_meta: {
+					type: 'pagination',
+					description: 'Pagination information for this request'
+				}
+			}
+		},
+		pairedItem: itemIndex,
+	};
+}
+
+/**
  * Generic function to catch and format errors for load/search functions
  */
 export function catchAndFormatError(error: any, operation: string): Error {
