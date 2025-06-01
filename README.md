@@ -10,7 +10,7 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 ## Features
 
-The Binalyze AIR node provides access to four main resource categories with comprehensive operations:
+The Binalyze AIR node provides access to five main resource categories with comprehensive operations:
 
 ### 🏷️ Auto Asset Tags
 
@@ -76,6 +76,25 @@ Manage evidence storage and repositories:
 - Pagination support for large repository collections
 - Support for different repository types and configurations
 
+### 🔍 Triage Rules
+
+Manage detection and analysis rules for threat hunting:
+
+- **Get Triage Rule** - Retrieve details of a specific triage rule by ID or name
+- **Get Many Triage Rules** - Retrieve multiple triage rules with comprehensive filtering
+- **Create Triage Rule** - Create new triage rules for detection and analysis
+- **Update Triage Rule** - Modify existing triage rules by ID or name
+- **Delete Triage Rule** - Remove triage rules by ID or name
+
+**Triage Rule Features:**
+- Support for multiple detection engines: YARA, Sigma, and osquery
+- Flexible search locations: file system, memory, both, or event records
+- Organization-scoped rule management with configurable organization access
+- Advanced filtering by description, search location, engine type, and search terms
+- Rule validation and syntax checking
+- Comprehensive CRUD operations with resource locator support
+- Detailed rule content management with multi-line editor support
+
 ## Authentication
 
 The node uses API token-based authentication with the following requirements:
@@ -104,6 +123,7 @@ Comprehensive filtering options across all resources:
 - **Organizations**: Sort by creation date or name
 - **Users**: Filter by roles, organization membership, sort by creation date or username
 - **Repositories**: Filter by host, path, search term, sort by multiple attributes
+- **Triage Rules**: Filter by description, search location, engine type, sort by creation date, description, or search location
 
 ### Error Handling
 Robust error handling with detailed error messages for:
@@ -156,6 +176,12 @@ To use this node in your n8n instance:
 - List all repositories within an organization
 - Search for specific repositories by name or path
 - Monitor repository status and configurations
+
+### Triage Rule Management
+- Create and manage YARA, Sigma, and osquery detection rules
+- Update existing rules for improved threat detection
+- Filter rules by engine type and search location
+- Delete outdated or unnecessary rules
 
 ## Development
 
