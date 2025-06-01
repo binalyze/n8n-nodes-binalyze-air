@@ -316,6 +316,11 @@ export const OrganizationsOperations: INodeProperties[] = [
 				type: 'number',
 				default: 1,
 				description: 'Which page of results to return',
+				displayOptions: {
+					show: {
+						'/operation': ['getAll', 'getUsers'],
+					},
+				},
 				typeOptions: {
 					minValue: 1,
 				},
@@ -326,6 +331,11 @@ export const OrganizationsOperations: INodeProperties[] = [
 				type: 'number',
 				default: 10,
 				description: 'How many results to return per page',
+				displayOptions: {
+					show: {
+						'/operation': ['getAll', 'getUsers'],
+					},
+				},
 				typeOptions: {
 					minValue: 1,
 				},
@@ -348,6 +358,11 @@ export const OrganizationsOperations: INodeProperties[] = [
 				type: 'options',
 				default: 'createdAt',
 				description: 'Attribute name to order the responses by',
+				displayOptions: {
+					show: {
+						'/operation': ['getAll', 'getUsers'],
+					},
+				},
 				options: [
 					{
 						name: 'Created At',
@@ -379,6 +394,11 @@ export const OrganizationsOperations: INodeProperties[] = [
 				type: 'options',
 				default: 'ASC',
 				description: 'Sort order',
+				displayOptions: {
+					show: {
+						'/operation': ['getAll', 'getUsers'],
+					},
+				},
 				options: [
 					{
 						name: 'Ascending',
