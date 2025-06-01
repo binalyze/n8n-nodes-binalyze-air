@@ -13,15 +13,29 @@ import {
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
 
 export interface PaginationInfo {
-	pageNumber: number;
-	totalPages: number;
+	totalEntityCount: number;
+	currentPage: number;
+	pageSize: number;
+	previousPage: number;
+	totalPageCount: number;
+	nextPage: number;
+	sortables?: string[];
+	filters?: any[];
 }
 
 export interface ApiResponse {
 	success: boolean;
 	result?: {
 		entities?: any[];
-		pagination?: PaginationInfo;
+		// Pagination properties are directly in result, not in a separate pagination object
+		totalEntityCount?: number;
+		currentPage?: number;
+		pageSize?: number;
+		previousPage?: number;
+		totalPageCount?: number;
+		nextPage?: number;
+		sortables?: string[];
+		filters?: any[];
 	};
 	errors?: string[];
 }
@@ -235,16 +249,35 @@ export function createPaginationInfoItem(
 ): INodeExecutionData {
 	return {
 		json: {
-			_paginationInfo: {
-				...paginationData,
-				_meta: {
-					type: 'pagination',
-					description: 'Pagination information for this request'
-				}
+			_pagination: {
+				...paginationData
 			}
 		},
 		pairedItem: itemIndex,
 	};
+}
+
+/**
+ * Extract pagination information from API result object
+ */
+export function extractPaginationInfo(result: any): PaginationInfo | null {
+	if (!result) return null;
+
+	// Check if pagination properties exist in the result
+	if (result.totalEntityCount !== undefined) {
+		return {
+			totalEntityCount: result.totalEntityCount,
+			currentPage: result.currentPage,
+			pageSize: result.pageSize,
+			previousPage: result.previousPage,
+			totalPageCount: result.totalPageCount,
+			nextPage: result.nextPage,
+			sortables: result.sortables,
+			filters: result.filters,
+		};
+	}
+
+	return null;
 }
 
 /**
@@ -253,4 +286,85 @@ export function createPaginationInfoItem(
 export function catchAndFormatError(error: any, operation: string): Error {
 	const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 	return new Error(`Failed to ${operation}: ${errorMessage}`);
+}
+
+/**
+ * Process API response entities and attach pagination metadata to the execution context
+ * This avoids mixing pagination info with actual entities in the results array
+ */
+export function processApiResponseEntitiesWithMetadata(
+	entities: any[],
+	paginationData: PaginationInfo | null,
+	returnData: INodeExecutionData[],
+	itemIndex: number
+): void {
+	entities.forEach((entity: any) => {
+		const executionData: INodeExecutionData = {
+			json: entity,
+			pairedItem: itemIndex,
+		};
+
+		// Note: In n8n, metadata is typically used for specific internal purposes
+		// For pagination info, consider alternative approaches like:
+		// 1. Including it in the json object with a special key
+		// 2. Using a separate output for pagination info
+		// 3. Simply omitting it if not essential for workflow logic
+
+		returnData.push(executionData);
+	});
+}
+
+/**
+ * Process API response entities with pagination info included in each entity's JSON
+ * This approach includes pagination info within each entity for downstream access
+ */
+export function processApiResponseEntitiesWithPaginationInJson(
+	entities: any[],
+	paginationData: PaginationInfo | null,
+	returnData: INodeExecutionData[],
+	itemIndex: number
+): void {
+	entities.forEach((entity: any) => {
+		const jsonData = { ...entity };
+
+		// Include pagination info in the entity's JSON if available
+		if (paginationData) {
+			jsonData._pagination = paginationData;
+		}
+
+		returnData.push({
+			json: jsonData,
+			pairedItem: itemIndex,
+		});
+	});
+}
+
+/**
+ * Process API response entities with pagination info as the first separate item
+ * This approach clearly separates pagination metadata from entities
+ */
+export function processApiResponseEntitiesWithPaginationFirst(
+	entities: any[],
+	paginationData: PaginationInfo | null,
+	returnData: INodeExecutionData[],
+	itemIndex: number
+): void {
+	// Add pagination info as the first item if available
+	if (paginationData) {
+		returnData.push({
+			json: {
+				_type: 'pagination_metadata',
+				...paginationData
+			},
+			pairedItem: itemIndex,
+		});
+	}
+
+	// Then add all entities
+	entities.forEach((entity: any) => {
+		returnData.push({
+			json: entity,
+			pairedItem: itemIndex,
+		});
+	});
 }

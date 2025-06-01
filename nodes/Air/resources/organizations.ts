@@ -19,6 +19,7 @@ import {
 	handleExecuteError,
 	processApiResponseEntitiesClean,
 	createPaginationInfoItem,
+	extractPaginationInfo,
 	catchAndFormatError,
 } from './helpers';
 
@@ -291,9 +292,9 @@ export async function fetchAllOrganizations(
 		const organizations = responseData.result?.entities || [];
 		allOrganizations.push(...organizations);
 
-		// Check if there are more pages
-		const pagination = responseData.result?.pagination;
-		if (pagination && pagination.pageNumber < pagination.totalPages) {
+		// Check if there are more pages using the actual API pagination structure
+		const result = responseData.result;
+		if (result && result.currentPage && result.totalPageCount && result.currentPage < result.totalPageCount) {
 			currentPage++;
 		} else {
 			hasMorePages = false;
@@ -356,9 +357,9 @@ export async function findOrganizationByName(
 			break;
 		}
 
-		// Check if there are more pages
-		const pagination = searchResponse.result?.pagination;
-		if (pagination && pagination.pageNumber < pagination.totalPages) {
+		// Check if there are more pages using the actual API pagination structure
+		const result = searchResponse.result;
+		if (result && result.currentPage && result.totalPageCount && result.currentPage < result.totalPageCount) {
 			currentPage++;
 		} else {
 			break; // No more pages
@@ -518,12 +519,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 				// Process entities without adding pagination to each one
 				processApiResponseEntitiesClean(entities, returnData, i);
-
-				// If pagination info exists, add it as a separate item
-				const paginationData = responseData.result?.pagination;
-				if (paginationData) {
-					returnData.push(createPaginationInfoItem(paginationData, i));
-				}
 			} else if (operation === 'get') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				let organizationId: string;
@@ -625,25 +620,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 				// Process entities without adding pagination to each one
 				processApiResponseEntitiesClean(entities, returnData, i);
-
-				// For organization users endpoint, pagination info is directly in result, not in result.pagination
-				if (responseData.result) {
-					const paginationInfo = {
-						totalEntityCount: responseData.result.totalEntityCount,
-						currentPage: responseData.result.currentPage,
-						pageSize: responseData.result.pageSize,
-						totalPageCount: responseData.result.totalPageCount,
-						previousPage: responseData.result.previousPage,
-						nextPage: responseData.result.nextPage,
-						sortables: responseData.result.sortables,
-						filters: responseData.result.filters,
-					};
-
-					// Only add pagination info if it contains meaningful data
-					if (paginationInfo.totalEntityCount !== undefined) {
-						returnData.push(createPaginationInfoItem(paginationInfo, i));
-					}
-				}
 			} else if (operation === 'addTags') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				const tags = this.getNodeParameter('tags', i) as string;

@@ -17,7 +17,9 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	processApiResponseEntities,
+	processApiResponseEntitiesClean,
+	createPaginationInfoItem,
+	extractPaginationInfo,
 	catchAndFormatError,
 } from './helpers';
 
@@ -354,9 +356,9 @@ export async function fetchAllRepositories(
 		const repositories = responseData.result?.entities || [];
 		allRepositories.push(...repositories);
 
-		// Check if there are more pages
-		const pagination = responseData.result?.pagination;
-		if (pagination && pagination.pageNumber < pagination.totalPages) {
+		// Check if there are more pages using the actual API pagination structure
+		const result = responseData.result;
+		if (result && result.currentPage && result.totalPageCount && result.currentPage < result.totalPageCount) {
 			currentPage++;
 		} else {
 			hasMorePages = false;
@@ -573,9 +575,15 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 				validateApiResponse(responseData);
 
 				const entities = responseData.result?.entities || [];
-				const pagination = responseData.result?.pagination;
 
-				processApiResponseEntities(entities, pagination, returnData, i);
+				// Process entities without adding pagination to each one
+				processApiResponseEntitiesClean(entities, returnData, i);
+
+				// Extract pagination info using the new helper function
+				const paginationData = extractPaginationInfo(responseData.result);
+				if (paginationData) {
+					returnData.push(createPaginationInfoItem(paginationData, i));
+				}
 			}
 		} catch (error) {
 			handleExecuteError(this, error, i, returnData);
