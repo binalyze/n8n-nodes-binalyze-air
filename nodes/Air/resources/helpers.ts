@@ -482,7 +482,94 @@ export function processApiResponseEntitiesWithPaginationFirst(
 }
 
 /**
- * Process organization entity to add computed shareableDeploymentPage property
+ * Platform enum for deployment packages
+ */
+export enum Platform {
+	Windows = 'windows',
+	Linux = 'linux',
+	Darwin = 'darwin',
+}
+
+/**
+ * Package extension enum for deployment packages
+ */
+export enum PackageExtension {
+	msi = 'msi', // Only available for windows platform
+	deb = 'deb', // Only available for linux platform
+	rpm = 'rpm', // Only available for linux platform
+	pkg = 'pkg', // Only available for darwin platform (macOS)
+}
+
+/**
+ * Architecture enum for deployment packages
+ */
+export enum Architecture {
+	i386 = '386', // Only available for windows and linux. Not supported for darwin (macOS)
+	amd64 = 'amd64',
+	arm64 = 'arm64',
+}
+
+/**
+ * Generate deployment package download links for an organization
+ */
+function generateDeploymentPackages(
+	organizationId: string,
+	deploymentToken: string,
+	instanceUrl: string
+): any {
+	// Generate a random value for ckey parameter
+	const generateRandomKey = () => Math.random().toString(36).substring(2, 15);
+
+	const baseUrl = `${instanceUrl}/api/endpoints/download/${organizationId}`;
+
+	const deploymentPackages: any = {};
+
+	// Helper function to convert architecture ID to user-friendly name
+	const getArchLabel = (arch: string): string => {
+		switch (arch) {
+			case Architecture.i386:
+				return '32bit';
+			case Architecture.amd64:
+				return '64bit';
+			case Architecture.arm64:
+				return 'arm64';
+			default:
+				return arch;
+		}
+	};
+
+	// Windows platform (supports i386, amd64 with msi)
+	[Architecture.i386, Architecture.amd64].forEach(arch => {
+		const archLabel = getArchLabel(arch);
+		const key = `windows-${archLabel}-msi`;
+		deploymentPackages[key] = `${baseUrl}/${Platform.Windows}/${PackageExtension.msi}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+	});
+
+	// Linux platform (supports i386, amd64, arm64 with deb and rpm)
+	[Architecture.i386, Architecture.amd64, Architecture.arm64].forEach(arch => {
+		const archLabel = getArchLabel(arch);
+
+		// DEB package
+		const debKey = `linux-${archLabel}-deb`;
+		deploymentPackages[debKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.deb}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+
+		// RPM package
+		const rpmKey = `linux-${archLabel}-rpm`;
+		deploymentPackages[rpmKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.rpm}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+	});
+
+	// Darwin platform (supports amd64, arm64 with pkg - no i386 support)
+	[Architecture.amd64, Architecture.arm64].forEach(arch => {
+		const archLabel = getArchLabel(arch);
+		const key = `macos-${archLabel}-pkg`;
+		deploymentPackages[key] = `${baseUrl}/${Platform.Darwin}/${PackageExtension.pkg}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+	});
+
+	return deploymentPackages;
+}
+
+/**
+ * Process organization entity to add computed shareableDeploymentPage and deploymentPackages properties
  */
 export function processOrganizationEntity(organization: any, instanceUrl: string): any {
 	const processedOrg = { ...organization };
@@ -492,6 +579,23 @@ export function processOrganizationEntity(organization: any, instanceUrl: string
 		processedOrg.shareableDeploymentPage = `${instanceUrl}/#/shareable-deploy?token=${organization.deploymentToken}`;
 	} else {
 		processedOrg.shareableDeploymentPage = '';
+	}
+
+	// Add deploymentPackages property with download links for all platforms and architectures
+	if (organization.deploymentToken) {
+		try {
+			const organizationId = extractEntityId(organization, 'organization');
+			processedOrg.deploymentPackages = generateDeploymentPackages(
+				organizationId,
+				organization.deploymentToken,
+				instanceUrl
+			);
+		} catch (error) {
+			// If we can't extract organization ID, set deploymentPackages to empty object
+			processedOrg.deploymentPackages = {};
+		}
+	} else {
+		processedOrg.deploymentPackages = {};
 	}
 
 	return processedOrg;
