@@ -447,11 +447,11 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 			const operation = this.getNodeParameter('operation', i) as string;
 
 			if (operation === 'getAll') {
-				const organizationIds = this.getNodeParameter('organizationIds', i) as string;
+				const organizationIds = String(this.getNodeParameter('organizationIds', i)).trim();
 				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
 				// Validate that organizationIds is provided
-				if (!organizationIds.trim()) {
+				if (!organizationIds) {
 					throw new NodeOperationError(this.getNode(), 'Organization IDs are required', {
 						itemIndex: i,
 					});
