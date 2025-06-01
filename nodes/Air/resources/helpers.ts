@@ -480,3 +480,26 @@ export function processApiResponseEntitiesWithPaginationFirst(
 		});
 	});
 }
+
+/**
+ * Process organization entity to add computed shareableDeploymentPage property
+ */
+export function processOrganizationEntity(organization: any, instanceUrl: string): any {
+	const processedOrg = { ...organization };
+
+	// Add shareableDeploymentPage property based on shareableDeploymentEnabled and deploymentToken
+	if (organization.shareableDeploymentEnabled && organization.deploymentToken) {
+		processedOrg.shareableDeploymentPage = `${instanceUrl}/#/shareable-deploy?token=${organization.deploymentToken}`;
+	} else {
+		processedOrg.shareableDeploymentPage = '';
+	}
+
+	return processedOrg;
+}
+
+/**
+ * Process multiple organization entities to add computed properties
+ */
+export function processOrganizationEntities(organizations: any[], instanceUrl: string): any[] {
+	return organizations.map(org => processOrganizationEntity(org, instanceUrl));
+}

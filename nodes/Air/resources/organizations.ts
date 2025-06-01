@@ -21,6 +21,8 @@ import {
 	processApiResponseEntitiesWithSimplifiedPagination,
 	requireValidId,
 	catchAndFormatError,
+	processOrganizationEntity,
+	processOrganizationEntities,
 } from './helpers';
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
@@ -518,8 +520,11 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				const entities = responseData.result?.entities || [];
 				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
 
+				// Process organizations to add computed properties
+				const processedEntities = processOrganizationEntities(entities, credentials.instanceUrl);
+
 				// Process entities with simplified pagination attached to each entity
-				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+				processApiResponseEntitiesWithSimplifiedPagination(processedEntities, paginationInfo, returnData, i);
 			} else if (operation === 'get') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				let organizationId: string;
@@ -577,8 +582,11 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					});
 				}
 
+				// Process organization to add computed properties
+				const processedOrganization = processOrganizationEntity(organizationData, credentials.instanceUrl);
+
 				returnData.push({
-					json: organizationData,
+					json: processedOrganization,
 					pairedItem: i,
 				});
 			} else if (operation === 'getUsers') {
@@ -677,8 +685,11 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				const responseData = await this.helpers.httpRequest(options);
 				validateApiResponse(responseData);
 
+				// Process organization result to add computed properties
+				const processedResult = responseData.result ? processOrganizationEntity(responseData.result, credentials.instanceUrl) : responseData.result;
+
 				returnData.push({
-					json: responseData.result,
+					json: processedResult,
 					pairedItem: i,
 				});
 			} else if (operation === 'removeTags') {
@@ -732,8 +743,11 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				const responseData = await this.helpers.httpRequest(options);
 				validateApiResponse(responseData);
 
+				// Process organization result to add computed properties
+				const processedResult = responseData.result ? processOrganizationEntity(responseData.result, credentials.instanceUrl) : responseData.result;
+
 				returnData.push({
-					json: responseData.result,
+					json: processedResult,
 					pairedItem: i,
 				});
 			}
