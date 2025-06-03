@@ -140,14 +140,14 @@ export const TriageRulesOperations: INodeProperties[] = [
 			},
 		},
 		required: true,
-		description: 'Description of the triage rule (alphanumeric characters only)',
+		description: 'Description of the triage rule (you must use spaces, hyphens, underscores, at sign or alphanumeric characters)',
 		typeOptions: {
 			validation: [
 				{
 					type: 'regex',
 					properties: {
-						regex: '^[a-zA-Z0-9 ._-]+$',
-						errorMessage: 'Description must contain only alphanumeric characters, spaces, dots, underscores, and hyphens',
+						regex: '^[a-zA-Z0-9 _@-]+$',
+						errorMessage: 'Description must contain only alphanumeric characters, spaces, hyphens, underscores, and at sign (@)',
 					},
 				},
 			],
