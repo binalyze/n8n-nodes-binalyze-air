@@ -44,6 +44,12 @@ export const TriageRulesOperations: INodeProperties[] = [
 				action: 'Create a triage rule',
 			},
 			{
+				name: 'Create Rule Tag',
+				value: 'createTag',
+				description: 'Create a new rule tag',
+				action: 'Create a tag',
+			},
+			{
 				name: 'Delete',
 				value: 'delete',
 				description: 'Delete a triage rule',
@@ -54,6 +60,12 @@ export const TriageRulesOperations: INodeProperties[] = [
 				value: 'getAll',
 				description: 'Retrieve many triage rules',
 				action: 'Get many triage rules',
+			},
+			{
+				name: 'Get Rule Tags',
+				value: 'getRuleTags',
+				description: 'Retrieve rule tags',
+				action: 'Get rule tags',
 			},
 			{
 				name: 'Get Triage Rule',
@@ -400,6 +412,86 @@ export const TriageRulesOperations: INodeProperties[] = [
 				default: '0',
 				placeholder: 'Enter organization IDs (comma-separated)',
 				description: 'Organization IDs to filter triage rules by when using "From List" selection. Use "0" to retrieve rules that are visible to all organizations.',
+			},
+		],
+	},
+	{
+		displayName: 'Tag Name',
+		name: 'tagName',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter tag name',
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['createTag'],
+			},
+		},
+		required: true,
+		description: 'Name of the tag to create',
+	},
+	{
+		displayName: 'Organization ID',
+		name: 'tagOrganizationId',
+		type: 'number',
+		default: 0,
+		placeholder: 'Enter organization ID',
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['createTag'],
+			},
+		},
+		required: true,
+		description: 'Organization ID for the tag (use 0 for all organizations)',
+		typeOptions: {
+			minValue: 0,
+		},
+	},
+	{
+		displayName: 'Organization ID',
+		name: 'organizationId',
+		type: 'number',
+		default: 0,
+		placeholder: 'Enter organization ID',
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['getRuleTags'],
+			},
+		},
+		required: true,
+		description: 'Organization ID to filter rule tags by (required by API). Use 0 to retrieve tags that are visible to all organizations.',
+		typeOptions: {
+			minValue: 0,
+		},
+	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['getRuleTags'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Search Term',
+				name: 'searchTerm',
+				type: 'string',
+				default: '',
+				description: 'Search term to filter rule tags',
+			},
+			{
+				displayName: 'With Count',
+				name: 'withCount',
+				type: 'boolean',
+				default: true,
+				description: 'Whether to include count information in the response',
 			},
 		],
 	},
@@ -851,6 +943,70 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					},
 					pairedItem: i,
 				});
+			} else if (operation === 'createTag') {
+				const tagName = this.getNodeParameter('tagName', i) as string;
+				const tagOrganizationId = this.getNodeParameter('tagOrganizationId', i) as number;
+
+				// Validate required fields
+				if (!tagName) {
+					throw new NodeOperationError(this.getNode(), 'Tag name cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				// Build the request body
+				const requestBody: any = {
+					name: tagName,
+					organizationId: tagOrganizationId,
+				};
+
+				const options = buildRequestOptions(
+					credentials,
+					'POST',
+					'/api/public/triages/tags'
+				);
+
+				options.body = requestBody;
+
+				const responseData = await this.helpers.httpRequest(options);
+				validateApiResponse(responseData, 'Failed to create tag');
+
+				returnData.push({
+					json: responseData.result,
+					pairedItem: i,
+				});
+			} else if (operation === 'getRuleTags') {
+				const organizationId = this.getNodeParameter('organizationId', i) as number;
+				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+
+				const queryParams: Record<string, string | number> = {
+					'filter[organizationId]': organizationId,
+				};
+
+				// Add optional parameters if provided
+				if (additionalFields.searchTerm) {
+					queryParams['filter[searchTerm]'] = additionalFields.searchTerm;
+				}
+
+				// Always include withCount, defaulting to true if not specified
+				const withCount = additionalFields.withCount !== undefined ? additionalFields.withCount : true;
+				queryParams['filter[withCount]'] = withCount.toString();
+
+				const options = buildRequestOptions(
+					credentials,
+					'GET',
+					'/api/public/triages/tags',
+					queryParams
+				);
+
+				const responseData = await this.helpers.httpRequest(options);
+				validateApiResponse(responseData);
+
+				const entities = responseData.result?.entities || [];
+				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+
+				// Process entities with simplified pagination attached to each entity
+				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			}
 
 		} catch (error) {

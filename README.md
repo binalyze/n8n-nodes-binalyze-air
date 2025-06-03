@@ -85,6 +85,8 @@ Manage detection and analysis rules for threat hunting:
 - **Create Triage Rule** - Create new triage rules for detection and analysis
 - **Update Triage Rule** - Modify existing triage rules by ID or name
 - **Delete Triage Rule** - Remove triage rules by ID or name
+- **Get Rule Tags** - Retrieve rule tags filtered by organization ID
+- **Create Rule Tag** - Create new rule tags for organizing triage rules
 
 **Triage Rule Features:**
 - Support for multiple detection engines: YARA, Sigma, and osquery
@@ -94,6 +96,7 @@ Manage detection and analysis rules for threat hunting:
 - Rule validation and syntax checking
 - Comprehensive CRUD operations with resource locator support
 - Detailed rule content management with multi-line editor support
+- Rule tag management with organization-specific filtering (single organization ID)
 
 ## Authentication
 
