@@ -119,7 +119,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 		description: 'The triage rule to operate on',
 	},
 	{
-		displayName: 'Organization Filter',
+		displayName: 'Organization IDs',
 		name: 'organizationIds',
 		type: 'string',
 		default: '0',
@@ -127,11 +127,11 @@ export const TriageRulesOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['triagerules'],
-				operation: ['getAll'],
+				operation: ['getAll', 'get'],
 			},
 		},
 		required: true,
-		description: 'Organization IDs to filter triage rules by (required by API). Use "0" for all organizations.',
+		description: 'Organization IDs to filter triage rules by (required by API). Use "0" to retrieve rules that are visible to all organizations. Specify a single organization ID to retrieve rules that are visible to that organization only alongside those that are visible to all organizations.',
 	},
 	{
 		displayName: 'Description',
@@ -614,6 +614,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			} else if (operation === 'get') {
 				const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
+				const organizationIds = this.getNodeParameter('organizationIds', i) as string;
 				let triageRuleId: string;
 
 				if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
@@ -639,10 +640,15 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					});
 				}
 
+				const queryParams: Record<string, string> = {
+					'filter[organizationIds]': organizationIds,
+				};
+
 				const options = buildRequestOptions(
 					credentials,
 					'GET',
-					`/api/public/triages/rules/${triageRuleId}`
+					`/api/public/triages/rules/${triageRuleId}`,
+					queryParams
 				);
 
 				const responseData = await this.helpers.httpRequest(options);

@@ -99,7 +99,7 @@ export const RepositoriesOperations: INodeProperties[] = [
 		description: 'The repository to retrieve',
 	},
 	{
-		displayName: 'Organization ID',
+		displayName: 'Organization IDs',
 		name: 'organizationId',
 		type: 'number',
 		required: true,
@@ -111,7 +111,7 @@ export const RepositoriesOperations: INodeProperties[] = [
 				operation: ['get', 'getAll'],
 			},
 		},
-		description: 'The organization ID to filter repositories by (0 for default organization)',
+		description: 'The Organization ID to filter repositories by (0 for default organization). Use "0" to retrieve repositories that are visible to all organizations. Specify a single organization ID to retrieve repositories that are visible to that organization only alongside those that are visible to all organizations.',
 		typeOptions: {
 			minValue: 0,
 		},

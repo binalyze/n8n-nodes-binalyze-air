@@ -99,7 +99,7 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 		description: 'The auto asset tag to work with',
 	},
 	{
-		displayName: 'Organization ID',
+		displayName: 'Organization IDs',
 		name: 'organizationId',
 		type: 'number',
 		required: true,
@@ -111,7 +111,7 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 				operation: ['get'],
 			},
 		},
-		description: 'The organization ID to filter auto asset tags by (0 for all organizations)',
+		description: 'The organization ID to filter auto asset tags by (0 for all organizations). Use "0" to retrieve tags that are visible to all organizations. Specify a single organization ID to retrieve tags that are visible to that organization only alongside those that are visible to all organizations.',
 		typeOptions: {
 			minValue: 0,
 		},

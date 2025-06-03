@@ -89,7 +89,7 @@ Manage detection and analysis rules for threat hunting:
 **Triage Rule Features:**
 - Support for multiple detection engines: YARA, Sigma, and osquery
 - Flexible search locations: file system, memory, both, or event records
-- Organization-scoped rule management with configurable organization access
+- Organization-scoped rule management with configurable organization access for all operations including individual rule retrieval
 - Advanced filtering by description, search location, engine type, and search terms
 - Rule validation and syntax checking
 - Comprehensive CRUD operations with resource locator support
