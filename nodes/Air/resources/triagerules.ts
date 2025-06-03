@@ -108,12 +108,6 @@ export const TriageRulesOperations: INodeProperties[] = [
 				],
 				placeholder: 'Enter triage rule ID',
 			},
-			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter triage rule description/name',
-			},
 		],
 		required: true,
 		description: 'The triage rule to operate on',
@@ -127,7 +121,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['triagerules'],
-				operation: ['getAll', 'get'],
+				operation: ['getAll'],
 			},
 		},
 		required: true,
@@ -198,7 +192,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 				value: 'sigma',
 			},
 			{
-				name: 'OSQuery',
+				name: 'Osquery',
 				value: 'osquery',
 			},
 		],
@@ -214,6 +208,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 			show: {
 				resource: ['triagerules'],
 				operation: ['create', 'update'],
+				engine: ['yara'],
 			},
 		},
 		options: [
@@ -228,14 +223,10 @@ export const TriageRulesOperations: INodeProperties[] = [
 			{
 				name: 'Both',
 				value: 'both',
-			},
-			{
-				name: 'Event Records',
-				value: 'event-records',
-			},
+			}
 		],
 		required: true,
-		description: 'Where to search when applying the triage rule',
+		description: 'Where to search when running the triage rule',
 	},
 	{
 		displayName: 'Organization IDs',
@@ -266,13 +257,6 @@ export const TriageRulesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'All Organizations',
-				name: 'allOrganizations',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to include all organizations',
-			},
-			{
 				displayName: 'Description Filter',
 				name: 'description',
 				type: 'string',
@@ -295,7 +279,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 						value: 'sigma',
 					},
 					{
-						name: 'OSQuery',
+						name: 'Osquery',
 						value: 'osquery',
 					},
 				],
@@ -396,6 +380,29 @@ export const TriageRulesOperations: INodeProperties[] = [
 			},
 		],
 	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['get'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Organization IDs',
+				name: 'organizationIds',
+				type: 'string',
+				default: '0',
+				placeholder: 'Enter organization IDs (comma-separated)',
+				description: 'Organization IDs to filter triage rules by when using "From List" selection. Use "0" to retrieve rules that are visible to all organizations.',
+			},
+		],
+	},
 ];
 
 export function extractTriageRuleId(triageRule: any): string {
@@ -454,47 +461,6 @@ export async function fetchAllTriageRules(
 	}
 }
 
-export async function findTriageRuleByName(
-	context: IExecuteFunctions,
-	credentials: AirCredentials,
-	ruleName: string
-): Promise<string> {
-	try {
-		const triageRules = await fetchAllTriageRules(context, credentials, '0', ruleName);
-
-		// Try exact match first
-		const exactMatch = triageRules.find(rule => rule.description === ruleName);
-		if (exactMatch && isValidTriageRule(exactMatch)) {
-			return extractTriageRuleId(exactMatch);
-		}
-
-		// Try case-insensitive exact match
-		const caseInsensitiveMatch = triageRules.find(rule =>
-			rule.description && rule.description.toLowerCase() === ruleName.toLowerCase()
-		);
-		if (caseInsensitiveMatch && isValidTriageRule(caseInsensitiveMatch)) {
-			return extractTriageRuleId(caseInsensitiveMatch);
-		}
-
-		// Try partial match
-		const partialMatch = triageRules.find(rule =>
-			rule.description && rule.description.toLowerCase().includes(ruleName.toLowerCase())
-		);
-		if (partialMatch && isValidTriageRule(partialMatch)) {
-			return extractTriageRuleId(partialMatch);
-		}
-
-		throw new NodeOperationError(context.getNode(),
-			`Triage rule with name "${ruleName}" not found. Please check the name or use the ID instead.`
-		);
-	} catch (error) {
-		if (error instanceof NodeOperationError) {
-			throw error;
-		}
-		throw catchAndFormatError(error, `Failed to find triage rule by name: ${ruleName}`);
-	}
-}
-
 export function buildTriageRuleQueryParams(organizationIds: string, additionalFields: any): Record<string, string | number> {
 	const queryParams: Record<string, string | number> = {
 		'filter[organizationIds]': organizationIds,
@@ -514,10 +480,6 @@ export function buildTriageRuleQueryParams(organizationIds: string, additionalFi
 
 	if (additionalFields.engines && additionalFields.engines.length > 0) {
 		queryParams['filter[engines]'] = additionalFields.engines.join(',');
-	}
-
-	if (additionalFields.allOrganizations !== undefined) {
-		queryParams['filter[allOrganizations]'] = additionalFields.allOrganizations ? 'true' : 'false';
 	}
 
 	if (additionalFields.pageNumber) {
@@ -542,7 +504,21 @@ export function buildTriageRuleQueryParams(organizationIds: string, additionalFi
 export async function getTriageRules(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const triageRules = await fetchAllTriageRules(this, credentials, '0', filter);
+
+		// Get organization IDs from additional fields if available, default to '0'
+		let organizationIds = '0';
+		try {
+			const currentNodeParameters = this.getCurrentNodeParameters();
+			const additionalFields = currentNodeParameters?.additionalFields as any;
+			if (additionalFields?.organizationIds) {
+				organizationIds = additionalFields.organizationIds;
+			}
+		} catch (error) {
+			// If we can't get the current node parameters, use default
+			organizationIds = '0';
+		}
+
+		const triageRules = await fetchAllTriageRules(this, credentials, organizationIds, filter);
 
 		return createListSearchResults(
 			triageRules,
@@ -614,17 +590,10 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			} else if (operation === 'get') {
 				const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
-				const organizationIds = this.getNodeParameter('organizationIds', i) as string;
 				let triageRuleId: string;
 
 				if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
 					triageRuleId = triageRuleResource.value;
-				} else if (triageRuleResource.mode === 'name') {
-					try {
-						triageRuleId = await findTriageRuleByName(this, credentials, triageRuleResource.value);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-					}
 				} else {
 					throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
 						itemIndex: i,
@@ -640,15 +609,10 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					});
 				}
 
-				const queryParams: Record<string, string> = {
-					'filter[organizationIds]': organizationIds,
-				};
-
 				const options = buildRequestOptions(
 					credentials,
 					'GET',
-					`/api/public/triages/rules/${triageRuleId}`,
-					queryParams
+					`/api/public/triages/rules/${triageRuleId}`
 				);
 
 				const responseData = await this.helpers.httpRequest(options);
@@ -683,8 +647,13 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 				const description = this.getNodeParameter('description', i) as string;
 				const rule = this.getNodeParameter('rule', i) as string;
 				const engine = this.getNodeParameter('engine', i) as string;
-				const searchIn = this.getNodeParameter('searchIn', i) as string;
 				const organizationIdsArray = this.getNodeParameter('organizationIdsArray', i) as string;
+
+				// Get searchIn only if engine is 'yara'
+				let searchIn: string | undefined;
+				if (engine === 'yara') {
+					searchIn = this.getNodeParameter('searchIn', i) as string;
+				}
 
 				// Validate required fields
 				const trimmedDescription = description.trim();
@@ -721,13 +690,17 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 				}
 
 				// Build the request body
-				const requestBody = {
+				const requestBody: any = {
 					description: trimmedDescription,
 					rule: trimmedRule,
 					engine,
-					searchIn,
 					organizationIds,
 				};
+
+				// Only include searchIn for YARA engine
+				if (engine === 'yara' && searchIn) {
+					requestBody.searchIn = searchIn;
+				}
 
 				const options = buildRequestOptions(
 					credentials,
@@ -749,19 +722,18 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 				const description = this.getNodeParameter('description', i) as string;
 				const rule = this.getNodeParameter('rule', i) as string;
 				const engine = this.getNodeParameter('engine', i) as string;
-				const searchIn = this.getNodeParameter('searchIn', i) as string;
 				const organizationIdsArray = this.getNodeParameter('organizationIdsArray', i) as string;
+
+				// Get searchIn only if engine is 'yara'
+				let searchIn: string | undefined;
+				if (engine === 'yara') {
+					searchIn = this.getNodeParameter('searchIn', i) as string;
+				}
 
 				let triageRuleId: string;
 
 				if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
 					triageRuleId = triageRuleResource.value;
-				} else if (triageRuleResource.mode === 'name') {
-					try {
-						triageRuleId = await findTriageRuleByName(this, credentials, triageRuleResource.value);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-					}
 				} else {
 					throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
 						itemIndex: i,
@@ -812,13 +784,17 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 				}
 
 				// Build the request body
-				const requestBody = {
+				const requestBody: any = {
 					description: trimmedDescription,
 					rule: trimmedRule,
 					engine,
-					searchIn,
 					organizationIds,
 				};
+
+				// Only include searchIn for YARA engine
+				if (engine === 'yara' && searchIn) {
+					requestBody.searchIn = searchIn;
+				}
 
 				const options = buildRequestOptions(
 					credentials,
@@ -842,12 +818,6 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 				if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
 					triageRuleId = triageRuleResource.value;
-				} else if (triageRuleResource.mode === 'name') {
-					try {
-						triageRuleId = await findTriageRuleByName(this, credentials, triageRuleResource.value);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-					}
 				} else {
 					throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
 						itemIndex: i,
