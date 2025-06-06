@@ -24,6 +24,8 @@ import {
 
 import { api as tasksApi, Task } from '../api/tasks/tasks';
 import { api as taskAssignmentsApi } from '../api/tasks/assignments/assignments';
+import { api as organizationsApi, Organization } from '../api/organizations/organizations';
+import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
 
 export const TasksOperations: INodeProperties[] = [
 	{
@@ -113,18 +115,316 @@ export const TasksOperations: INodeProperties[] = [
 		description: 'The ID of the task assignment',
 	},
 	{
-		displayName: 'Organization IDs',
+		displayName: 'Organization',
 		name: 'organizationIds',
-		type: 'string',
-		default: '0',
-		placeholder: 'Enter organization IDs (comma-separated)',
+		type: 'resourceLocator',
+		default: { mode: 'id', value: '0' },
+		placeholder: 'Select organization(s)...',
 		displayOptions: {
 			show: {
 				resource: ['tasks'],
 				operation: ['getAll'],
 			},
 		},
-		description: 'Comma-separated list of organization IDs to filter tasks. Use "0" for all organizations.',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9,\\s]+$',
+							errorMessage: 'Organization IDs must be comma-separated numbers. Use "0" for all organizations.',
+						},
+					},
+				],
+				placeholder: 'Enter organization IDs (comma-separated) or "0" for all',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'Organization(s) to filter tasks. Use "0" for all organizations, specific IDs for multiple organizations, or search by name for a single organization.',
+	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['tasks'],
+				operation: ['getAll'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Execution Type Filter',
+				name: 'executionType',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter tasks by execution type',
+				options: [
+					{
+						name: 'Now',
+						value: 'now',
+					},
+					{
+						name: 'Scheduled',
+						value: 'scheduled',
+					},
+				],
+			},
+			{
+				displayName: 'Name Filter',
+				name: 'name',
+				type: 'string',
+				default: '',
+				description: 'Filter tasks by name (supports partial matches)',
+			},
+			{
+				displayName: 'Page Number',
+				name: 'pageNumber',
+				type: 'number',
+				default: 1,
+				description: 'Which page of results to return',
+				typeOptions: {
+					minValue: 1,
+				},
+			},
+			{
+				displayName: 'Page Size',
+				name: 'pageSize',
+				type: 'number',
+				default: 10,
+				description: 'How many results to return per page',
+				typeOptions: {
+					minValue: 1,
+				},
+			},
+			{
+				displayName: 'Sort By',
+				name: 'sortBy',
+				type: 'options',
+				default: 'createdAt',
+				description: 'Attribute name to order the responses by',
+				options: [
+					{
+						name: 'Created At',
+						value: 'createdAt',
+					},
+					{
+						name: 'Name',
+						value: 'name',
+					},
+					{
+						name: 'Organization ID',
+						value: 'organizationId',
+					},
+					{
+						name: 'Status',
+						value: 'status',
+					},
+					{
+						name: 'Type',
+						value: 'type',
+					},
+					{
+						name: 'Updated At',
+						value: 'updatedAt',
+					},
+				],
+			},
+			{
+				displayName: 'Sort Type',
+				name: 'sortType',
+				type: 'options',
+				default: 'DESC',
+				description: 'Sort order',
+				options: [
+					{
+						name: 'Ascending',
+						value: 'ASC',
+					},
+					{
+						name: 'Descending',
+						value: 'DESC',
+					},
+				],
+			},
+			{
+				displayName: 'Source Filter',
+				name: 'source',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter tasks by source',
+				options: [
+					{
+						name: 'API',
+						value: 'api',
+					},
+					{
+						name: 'Scheduler',
+						value: 'scheduler',
+					},
+					{
+						name: 'System',
+						value: 'system',
+					},
+					{
+						name: 'User',
+						value: 'user',
+					},
+					{
+						name: 'Webhook',
+						value: 'webhook',
+					},
+				],
+			},
+			{
+				displayName: 'Status Filter',
+				name: 'status',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter tasks by status',
+				options: [
+					{
+						name: 'Assigned',
+						value: 'assigned',
+					},
+					{
+						name: 'Cancelled',
+						value: 'cancelled',
+					},
+					{
+						name: 'Completed',
+						value: 'completed',
+					},
+					{
+						name: 'Failed',
+						value: 'failed',
+					},
+					{
+						name: 'Processing',
+						value: 'processing',
+					},
+					{
+						name: 'Scheduled',
+						value: 'scheduled',
+					},
+				],
+			},
+			{
+				displayName: 'Type Filter',
+				name: 'type',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter tasks by type',
+				options: [
+					{
+						name: 'Acquire Image',
+						value: 'acquire-image',
+					},
+					{
+						name: 'Acquisition',
+						value: 'acquisition',
+					},
+					{
+						name: 'Agent Deployment',
+						value: 'agent-deployment',
+					},
+					{
+						name: 'Auto Tagging',
+						value: 'auto-tagging',
+					},
+					{
+						name: 'Baseline Acquisition',
+						value: 'baseline-acquisition',
+					},
+					{
+						name: 'Baseline Comparison',
+						value: 'baseline-comparison',
+					},
+					{
+						name: 'Calculate Hash',
+						value: 'calculate-hash',
+					},
+					{
+						name: 'Interact Shell',
+						value: 'interact-shell',
+					},
+					{
+						name: 'Investigation',
+						value: 'investigation',
+					},
+					{
+						name: 'Isolation',
+						value: 'isolation',
+					},
+					{
+						name: 'Log Retrieval',
+						value: 'log-retrieval',
+					},
+					{
+						name: 'Migration',
+						value: 'migration',
+					},
+					{
+						name: 'Offline Acquisition',
+						value: 'offline-acquisition',
+					},
+					{
+						name: 'Offline Triage',
+						value: 'offline-triage',
+					},
+					{
+						name: 'Purge Local Data',
+						value: 'purge-local-data',
+					},
+					{
+						name: 'Reboot',
+						value: 'reboot',
+					},
+					{
+						name: 'Retry Upload',
+						value: 'retry-upload',
+					},
+					{
+						name: 'Shutdown',
+						value: 'shutdown',
+					},
+					{
+						name: 'Triage',
+						value: 'triage',
+					},
+					{
+						name: 'Uninstall',
+						value: 'uninstall',
+					},
+					{
+						name: 'Version Update',
+						value: 'version-update',
+					},
+				],
+			},
+		],
 	},
 ];
 
@@ -154,6 +454,70 @@ export function isValidTask(task: any): boolean {
  */
 export function isValidTaskAssignment(assignment: any): boolean {
 	return isValidEntity(assignment, ['name']);
+}
+
+/**
+ * Extract organization ID from organization object with comprehensive field checking
+ */
+export function extractOrganizationId(organization: any): string {
+	return extractEntityId(organization, 'organization');
+}
+
+/**
+ * Search for organization by exact name match across all pages using API
+ */
+export async function findOrganizationByName(
+	context: IExecuteFunctions,
+	credentials: AirCredentials,
+	organizationName: string
+): Promise<string> {
+	const searchName = organizationName.trim();
+
+	if (!searchName) {
+		throw new Error('Organization name cannot be empty');
+	}
+
+	try {
+		// Use the API to get all organizations with search and pagination support
+		const organizations = await organizationsApi.getAllOrganizations(context, credentials, searchName);
+
+		// Look for exact match (case-insensitive)
+		const exactMatch = organizations.find((org: Organization) =>
+			org.name && org.name.toLowerCase() === searchName.toLowerCase()
+		);
+
+		if (!exactMatch) {
+			// If no exact match with search term, try getting all organizations and search manually
+			const allOrganizations = await organizationsApi.getAllOrganizations(context, credentials);
+
+			const exactMatchInAll = allOrganizations.find((org: Organization) =>
+				org.name && org.name.toLowerCase() === searchName.toLowerCase()
+			);
+
+			if (exactMatchInAll) {
+				return extractOrganizationId(exactMatchInAll);
+			}
+
+			// Provide helpful error message with suggestions
+			const suggestions = allOrganizations
+				.filter((org: Organization) =>
+					org.name && org.name.toLowerCase().includes(searchName.toLowerCase())
+				)
+				.map((org: Organization) => org.name)
+				.slice(0, 5);
+
+			let errorMessage = `Organization '${searchName}' not found.`;
+			if (suggestions.length > 0) {
+				errorMessage += ` Similar organizations: ${suggestions.join(', ')}`;
+			}
+
+			throw new Error(errorMessage);
+		}
+
+		return extractOrganizationId(exactMatch);
+	} catch (error) {
+		throw new Error(`Failed to find organization by name: ${error instanceof Error ? error.message : String(error)}`);
+	}
 }
 
 // List search method for resource locator
@@ -224,7 +588,24 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 			switch (operation) {
 				case 'getAll': {
-					const organizationIds = this.getNodeParameter('organizationIds', i) as string;
+					const organizationResource = this.getNodeParameter('organizationIds', i) as any;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+					let organizationIds: string;
+
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationIds = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							const orgId = await findOrganizationByName(this, credentials, organizationResource.value);
+							organizationIds = orgId;
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
 					// Parse organization IDs
 					const orgIds = organizationIds.trim();
@@ -234,7 +615,46 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 						});
 					}
 
-					const response = await tasksApi.getTasks(this, credentials, orgIds);
+					// Build options object from additionalFields
+					const options: any = {};
+
+					if (additionalFields.pageNumber) {
+						options.pageNumber = additionalFields.pageNumber;
+					}
+
+					if (additionalFields.pageSize) {
+						options.pageSize = additionalFields.pageSize;
+					}
+
+					if (additionalFields.name) {
+						options.name = additionalFields.name;
+					}
+
+					if (additionalFields.type) {
+						options.type = additionalFields.type;
+					}
+
+					if (additionalFields.source) {
+						options.source = additionalFields.source;
+					}
+
+					if (additionalFields.status) {
+						options.status = additionalFields.status;
+					}
+
+					if (additionalFields.executionType) {
+						options.executionType = additionalFields.executionType;
+					}
+
+					if (additionalFields.sortBy) {
+						options.sortBy = additionalFields.sortBy;
+					}
+
+					if (additionalFields.sortType) {
+						options.sortType = additionalFields.sortType;
+					}
+
+					const response = await tasksApi.getTasks(this, credentials, orgIds, Object.keys(options).length > 0 ? options : undefined);
 					validateApiResponse(response);
 
 					const entities = response.result?.entities || [];

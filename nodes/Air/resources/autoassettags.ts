@@ -157,7 +157,6 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 				description: 'How many results to return per page',
 				typeOptions: {
 					minValue: 1,
-					maxValue: 100,
 				},
 			},
 			{

@@ -138,17 +138,95 @@ export const api = {
   async getTasks(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    organizationIds: string | string[] = '0'
+    organizationIds: string | string[] = '0',
+    options?: {
+      pageNumber?: number;
+      pageSize?: number;
+      name?: string;
+      type?: string[];
+      source?: string[];
+      status?: string[];
+      executionType?: string[];
+      createdByFilter?: string;
+      sortBy?: string;
+      sortType?: string;
+      // Legacy parameters for backward compatibility
+      searchTerm?: string;
+      statusFilter?: string;
+      typeFilter?: string;
+      scheduledOnly?: boolean;
+    }
   ): Promise<TasksResponse> {
     try {
       const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
+      const queryParams: Record<string, string | number> = {
+        'filter[organizationIds]': orgIds
+      };
+
+      // Add pagination parameters
+      if (options?.pageNumber) {
+        queryParams.pageNumber = options.pageNumber;
+      }
+
+      if (options?.pageSize) {
+        queryParams.pageSize = options.pageSize;
+      }
+
+      // Add name filter (replaces searchTerm)
+      if (options?.name || options?.searchTerm) {
+        queryParams['filter[name]'] = options.name || options.searchTerm || '';
+      }
+
+      // Add type filter (supports multiple values)
+      if (options?.type && options.type.length > 0) {
+        queryParams['filter[type]'] = options.type.join(',');
+      } else if (options?.typeFilter) {
+        // Legacy support
+        queryParams['filter[type]'] = options.typeFilter;
+      }
+
+      // Add source filter (supports multiple values)
+      if (options?.source && options.source.length > 0) {
+        queryParams['filter[source]'] = options.source.join(',');
+      }
+
+      // Add status filter (supports multiple values)
+      if (options?.status && options.status.length > 0) {
+        queryParams['filter[status]'] = options.status.join(',');
+      } else if (options?.statusFilter) {
+        // Legacy support
+        queryParams['filter[status]'] = options.statusFilter;
+      }
+
+      // Add execution type filter (supports multiple values)
+      if (options?.executionType && options.executionType.length > 0) {
+        queryParams['filter[executionType]'] = options.executionType.join(',');
+      }
+
+      // Add created by filter
+      if (options?.createdByFilter) {
+        queryParams['filter[createdBy]'] = options.createdByFilter;
+      }
+
+      // Legacy scheduled only filter
+      if (options?.scheduledOnly) {
+        queryParams['filter[isScheduled]'] = 'true';
+      }
+
+      // Add sorting parameters
+      if (options?.sortBy) {
+        queryParams.sortBy = options.sortBy;
+      }
+
+      if (options?.sortType) {
+        queryParams.sortType = options.sortType;
+      }
+
       const requestOptions: IHttpRequestOptions = {
         method: 'GET',
         url: `${credentials.instanceUrl}/api/public/tasks`,
-        qs: {
-          'filter[organizationIds]': orgIds
-        },
+        qs: queryParams,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${credentials.token}`
