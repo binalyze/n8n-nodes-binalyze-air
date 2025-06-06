@@ -166,44 +166,6 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 				default: '',
 				description: 'Search term to filter auto asset tags',
 			},
-			{
-				displayName: 'Sort By',
-				name: 'sortBy',
-				type: 'options',
-				options: [
-					{
-						name: 'Created At',
-						value: 'createdAt',
-					},
-					{
-						name: 'Updated At',
-						value: 'updatedAt',
-					},
-					{
-						name: 'Tag',
-						value: 'tag',
-					},
-				],
-				default: 'createdAt',
-				description: 'Attribute name to order the responses by',
-			},
-			{
-				displayName: 'Sort Type',
-				name: 'sortType',
-				type: 'options',
-				options: [
-					{
-						name: 'Ascending',
-						value: 'ASC',
-					},
-					{
-						name: 'Descending',
-						value: 'DESC',
-					},
-				],
-				default: 'ASC',
-				description: 'Sort order',
-			},
 		],
 	},
 ];
@@ -318,12 +280,6 @@ export function buildAutoAssetTagQueryParams(additionalFields: any): Record<stri
 	}
 	if (additionalFields.pageSize !== undefined) {
 		queryParams.pageSize = additionalFields.pageSize;
-	}
-	if (additionalFields.sortBy !== undefined) {
-		queryParams.sortBy = additionalFields.sortBy;
-	}
-	if (additionalFields.sortType !== undefined) {
-		queryParams.sortType = additionalFields.sortType;
 	}
 	if (additionalFields.searchTerm !== undefined) {
 		queryParams['filter[searchTerm]'] = additionalFields.searchTerm;

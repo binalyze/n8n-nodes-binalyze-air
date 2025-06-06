@@ -161,40 +161,6 @@ export const UsersOperations: INodeProperties[] = [
 				default: '',
 				description: 'Filter users by roles (comma-separated)',
 			},
-			{
-				displayName: 'Sort By',
-				name: 'sortBy',
-				type: 'options',
-				default: 'createdAt',
-				description: 'Attribute name to order the responses by',
-				options: [
-					{
-						name: 'Created At',
-						value: 'createdAt',
-					},
-					{
-						name: 'Username',
-						value: 'username',
-					},
-				],
-			},
-			{
-				displayName: 'Sort Type',
-				name: 'sortType',
-				type: 'options',
-				default: 'ASC',
-				description: 'Sort order',
-				options: [
-					{
-						name: 'Ascending',
-						value: 'ASC',
-					},
-					{
-						name: 'Descending',
-						value: 'DESC',
-					},
-				],
-			},
 		],
 	},
 ];
@@ -381,8 +347,6 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 						pageNumber: additionalFields.pageNumber,
 						pageSize: additionalFields.pageSize,
 						roles: additionalFields.roles,
-						sortBy: additionalFields.sortBy,
-						sortType: additionalFields.sortType,
 					};
 
 					const responseData = await usersApi.getUsers(this, credentials, organizationIds, additionalParams);

@@ -703,64 +703,6 @@ export const OrganizationsOperations: INodeProperties[] = [
 					},
 				},
 			},
-			{
-				displayName: 'Sort By',
-				name: 'sortBy',
-				type: 'options',
-				default: 'createdAt',
-				description: 'Attribute name to order the responses by',
-				displayOptions: {
-					show: {
-						'/operation': ['getAll', 'getUsers'],
-					},
-				},
-				options: [
-					{
-						name: 'Created At',
-						value: 'createdAt',
-					},
-					{
-						name: 'Name',
-						value: 'name',
-						displayOptions: {
-							show: {
-								'/operation': ['getAll'],
-							},
-						},
-					},
-					{
-						name: 'Username',
-						value: 'username',
-						displayOptions: {
-							show: {
-								'/operation': ['getUsers'],
-							},
-						},
-					},
-				],
-			},
-			{
-				displayName: 'Sort Type',
-				name: 'sortType',
-				type: 'options',
-				default: 'ASC',
-				description: 'Sort order',
-				displayOptions: {
-					show: {
-						'/operation': ['getAll', 'getUsers'],
-					},
-				},
-				options: [
-					{
-						name: 'Ascending',
-						value: 'ASC',
-					},
-					{
-						name: 'Descending',
-						value: 'DESC',
-					},
-				],
-			},
 		],
 	},
 ];
@@ -915,14 +857,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 						options.nameFilter = additionalFields.nameFilter;
 					}
 
-					if (additionalFields.sortBy) {
-						options.sortBy = additionalFields.sortBy;
-					}
-
-					if (additionalFields.sortType) {
-						options.sortType = additionalFields.sortType;
-					}
-
 					const response = await organizationsApi.getOrganizations(this, credentials, Object.keys(options).length > 0 ? options : undefined);
 					validateApiResponse(response);
 
@@ -1031,14 +965,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 					if (additionalFields.pageSize) {
 						options.pageSize = additionalFields.pageSize;
-					}
-
-					if (additionalFields.sortBy) {
-						options.sortBy = additionalFields.sortBy;
-					}
-
-					if (additionalFields.sortType) {
-						options.sortType = additionalFields.sortType;
 					}
 
 					const response = await organizationUsersApi.getOrganizationUsers(this, credentials, parseInt(organizationId), Object.keys(options).length > 0 ? options : undefined);

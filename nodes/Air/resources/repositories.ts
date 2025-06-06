@@ -171,56 +171,6 @@ export const RepositoriesOperations: INodeProperties[] = [
 				description: 'Search repositories by name (supports partial matches)',
 			},
 			{
-				displayName: 'Sort By',
-				name: 'sortBy',
-				type: 'options',
-				default: 'createdAt',
-				description: 'Attribute name to order the responses by',
-				options: [
-					{
-						name: 'Created At',
-						value: 'createdAt',
-					},
-					{
-						name: 'Host',
-						value: 'host',
-					},
-					{
-						name: 'Name',
-						value: 'name',
-					},
-					{
-						name: 'Path',
-						value: 'path',
-					},
-					{
-						name: 'Type',
-						value: 'type',
-					},
-					{
-						name: 'Username',
-						value: 'username',
-					},
-				],
-			},
-			{
-				displayName: 'Sort Type',
-				name: 'sortType',
-				type: 'options',
-				default: 'ASC',
-				description: 'Sort order',
-				options: [
-					{
-						name: 'Ascending',
-						value: 'ASC',
-					},
-					{
-						name: 'Descending',
-						value: 'DESC',
-					},
-				],
-			},
-			{
 				displayName: 'Type',
 				name: 'type',
 				type: 'options',
@@ -274,14 +224,6 @@ export function buildRepositoryQueryParams(organizationId: number, additionalFie
 	}
 	if (additionalFields.pageSize !== undefined) {
 		queryParams.pageSize = additionalFields.pageSize;
-	}
-
-	// Add sorting parameters
-	if (additionalFields.sortBy) {
-		queryParams.sortBy = additionalFields.sortBy;
-	}
-	if (additionalFields.sortType) {
-		queryParams.sortType = additionalFields.sortType;
 	}
 
 	// Add filter parameters

@@ -428,48 +428,6 @@ export const TriageRulesOperations: INodeProperties[] = [
 				default: '',
 				description: 'Search term to filter triage rules',
 			},
-			{
-				displayName: 'Sort By',
-				name: 'sortBy',
-				type: 'options',
-				default: 'createdAt',
-				description: 'Attribute name to order the responses by',
-				options: [
-					{
-						name: 'Created At',
-						value: 'createdAt',
-					},
-					{
-						name: 'Description',
-						value: 'description',
-					},
-					{
-						name: 'Search In',
-						value: 'searchIn',
-					},
-					{
-						name: 'Upload Date',
-						value: 'uploadDate',
-					},
-				],
-			},
-			{
-				displayName: 'Sort Type',
-				name: 'sortType',
-				type: 'options',
-				default: 'ASC',
-				description: 'Sort order',
-				options: [
-					{
-						name: 'Ascending',
-						value: 'ASC',
-					},
-					{
-						name: 'Descending',
-						value: 'DESC',
-					},
-				],
-			},
 		],
 	},
 	{
@@ -788,14 +746,6 @@ export function buildTriageRuleQueryParams(organizationIds: string, additionalFi
 
 	if (additionalFields.pageSize) {
 		queryParams['pageSize'] = additionalFields.pageSize;
-	}
-
-	if (additionalFields.sortBy) {
-		queryParams['sortBy'] = additionalFields.sortBy;
-	}
-
-	if (additionalFields.sortType) {
-		queryParams['sortType'] = additionalFields.sortType;
 	}
 
 	return queryParams;

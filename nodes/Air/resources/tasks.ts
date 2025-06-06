@@ -220,56 +220,6 @@ export const TasksOperations: INodeProperties[] = [
 				},
 			},
 			{
-				displayName: 'Sort By',
-				name: 'sortBy',
-				type: 'options',
-				default: 'createdAt',
-				description: 'Attribute name to order the responses by',
-				options: [
-					{
-						name: 'Created At',
-						value: 'createdAt',
-					},
-					{
-						name: 'Name',
-						value: 'name',
-					},
-					{
-						name: 'Organization ID',
-						value: 'organizationId',
-					},
-					{
-						name: 'Status',
-						value: 'status',
-					},
-					{
-						name: 'Type',
-						value: 'type',
-					},
-					{
-						name: 'Updated At',
-						value: 'updatedAt',
-					},
-				],
-			},
-			{
-				displayName: 'Sort Type',
-				name: 'sortType',
-				type: 'options',
-				default: 'DESC',
-				description: 'Sort order',
-				options: [
-					{
-						name: 'Ascending',
-						value: 'ASC',
-					},
-					{
-						name: 'Descending',
-						value: 'DESC',
-					},
-				],
-			},
-			{
 				displayName: 'Source Filter',
 				name: 'source',
 				type: 'multiOptions',
@@ -644,14 +594,6 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 					if (additionalFields.executionType) {
 						options.executionType = additionalFields.executionType;
-					}
-
-					if (additionalFields.sortBy) {
-						options.sortBy = additionalFields.sortBy;
-					}
-
-					if (additionalFields.sortType) {
-						options.sortType = additionalFields.sortType;
 					}
 
 					const response = await tasksApi.getTasks(this, credentials, orgIds, Object.keys(options).length > 0 ? options : undefined);

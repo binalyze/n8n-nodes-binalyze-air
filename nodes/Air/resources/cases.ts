@@ -20,6 +20,9 @@ import {
 	processApiResponseEntities,
 } from '../utils/helpers';
 
+// Import user utilities for Resource Locator pattern
+import { findUserByUsername, fetchAllUsers, isValidUser, extractUserId } from './users';
+
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
 import {
 	api as casesApi,
@@ -236,34 +239,100 @@ export const CasesOperations: INodeProperties[] = [
 		description: 'Organization for the case. For getAll operation, use "0" for all organizations.',
 	},
 	{
-		displayName: 'Owner User ID',
+		displayName: 'Owner User',
 		name: 'ownerUserId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter owner user ID',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select a user...',
 		displayOptions: {
 			show: {
 				resource: ['cases'],
 				operation: ['create'],
 			},
 		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a user...',
+				typeOptions: {
+					searchListMethod: 'getUsers',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid user ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter user ID (alphanumeric or GUID)',
+			},
+			{
+				displayName: 'By Username',
+				name: 'username',
+				type: 'string',
+				placeholder: 'Enter username or email',
+			},
+		],
 		required: true,
-		description: 'The ID of the user who will own the case',
+		description: 'The user who will own the case',
 	},
 	{
-		displayName: 'New Owner User ID',
+		displayName: 'New Owner User',
 		name: 'newOwnerUserId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter new owner user ID',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select a user...',
 		displayOptions: {
 			show: {
 				resource: ['cases'],
 				operation: ['changeOwner'],
 			},
 		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a user...',
+				typeOptions: {
+					searchListMethod: 'getUsers',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid user ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter user ID (alphanumeric or GUID)',
+			},
+			{
+				displayName: 'By Username',
+				name: 'username',
+				type: 'string',
+				placeholder: 'Enter username or email',
+			},
+		],
 		required: true,
-		description: 'The ID of the new owner user',
+		description: 'The new owner user for the case',
 	},
 	{
 		displayName: 'Task Assignment ID',
@@ -320,18 +389,12 @@ export const CasesOperations: INodeProperties[] = [
 		description: 'The visibility of the case',
 	},
 	{
-		displayName: 'Assigned User IDs',
+		displayName: 'Assigned Users',
 		name: 'assignedUserIds',
 		type: 'string',
 		default: '',
-		placeholder: 'Enter user IDs (comma-separated)',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['create'],
-			},
-		},
-		description: 'Comma-separated list of user IDs to assign to the case',
+		placeholder: 'Enter user IDs (comma-separated) e.g., user1,user2,user3',
+		description: 'Comma-separated list of user IDs to assign to the case. You can find user IDs from the Users resource.',
 	},
 	{
 		displayName: 'Update Fields',
@@ -347,12 +410,12 @@ export const CasesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Assigned User IDs',
+				displayName: 'Assigned Users',
 				name: 'assignedUserIds',
 				type: 'string',
 				default: '',
-				placeholder: 'Enter user IDs (comma-separated)',
-				description: 'Comma-separated list of user IDs to assign to the case',
+				placeholder: 'Enter user IDs (comma-separated) e.g., user1,user2,user3',
+				description: 'Comma-separated list of user IDs to assign to the case. You can find user IDs from the Users resource.',
 			},
 			{
 				displayName: 'Name',
@@ -369,11 +432,45 @@ export const CasesOperations: INodeProperties[] = [
 				description: 'JSON array of notes for the case',
 			},
 			{
-				displayName: 'Owner User ID',
+				displayName: 'Owner User',
 				name: 'ownerUserId',
-				type: 'string',
-				default: '',
-				description: 'The new owner user ID',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				placeholder: 'Select a user...',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select a user...',
+						typeOptions: {
+							searchListMethod: 'getUsers',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[a-zA-Z0-9-_]+$',
+									errorMessage: 'Not a valid user ID (must contain only letters, numbers, hyphens, and underscores)',
+								},
+							},
+						],
+						placeholder: 'Enter user ID (alphanumeric or GUID)',
+					},
+					{
+						displayName: 'By Username',
+						name: 'username',
+						type: 'string',
+						placeholder: 'Enter username or email',
+					},
+				],
+				description: 'The new owner user for the case',
 			},
 			{
 				displayName: 'Status',
@@ -429,20 +526,6 @@ export const CasesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Assigned User ID',
-				name: 'assignedUserId',
-				type: 'string',
-				default: '',
-				description: 'Filter cases by assigned user ID',
-			},
-			{
-				displayName: 'Owner User ID',
-				name: 'ownerUserId',
-				type: 'string',
-				default: '',
-				description: 'Filter cases by owner user ID',
-			},
-			{
 				displayName: 'Page Number',
 				name: 'pageNumber',
 				type: 'number',
@@ -462,48 +545,6 @@ export const CasesOperations: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Search term to filter cases',
-			},
-			{
-				displayName: 'Sort By',
-				name: 'sortBy',
-				type: 'options',
-				default: 'createdAt',
-				options: [
-					{
-						name: 'Created At',
-						value: 'createdAt',
-					},
-					{
-						name: 'Updated At',
-						value: 'updatedAt',
-					},
-					{
-						name: 'Name',
-						value: 'name',
-					},
-					{
-						name: 'Status',
-						value: 'status',
-					},
-				],
-				description: 'Sort cases by field',
-			},
-			{
-				displayName: 'Sort Type',
-				name: 'sortType',
-				type: 'options',
-				default: 'desc',
-				options: [
-					{
-						name: 'Ascending',
-						value: 'asc',
-					},
-					{
-						name: 'Descending',
-						value: 'desc',
-					},
-				],
-				description: 'Sort direction',
 			},
 			{
 				displayName: 'Status Filter',
@@ -718,6 +759,68 @@ export function isValidCase(caseItem: any): boolean {
 	return isValidEntity(caseItem, ['_id']);
 }
 
+export async function resolveUserResourceLocator(
+	context: IExecuteFunctions,
+	credentials: AirCredentials,
+	userResource: any,
+	itemIndex: number,
+	organizationIds?: string
+): Promise<string> {
+	if (!userResource || typeof userResource !== 'object') {
+		throw new Error('Invalid user resource locator');
+	}
+
+	let userId: string;
+
+	if (userResource.mode === 'list' || userResource.mode === 'id') {
+		userId = userResource.value;
+	} else if (userResource.mode === 'username') {
+		try {
+			// Use the provided organization IDs or default to '0' for all organizations
+			const orgIds = organizationIds || '0';
+			userId = await findUserByUsername(context, credentials, userResource.value, orgIds);
+		} catch (error) {
+			throw new Error(`Failed to find user by username: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	} else {
+		throw new Error('Invalid user selection mode');
+	}
+
+	return requireValidId(userId, 'User ID');
+}
+
+/**
+ * Helper function to get organization ID from the current node context
+ * This attempts to access the organization parameter from the current node configuration
+ * Falls back to '0' (all organizations) if the organization cannot be determined
+ */
+function getOrganizationIdFromContext(context: ILoadOptionsFunctions): string {
+	try {
+		// Try to get the current node parameters which includes the organization selection
+		const currentParams = context.getCurrentNodeParameters();
+		if (currentParams && currentParams.organizationId) {
+			const orgResource = currentParams.organizationId as any;
+
+			// Handle different organization resource locator modes
+			if (typeof orgResource === 'object') {
+				if (orgResource.mode === 'id' || orgResource.mode === 'list') {
+					return orgResource.value || '0';
+				}
+				// For 'name' mode, we can't resolve it here without credentials, so fall back to default
+				return '0';
+			} else if (typeof orgResource === 'string') {
+				return orgResource;
+			}
+		}
+	} catch (error) {
+		// If we can't get the current parameters (e.g., during initial dropdown loading),
+		// fall back to default
+	}
+
+	// Default to all organizations if we can't determine the specific organization
+	return '0';
+}
+
 export async function findOrganizationByName(
 	context: IExecuteFunctions,
 	credentials: AirCredentials,
@@ -805,6 +908,33 @@ export async function getCasesOptions(this: ILoadOptionsFunctions): Promise<INod
 			throw error;
 		}
 		throw new Error('Failed to fetch cases options');
+	}
+}
+
+// Load options function for users (required for Resource Locator)
+export async function getUsers(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+		const organizationIds = getOrganizationIdFromContext(this);
+
+		// Use the organization-specific user search
+		const allUsers = await fetchAllUsers(this, credentials, organizationIds, filter);
+
+		return createListSearchResults(
+			allUsers,
+			isValidUser,
+			(user: any) => ({
+				name: user.username || user.email || `User ${extractUserId(user)}`,
+				value: extractUserId(user),
+				url: user.url || '',
+			}),
+			filter
+		);
+	} catch (error) {
+		if (error instanceof Error) {
+			throw error;
+		}
+		throw new Error('Failed to fetch users for selection');
 	}
 }
 
@@ -953,7 +1083,7 @@ async function executeCreateCase(
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
 	const caseName = this.getNodeParameter('caseName', itemIndex) as string;
 	const organizationResource = this.getNodeParameter('organizationId', itemIndex) as any;
-	const ownerUserId = this.getNodeParameter('ownerUserId', itemIndex) as string;
+	const ownerUserResource = this.getNodeParameter('ownerUserId', itemIndex) as any;
 	const visibility = this.getNodeParameter('visibility', itemIndex) as string;
 	const assignedUserIdsParam = this.getNodeParameter('assignedUserIds', itemIndex, '') as string;
 
@@ -969,6 +1099,9 @@ async function executeCreateCase(
 	} else {
 		throw new Error('Invalid organization selection');
 	}
+
+	// Resolve owner user ID using Resource Locator
+	const ownerUserId = await resolveUserResourceLocator(this, credentials, ownerUserResource, itemIndex, organizationId.toString());
 
 	const assignedUserIds = assignedUserIdsParam ? assignedUserIdsParam.split(',').map(id => id.trim()) : [];
 
@@ -1004,7 +1137,9 @@ async function executeUpdateCase(
 		updateData.name = updateFields.name;
 	}
 	if (updateFields.ownerUserId) {
-		updateData.ownerUserId = updateFields.ownerUserId;
+		// For update operations, we don't have direct access to organization context,
+		// so we use default organization scope for user resolution
+		updateData.ownerUserId = await resolveUserResourceLocator(this, credentials, updateFields.ownerUserId, itemIndex, '0');
 	}
 	if (updateFields.visibility) {
 		updateData.visibility = updateFields.visibility;
@@ -1094,7 +1229,10 @@ async function executeChangeOwner(
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
 	const caseId = requireValidId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
-	const newOwnerUserId = requireValidId(this.getNodeParameter('newOwnerUserId', itemIndex) as string, 'New Owner User ID');
+	const newOwnerUserResource = this.getNodeParameter('newOwnerUserId', itemIndex) as any;
+
+	// Resolve new owner user ID using Resource Locator
+	const newOwnerUserId = await resolveUserResourceLocator(this, credentials, newOwnerUserResource, itemIndex, '0');
 
 	const response = await casesApi.changeOwner(this, credentials, caseId, newOwnerUserId);
 
