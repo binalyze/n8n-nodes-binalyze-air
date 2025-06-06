@@ -48,7 +48,7 @@ export interface ApiResponse {
 		nextPage?: number;
 		sortables?: string[];
 		filters?: any[];
-	};
+	} | any[]; // result can also be a direct array of entities
 	errors?: string[];
 }
 
@@ -89,18 +89,9 @@ export function buildRequestOptions(
 	endpoint: string,
 	queryParams?: Record<string, string | number>
 ): IHttpRequestOptions {
-	let url = `${credentials.instanceUrl}${endpoint}`;
-
-	if (queryParams && Object.keys(queryParams).length > 0) {
-		const queryString = Object.entries(queryParams)
-			.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
-			.join('&');
-		url += `?${queryString}`;
-	}
-
-	return {
+	const options: IHttpRequestOptions = {
 		method,
-		url,
+		url: `${credentials.instanceUrl}${endpoint}`,
 		headers: {
 			'Authorization': `Bearer ${credentials.token}`,
 			'Accept': 'application/json',
@@ -108,6 +99,13 @@ export function buildRequestOptions(
 		},
 		json: true,
 	};
+
+	// Use n8n's built-in query parameter handling
+	if (queryParams && Object.keys(queryParams).length > 0) {
+		options.qs = queryParams;
+	}
+
+	return options;
 }
 
 /**
@@ -269,65 +267,64 @@ export function handleExecuteError(
 }
 
 /**
- * Generic function to process API response entities with pagination
+ * Extract entities from API response, handling both paginated and non-paginated responses
  */
-export function processApiResponseEntities(
-	entities: any[],
-	pagination: any,
-	returnData: INodeExecutionData[],
-	itemIndex: number
-): void {
-	entities.forEach((entity: any) => {
-		returnData.push({
-			json: {
-				...entity,
-				...(pagination && { _pagination: pagination }),
-			},
-			pairedItem: itemIndex,
-		});
-	});
+export function extractEntitiesFromResponse(responseData: ApiResponse): any[] {
+	if (!responseData.result) {
+		return [];
+	}
+
+	// If result is an array, return it directly (non-paginated response)
+	if (Array.isArray(responseData.result)) {
+		return responseData.result;
+	}
+
+	// If result is an object with entities property, return the entities (paginated response)
+	if (responseData.result.entities && Array.isArray(responseData.result.entities)) {
+		return responseData.result.entities;
+	}
+
+	// If result is an object but no entities property, return empty array
+	return [];
 }
 
 /**
- * Process API response entities without adding pagination to each entity
- * This is the preferred method for most cases where pagination shouldn't pollute individual entities
+ * Check if the API response has pagination info
  */
-export function processApiResponseEntitiesClean(
-	entities: any[],
-	returnData: INodeExecutionData[],
-	itemIndex: number
-): void {
-	entities.forEach((entity: any) => {
-		returnData.push({
-			json: entity,
-			pairedItem: itemIndex,
-		});
-	});
+export function hasResponsePagination(responseData: ApiResponse): boolean {
+	if (!responseData.result || Array.isArray(responseData.result)) {
+		return false;
+	}
+
+	return responseData.result.totalEntityCount !== undefined;
 }
 
 /**
- * Create a single pagination info item that can be added to the response
- * This allows pagination information to be available without attaching it to each entity
+ * Extract simplified pagination information from API result object (without sortables and filters)
  */
-export function createPaginationInfoItem(
-	paginationData: any,
-	itemIndex: number
-): INodeExecutionData {
-	return {
-		json: {
-			_pagination: {
-				...paginationData
-			}
-		},
-		pairedItem: itemIndex,
-	};
+export function extractSimplifiedPaginationInfo(result: any): SimplifiedPaginationInfo | null {
+	if (!result || Array.isArray(result)) return null;
+
+	// Check if pagination properties exist in the result
+	if (result.totalEntityCount !== undefined) {
+		return {
+			totalEntityCount: result.totalEntityCount,
+			currentPage: result.currentPage,
+			pageSize: result.pageSize,
+			previousPage: result.previousPage,
+			totalPageCount: result.totalPageCount,
+			nextPage: result.nextPage,
+		};
+	}
+
+	return null;
 }
 
 /**
  * Extract pagination information from API result object
  */
 export function extractPaginationInfo(result: any): PaginationInfo | null {
-	if (!result) return null;
+	if (!result || Array.isArray(result)) return null;
 
 	// Check if pagination properties exist in the result
 	if (result.totalEntityCount !== undefined) {
@@ -347,24 +344,42 @@ export function extractPaginationInfo(result: any): PaginationInfo | null {
 }
 
 /**
- * Extract simplified pagination information from API result object (without sortables and filters)
+ * Extract simplified pagination information from API response
  */
-export function extractSimplifiedPaginationInfo(result: any): SimplifiedPaginationInfo | null {
-	if (!result) return null;
-
-	// Check if pagination properties exist in the result
-	if (result.totalEntityCount !== undefined) {
-		return {
-			totalEntityCount: result.totalEntityCount,
-			currentPage: result.currentPage,
-			pageSize: result.pageSize,
-			previousPage: result.previousPage,
-			totalPageCount: result.totalPageCount,
-			nextPage: result.nextPage,
-		};
+export function extractSimplifiedPaginationInfoFromResponse(responseData: ApiResponse): SimplifiedPaginationInfo | null {
+	if (!responseData.result || Array.isArray(responseData.result)) {
+		return null;
 	}
 
-	return null;
+	return extractSimplifiedPaginationInfo(responseData.result);
+}
+
+/**
+ * Extract pagination information from API response
+ */
+export function extractPaginationInfoFromResponse(responseData: ApiResponse): PaginationInfo | null {
+	if (!responseData.result || Array.isArray(responseData.result)) {
+		return null;
+	}
+
+	return extractPaginationInfo(responseData.result);
+}
+
+/**
+ * Process API response entities without adding pagination to each entity
+ * This is the preferred method for most cases where pagination shouldn't pollute individual entities
+ */
+export function processApiResponseEntitiesClean(
+	entities: any[],
+	returnData: INodeExecutionData[],
+	itemIndex: number
+): void {
+	entities.forEach((entity: any) => {
+		returnData.push({
+			json: entity,
+			pairedItem: itemIndex,
+		});
+	});
 }
 
 /**
@@ -389,40 +404,6 @@ export function processApiResponseEntitiesWithSimplifiedPagination(
 			json: jsonData,
 			pairedItem: itemIndex,
 		});
-	});
-}
-
-/**
- * Generic function to catch and format errors for load/search functions
- */
-export function catchAndFormatError(error: any, operation: string): Error {
-	const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-	return new Error(`Failed to ${operation}: ${errorMessage}`);
-}
-
-/**
- * Process API response entities and attach pagination metadata to the execution context
- * This avoids mixing pagination info with actual entities in the results array
- */
-export function processApiResponseEntitiesWithMetadata(
-	entities: any[],
-	paginationData: PaginationInfo | null,
-	returnData: INodeExecutionData[],
-	itemIndex: number
-): void {
-	entities.forEach((entity: any) => {
-		const executionData: INodeExecutionData = {
-			json: entity,
-			pairedItem: itemIndex,
-		};
-
-		// Note: In n8n, metadata is typically used for specific internal purposes
-		// For pagination info, consider alternative approaches like:
-		// 1. Including it in the json object with a special key
-		// 2. Using a separate output for pagination info
-		// 3. Simply omitting it if not essential for workflow logic
-
-		returnData.push(executionData);
 	});
 }
 
@@ -452,158 +433,9 @@ export function processApiResponseEntitiesWithPaginationInJson(
 }
 
 /**
- * Process API response entities with pagination info as the first separate item
- * This approach clearly separates pagination metadata from entities
+ * Generic function to catch and format errors for load/search functions
  */
-export function processApiResponseEntitiesWithPaginationFirst(
-	entities: any[],
-	paginationData: PaginationInfo | null,
-	returnData: INodeExecutionData[],
-	itemIndex: number
-): void {
-	// Add pagination info as the first item if available
-	if (paginationData) {
-		returnData.push({
-			json: {
-				_type: 'pagination_metadata',
-				...paginationData
-			},
-			pairedItem: itemIndex,
-		});
-	}
-
-	// Then add all entities
-	entities.forEach((entity: any) => {
-		returnData.push({
-			json: entity,
-			pairedItem: itemIndex,
-		});
-	});
-}
-
-/**
- * Platform enum for deployment packages
- */
-export enum Platform {
-	Windows = 'windows',
-	Linux = 'linux',
-	Darwin = 'darwin',
-}
-
-/**
- * Package extension enum for deployment packages
- */
-export enum PackageExtension {
-	msi = 'msi', // Only available for windows platform
-	deb = 'deb', // Only available for linux platform
-	rpm = 'rpm', // Only available for linux platform
-	pkg = 'pkg', // Only available for darwin platform (macOS)
-}
-
-/**
- * Architecture enum for deployment packages
- */
-export enum Architecture {
-	i386 = '386', // Only available for windows and linux. Not supported for darwin (macOS)
-	amd64 = 'amd64',
-	arm64 = 'arm64',
-}
-
-/**
- * Generate deployment package download links for an organization
- */
-function generateDeploymentPackages(
-	organizationId: string,
-	deploymentToken: string,
-	instanceUrl: string
-): any {
-	// Generate a random value for ckey parameter
-	const generateRandomKey = () => Math.random().toString(36).substring(2, 15);
-
-	const baseUrl = `${instanceUrl}/api/endpoints/download/${organizationId}`;
-
-	const deploymentPackages: any = {};
-
-	// Helper function to convert architecture ID to user-friendly name
-	const getArchLabel = (arch: string): string => {
-		switch (arch) {
-			case Architecture.i386:
-				return '32bit';
-			case Architecture.amd64:
-				return '64bit';
-			case Architecture.arm64:
-				return 'arm64';
-			default:
-				return arch;
-		}
-	};
-
-	// Windows platform (supports i386, amd64 with msi)
-	[Architecture.i386, Architecture.amd64].forEach(arch => {
-		const archLabel = getArchLabel(arch);
-		const key = `windows-${archLabel}-msi`;
-		deploymentPackages[key] = `${baseUrl}/${Platform.Windows}/${PackageExtension.msi}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-	});
-
-	// Linux platform (supports i386, amd64, arm64 with deb and rpm)
-	[Architecture.i386, Architecture.amd64, Architecture.arm64].forEach(arch => {
-		const archLabel = getArchLabel(arch);
-
-		// DEB package
-		const debKey = `linux-${archLabel}-deb`;
-		deploymentPackages[debKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.deb}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-
-		// RPM package
-		const rpmKey = `linux-${archLabel}-rpm`;
-		deploymentPackages[rpmKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.rpm}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-	});
-
-	// Darwin platform (supports amd64, arm64 with pkg - no i386 support)
-	[Architecture.amd64, Architecture.arm64].forEach(arch => {
-		const archLabel = getArchLabel(arch);
-		const key = `macos-${archLabel}-pkg`;
-		deploymentPackages[key] = `${baseUrl}/${Platform.Darwin}/${PackageExtension.pkg}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-	});
-
-	return deploymentPackages;
-}
-
-/**
- * Process organization entity to add computed shareableDeploymentPage and deploymentPackages properties
- */
-export function processOrganizationEntity(organization: any, instanceUrl: string): any {
-	const processedOrg = { ...organization };
-
-	// Add shareableDeploymentPage property based on shareableDeploymentEnabled and deploymentToken
-	if (organization.shareableDeploymentEnabled && organization.deploymentToken) {
-		processedOrg.shareableDeploymentPage = `${instanceUrl}/#/shareable-deploy?token=${organization.deploymentToken}`;
-	} else {
-		processedOrg.shareableDeploymentPage = '';
-	}
-
-	// Add deploymentPackages property with download links for all platforms and architectures
-	if (organization.deploymentToken) {
-		try {
-			const organizationId = extractEntityId(organization, 'organization');
-			processedOrg.deploymentPackages = generateDeploymentPackages(
-				organizationId,
-				organization.deploymentToken,
-				instanceUrl
-			);
-		} catch (error) {
-			// If we can't extract organization ID, set deploymentPackages to empty object
-			processedOrg.deploymentPackages = {};
-		}
-	} else {
-		processedOrg.deploymentPackages = {};
-	}
-
-	return processedOrg;
-}
-
-/**
- * Process multiple organization entities to add computed properties
- */
-export function processOrganizationEntities(organizations: any[], instanceUrl: string): any[] {
-	return organizations.map(org => processOrganizationEntity(org, instanceUrl));
+export function catchAndFormatError(error: any, operation: string): Error {
+	const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+	return new Error(`Failed to ${operation}: ${errorMessage}`);
 }
