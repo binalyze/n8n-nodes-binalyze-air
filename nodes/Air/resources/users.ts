@@ -10,20 +10,19 @@ import {
 
 import {
 	getAirCredentials,
-	buildRequestOptions,
-	validateApiResponse,
 	extractEntityId,
 	isValidEntity,
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
 	extractSimplifiedPaginationInfo,
-	processApiResponseEntitiesWithSimplifiedPagination,
+	processApiResponseEntitiesWithSimplifiedPagination as attachPaginationInfoToEntities,
 	requireValidId,
 	catchAndFormatError,
 } from './helpers';
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
+import { api as usersApi, User } from '../api/users/users';
 
 export const UsersOperations: INodeProperties[] = [
 	{
@@ -223,31 +222,19 @@ export async function fetchAllUsers(
 	organizationIds: string = '0',
 	searchFilter?: string,
 	pageSize: number = 100
-): Promise<any[]> {
-	const allUsers: any[] = [];
+): Promise<User[]> {
+	const allUsers: User[] = [];
 	let currentPage = 1;
 	let hasMorePages = true;
 
 	while (hasMorePages) {
-		const queryParams: Record<string, string | number> = {
+		const additionalParams = {
 			pageNumber: currentPage,
 			pageSize,
-			'filter[organizationIds]': organizationIds,
+			searchTerm: searchFilter,
 		};
 
-		if (searchFilter) {
-			queryParams['filter[searchTerm]'] = searchFilter;
-		}
-
-		const options = buildRequestOptions(
-			credentials,
-			'GET',
-			'/api/public/user-management/users',
-			queryParams
-		);
-
-		const responseData = await context.helpers.httpRequest(options);
-		validateApiResponse(responseData, 'Failed to fetch users');
+		const responseData = await usersApi.getUsers(context, credentials, organizationIds, additionalParams);
 
 		const users = responseData.result?.entities || [];
 		allUsers.push(...users);
@@ -265,7 +252,7 @@ export async function fetchAllUsers(
 }
 
 /**
- * Search for user by exact username match across all pages
+ * Search for user by exact username match
  */
 export async function findUserByUsername(
 	context: IExecuteFunctions,
@@ -279,75 +266,35 @@ export async function findUserByUsername(
 		throw new Error('Username cannot be empty');
 	}
 
-	let currentPage = 1;
-	let foundMatch = false;
-	let userId: string | undefined;
+	// First try searching with the search term
+	const responseData = await usersApi.getUsers(context, credentials, organizationIds, {
+		searchTerm: searchUsername,
+	});
+	const users = responseData.result?.entities || [];
 
-	// Search through all pages until we find a match
-	while (!foundMatch) {
-		const queryParams = {
-			pageNumber: currentPage,
-			pageSize: 100,
-			'filter[organizationIds]': organizationIds,
-		};
+	// Look for exact match (case-insensitive) by username or email
+	let exactMatch = users.find((user: User) =>
+		(user.username && user.username.toLowerCase() === searchUsername.toLowerCase()) ||
+		(user.email && user.email.toLowerCase() === searchUsername.toLowerCase())
+	);
 
-		const options = buildRequestOptions(
-			credentials,
-			'GET',
-			'/api/public/user-management/users',
-			queryParams
-		);
+	// If no exact match found in search results, try fetching all users and search locally
+	if (!exactMatch) {
+		const allUsersResponse = await usersApi.getUsers(context, credentials, organizationIds);
+		const allUsers = allUsersResponse.result?.entities || [];
 
-		const searchResponse = await context.helpers.httpRequest(options);
-		validateApiResponse(searchResponse, 'Failed to search for user');
-
-		const users = searchResponse.result?.entities || [];
-
-		if (users.length === 0) {
-			break; // No more results
-		}
-
-		// Look for exact match (case-insensitive) by username or email
-		const exactMatch = users.find((user: any) =>
+		exactMatch = allUsers.find((user: User) =>
 			(user.username && user.username.toLowerCase() === searchUsername.toLowerCase()) ||
 			(user.email && user.email.toLowerCase() === searchUsername.toLowerCase())
 		);
-
-		if (exactMatch) {
-			foundMatch = true;
-			userId = extractUserId(exactMatch);
-			break;
-		}
-
-		// Check if there are more pages using the actual API pagination structure
-		const result = searchResponse.result;
-		if (result && result.currentPage && result.totalPageCount && result.currentPage < result.totalPageCount) {
-			currentPage++;
-		} else {
-			break; // No more pages
-		}
 	}
 
-	if (!foundMatch) {
+	if (!exactMatch) {
 		// Provide helpful error message with suggestions
-		const suggestionOptions = buildRequestOptions(
-			credentials,
-			'GET',
-			'/api/public/user-management/users',
-			{
-				pageNumber: 1,
-				pageSize: 10,
-				'filter[organizationIds]': organizationIds,
-			}
-		);
-
-		const suggestionResponse = await context.helpers.httpRequest(suggestionOptions);
-		const suggestions = suggestionResponse.success && suggestionResponse.result?.entities
-			? suggestionResponse.result.entities
-				.map((user: any) => user.username || user.email)
-				.filter(Boolean)
-				.slice(0, 5)
-			: [];
+		const suggestions = users
+			.map((user: User) => user.username || user.email)
+			.filter(Boolean)
+			.slice(0, 5);
 
 		let errorMessage = `User '${searchUsername}' not found.`;
 		if (suggestions.length > 0) {
@@ -357,37 +304,7 @@ export async function findUserByUsername(
 		throw new Error(errorMessage);
 	}
 
-	return userId!;
-}
-
-/**
- * Build query parameters for user list operations
- */
-export function buildUserQueryParams(organizationIds: string, additionalFields: any): Record<string, string | number> {
-	const queryParams: Record<string, string | number> = {
-		'filter[organizationIds]': organizationIds,
-	};
-
-	if (additionalFields.includeNotInOrganization !== undefined) {
-		queryParams['filter[includeNotInOrganization]'] = additionalFields.includeNotInOrganization;
-	}
-	if (additionalFields.pageNumber) {
-		queryParams.pageNumber = additionalFields.pageNumber;
-	}
-	if (additionalFields.pageSize) {
-		queryParams.pageSize = additionalFields.pageSize;
-	}
-	if (additionalFields.roles) {
-		queryParams['filter[roles]'] = additionalFields.roles;
-	}
-	if (additionalFields.sortBy) {
-		queryParams.sortBy = additionalFields.sortBy;
-	}
-	if (additionalFields.sortType) {
-		queryParams.sortType = additionalFields.sortType;
-	}
-
-	return queryParams;
+	return extractUserId(exactMatch);
 }
 
 // List search method for resource locator
@@ -446,85 +363,88 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 		try {
 			const operation = this.getNodeParameter('operation', i) as string;
 
-			if (operation === 'getAll') {
-				const organizationIds = String(this.getNodeParameter('organizationIds', i)).trim();
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+			switch (operation) {
+				case 'getAll': {
+					const organizationIds = String(this.getNodeParameter('organizationIds', i)).trim();
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
-				// Validate that organizationIds is provided
-				if (!organizationIds) {
-					throw new NodeOperationError(this.getNode(), 'Organization IDs are required', {
-						itemIndex: i,
-					});
-				}
-
-				const queryParams = buildUserQueryParams(organizationIds, additionalFields);
-
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					'/api/public/user-management/users',
-					queryParams
-				);
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
-
-				const entities = responseData.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
-
-				// Process entities with simplified pagination attached to each entity
-				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
-			} else if (operation === 'get') {
-				const userResource = this.getNodeParameter('userId', i) as any;
-				let userId: string;
-
-				if (userResource.mode === 'list' || userResource.mode === 'id') {
-					userId = userResource.value;
-				} else if (userResource.mode === 'username') {
-					try {
-						userId = await findUserByUsername(this, credentials, userResource.value);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					// Validate that organizationIds is provided
+					if (!organizationIds) {
+						throw new NodeOperationError(this.getNode(), 'Organization IDs are required', {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid user selection mode', {
-						itemIndex: i,
-					});
+
+					// Build additional parameters from the additionalFields
+					const additionalParams = {
+						includeNotInOrganization: additionalFields.includeNotInOrganization,
+						pageNumber: additionalFields.pageNumber,
+						pageSize: additionalFields.pageSize,
+						roles: additionalFields.roles,
+						sortBy: additionalFields.sortBy,
+						sortType: additionalFields.sortType,
+					};
+
+					const responseData = await usersApi.getUsers(this, credentials, organizationIds, additionalParams);
+
+					const entities = responseData.result?.entities || [];
+					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+
+					// Attach pagination info to entities
+					attachPaginationInfoToEntities(entities, paginationInfo, returnData, i);
+					break;
 				}
 
-				// Validate user ID
-				try {
-					userId = requireValidId(userId, 'User ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
+				case 'get': {
+					const userResource = this.getNodeParameter('userId', i) as any;
+					let userId: string;
+
+					if (userResource.mode === 'list' || userResource.mode === 'id') {
+						userId = userResource.value;
+					} else if (userResource.mode === 'username') {
+						try {
+							userId = await findUserByUsername(this, credentials, userResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid user selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate user ID
+					try {
+						userId = requireValidId(userId, 'User ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					const responseData = await usersApi.getUserById(this, credentials, userId);
+
+					// Handle the response - user API returns the user object directly in result
+					const userData = responseData.result;
+
+					if (!userData) {
+						throw new NodeOperationError(this.getNode(), 'User not found', {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: userData as any,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					`/api/public/user-management/users/${userId}`
-				);
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
-
-				// Handle the response - user API returns the user object directly in result
-				const userData = responseData.result;
-
-				if (!userData) {
-					throw new NodeOperationError(this.getNode(), 'User not found', {
+				default:
+					throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not supported`, {
 						itemIndex: i,
 					});
-				}
-
-				returnData.push({
-					json: userData,
-					pairedItem: i,
-				});
 			}
-
 		} catch (error) {
 			handleExecuteError(this, error, i, returnData);
 		}

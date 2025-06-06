@@ -153,16 +153,26 @@ export const api = {
   async getTriageRules(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    organizationIds: string | string[] = '0'
+    organizationIds: string | string[] = '0',
+    queryParams?: Record<string, string | number>
   ): Promise<TriageRulesResponse> {
     try {
       const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+
+      // Build the query string parameters
+      const qs: Record<string, string | number> = {
+        'filter[organizationIds]': orgIds
+      };
+
+      // Add additional query parameters if provided
+      if (queryParams) {
+        Object.assign(qs, queryParams);
+      }
+
       const options: IHttpRequestOptions = {
         method: 'GET',
         url: `${credentials.instanceUrl}/api/public/triages/rules`,
-        qs: {
-          'filter[organizationIds]': orgIds
-        },
+        qs,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${credentials.token}`

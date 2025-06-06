@@ -67,10 +67,44 @@ export interface CreateOrganizationRequest {
 export const api = {
   async getOrganizations(
     context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials
+    credentials: AirCredentials,
+    options?: {
+      pageNumber?: number;
+      pageSize?: number;
+      searchTerm?: string;
+      nameFilter?: string;
+      sortBy?: string;
+      sortType?: string;
+    }
   ): Promise<OrganizationsResponse> {
     try {
-      const options: IHttpRequestOptions = {
+      const queryParams: Record<string, string | number> = {};
+
+      if (options?.pageNumber) {
+        queryParams.pageNumber = options.pageNumber;
+      }
+
+      if (options?.pageSize) {
+        queryParams.pageSize = options.pageSize;
+      }
+
+      if (options?.searchTerm) {
+        queryParams['filter[searchTerm]'] = options.searchTerm;
+      }
+
+      if (options?.nameFilter) {
+        queryParams['filter[name]'] = options.nameFilter;
+      }
+
+      if (options?.sortBy) {
+        queryParams.sortBy = options.sortBy;
+      }
+
+      if (options?.sortType) {
+        queryParams.sortType = options.sortType;
+      }
+
+      const requestOptions: IHttpRequestOptions = {
         method: 'GET',
         url: `${credentials.instanceUrl}/api/public/organizations`,
         headers: {
@@ -80,7 +114,12 @@ export const api = {
         json: true
       };
 
-      const response = await context.helpers.httpRequest(options);
+      // Add query parameters if any exist
+      if (Object.keys(queryParams).length > 0) {
+        requestOptions.qs = queryParams;
+      }
+
+      const response = await context.helpers.httpRequest(requestOptions);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch organizations: ${error instanceof Error ? error.message : String(error)}`);

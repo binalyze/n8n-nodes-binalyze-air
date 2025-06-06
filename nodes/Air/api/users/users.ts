@@ -62,17 +62,53 @@ export const api = {
   async getUsers(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    organizationIds: string | string[] = '0'
+    organizationIds: string | string[] = '0',
+    additionalParams?: {
+      includeNotInOrganization?: boolean;
+      pageNumber?: number;
+      pageSize?: number;
+      roles?: string;
+      sortBy?: string;
+      sortType?: string;
+      searchTerm?: string;
+    }
   ): Promise<UsersResponse> {
     try {
       const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
+      const queryParams: Record<string, any> = {
+        'filter[organizationIds]': orgIds
+      };
+
+      // Add additional parameters if provided
+      if (additionalParams) {
+        if (additionalParams.includeNotInOrganization !== undefined) {
+          queryParams['filter[includeNotInOrganization]'] = additionalParams.includeNotInOrganization;
+        }
+        if (additionalParams.pageNumber) {
+          queryParams.pageNumber = additionalParams.pageNumber;
+        }
+        if (additionalParams.pageSize) {
+          queryParams.pageSize = additionalParams.pageSize;
+        }
+        if (additionalParams.roles) {
+          queryParams['filter[roles]'] = additionalParams.roles;
+        }
+        if (additionalParams.sortBy) {
+          queryParams.sortBy = additionalParams.sortBy;
+        }
+        if (additionalParams.sortType) {
+          queryParams.sortType = additionalParams.sortType;
+        }
+        if (additionalParams.searchTerm) {
+          queryParams['filter[searchTerm]'] = additionalParams.searchTerm;
+        }
+      }
+
       const options: IHttpRequestOptions = {
         method: 'GET',
         url: `${credentials.instanceUrl}/api/public/user-management/users`,
-        qs: {
-          'filter[organizationIds]': orgIds
-        },
+        qs: queryParams,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${credentials.token}`

@@ -741,7 +741,20 @@ export async function fetchAllTriageRules(
 	pageSize: number = 100
 ): Promise<any[]> {
 	try {
-		const response = await triagesApi.getTriageRules(context, credentials, organizationIds);
+		// Build query parameters
+		const queryParams: Record<string, string | number> = {
+			'filter[organizationIds]': organizationIds
+		};
+
+		if (searchFilter) {
+			queryParams['filter[searchTerm]'] = searchFilter;
+		}
+
+		if (pageSize) {
+			queryParams['pageSize'] = pageSize;
+		}
+
+		const response = await triagesApi.getTriageRules(context, credentials, organizationIds, queryParams);
 		return response.result?.entities || [];
 	} catch (error) {
 		throw catchAndFormatError(error, 'Failed to fetch triage rules');
@@ -805,7 +818,12 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 			organizationIds = '0';
 		}
 
-		const response = await triagesApi.getTriageRules(this, credentials, organizationIds);
+		// Build query parameters
+		const queryParams: Record<string, string | number> = {
+			'filter[organizationIds]': organizationIds
+		};
+
+		const response = await triagesApi.getTriageRules(this, credentials, organizationIds, queryParams);
 		const triageRules = response.result?.entities || [];
 
 		return createListSearchResults(
@@ -826,7 +844,13 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 export async function getTriageRulesOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const response = await triagesApi.getTriageRules(this, credentials, '0');
+
+		// Build query parameters
+		const queryParams: Record<string, string | number> = {
+			'filter[organizationIds]': '0'
+		};
+
+		const response = await triagesApi.getTriageRules(this, credentials, '0', queryParams);
 		const triageRules = response.result?.entities || [];
 
 		return createLoadOptions(
@@ -860,9 +884,13 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 			switch (operation) {
 				case 'getAll': {
 					const organizationIds = this.getNodeParameter('organizationIds', i) as string;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
-					// Use the new API method
-					const responseData = await triagesApi.getTriageRules(this, credentials, organizationIds);
+					// Build query parameters from additionalFields
+					const queryParams = buildTriageRuleQueryParams(organizationIds, additionalFields);
+
+					// Use the new API method with query parameters
+					const responseData = await triagesApi.getTriageRules(this, credentials, organizationIds, queryParams);
 
 					const entities = responseData.result?.entities || [];
 					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);

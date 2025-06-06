@@ -503,84 +503,94 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 		try {
 			const operation = this.getNodeParameter('operation', i) as string;
 
-			if (operation === 'get') {
-				const organizationId = this.getNodeParameter('organizationId', i) as number;
-				const repositoryResource = this.getNodeParameter('repositoryId', i) as any;
+			switch (operation) {
+				case 'get': {
+					const organizationId = this.getNodeParameter('organizationId', i) as number;
+					const repositoryResource = this.getNodeParameter('repositoryId', i) as any;
 
-				// Validate organization ID
-				if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
-					throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number (0 or greater)', {
-						itemIndex: i,
-					});
-				}
-
-				let repository: any | null = null;
-
-				if (repositoryResource.mode === 'list' || repositoryResource.mode === 'id') {
-					// For both list and id modes, the value should be the repository ID
-					const repositoryId = repositoryResource.value;
-					try {
-						const validatedRepositoryId = requireValidId(repositoryId, 'Repository ID');
-						repository = await getRepositoryById(this, credentials, organizationId, validatedRepositoryId);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
+					// Validate organization ID
+					if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number (0 or greater)', {
 							itemIndex: i,
 						});
 					}
-				} else if (repositoryResource.mode === 'name') {
-					// For name mode, search by name
-					const repositoryName = repositoryResource.value;
-					if (!repositoryName || typeof repositoryName !== 'string' || repositoryName.trim() === '') {
-						throw new NodeOperationError(this.getNode(), 'Repository name is required and must be a non-empty string', {
+
+					let repository: any | null = null;
+
+					if (repositoryResource.mode === 'list' || repositoryResource.mode === 'id') {
+						// For both list and id modes, the value should be the repository ID
+						const repositoryId = repositoryResource.value;
+						try {
+							const validatedRepositoryId = requireValidId(repositoryId, 'Repository ID');
+							repository = await getRepositoryById(this, credentials, organizationId, validatedRepositoryId);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, {
+								itemIndex: i,
+							});
+						}
+					} else if (repositoryResource.mode === 'name') {
+						// For name mode, search by name
+						const repositoryName = repositoryResource.value;
+						if (!repositoryName || typeof repositoryName !== 'string' || repositoryName.trim() === '') {
+							throw new NodeOperationError(this.getNode(), 'Repository name is required and must be a non-empty string', {
+								itemIndex: i,
+							});
+						}
+						repository = await getRepositoryByName(this, credentials, organizationId, repositoryName.trim());
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid repository selection mode', {
 							itemIndex: i,
 						});
 					}
-					repository = await getRepositoryByName(this, credentials, organizationId, repositoryName.trim());
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid repository selection mode', {
-						itemIndex: i,
-					});
+
+					if (repository) {
+						returnData.push({
+							json: repository,
+							pairedItem: { item: i },
+						});
+					} else {
+						throw new NodeOperationError(this.getNode(), `No repository found with ${repositoryResource.mode}: ${repositoryResource.value}`, {
+							itemIndex: i,
+						});
+					}
+					break;
 				}
 
-				if (repository) {
-					returnData.push({
-						json: repository,
-						pairedItem: { item: i },
-					});
-				} else {
-					throw new NodeOperationError(this.getNode(), `No repository found with ${repositoryResource.mode}: ${repositoryResource.value}`, {
-						itemIndex: i,
-					});
+				case 'getAll': {
+					const organizationId = this.getNodeParameter('organizationId', i) as number;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+
+					// Validate organization ID
+					if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number (0 or greater)', {
+							itemIndex: i,
+						});
+					}
+
+					const queryParams = buildRepositoryQueryParams(organizationId, additionalFields);
+
+					const options = buildRequestOptions(
+						credentials,
+						'GET',
+						'/api/public/evidences/repositories',
+						queryParams
+					);
+
+					const responseData = await this.helpers.httpRequest(options);
+					validateApiResponse(responseData);
+
+					const entities = responseData.result?.entities || [];
+					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+
+					// Process entities with simplified pagination attached to each entity
+					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					break;
 				}
 
-			} else if (operation === 'getAll') {
-				const organizationId = this.getNodeParameter('organizationId', i) as number;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-
-				// Validate organization ID
-				if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
-					throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number (0 or greater)', {
+				default:
+					throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not supported`, {
 						itemIndex: i,
 					});
-				}
-
-				const queryParams = buildRepositoryQueryParams(organizationId, additionalFields);
-
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					'/api/public/evidences/repositories',
-					queryParams
-				);
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
-
-				const entities = responseData.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
-
-				// Process entities with simplified pagination attached to each entity
-				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			}
 		} catch (error) {
 			handleExecuteError(this, error, i, returnData);

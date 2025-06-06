@@ -598,6 +598,45 @@ export const OrganizationsOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Contact Mobile',
+				name: 'contactMobile',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact mobile',
+				description: 'Mobile number of the contact person',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
+					},
+				},
+			},
+			{
+				displayName: 'Contact Phone',
+				name: 'contactPhone',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact phone',
+				description: 'Phone number of the contact person',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
+					},
+				},
+			},
+			{
+				displayName: 'Contact Title',
+				name: 'contactTitle',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact title',
+				description: 'Title of the contact person',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
+					},
+				},
+			},
+			{
 				displayName: 'Name Filter',
 				name: 'nameFilter',
 				type: 'string',
@@ -606,6 +645,19 @@ export const OrganizationsOperations: INodeProperties[] = [
 				displayOptions: {
 					show: {
 						'/operation': ['getAll'],
+					},
+				},
+			},
+			{
+				displayName: 'Note',
+				name: 'note',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter a note about this organization',
+				description: 'Additional notes about the organization',
+				displayOptions: {
+					show: {
+						'/operation': ['create'],
 					},
 				},
 			},
@@ -842,7 +894,36 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 			switch (operation) {
 				case 'getAll': {
-					const response = await organizationsApi.getOrganizations(this, credentials);
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+
+					// Build options object from additionalFields
+					const options: any = {};
+
+					if (additionalFields.pageNumber) {
+						options.pageNumber = additionalFields.pageNumber;
+					}
+
+					if (additionalFields.pageSize) {
+						options.pageSize = additionalFields.pageSize;
+					}
+
+					if (additionalFields.searchTerm) {
+						options.searchTerm = additionalFields.searchTerm;
+					}
+
+					if (additionalFields.nameFilter) {
+						options.nameFilter = additionalFields.nameFilter;
+					}
+
+					if (additionalFields.sortBy) {
+						options.sortBy = additionalFields.sortBy;
+					}
+
+					if (additionalFields.sortType) {
+						options.sortType = additionalFields.sortType;
+					}
+
+					const response = await organizationsApi.getOrganizations(this, credentials, Object.keys(options).length > 0 ? options : undefined);
 					validateApiResponse(response);
 
 					const entities = response.result?.entities || [];
@@ -911,6 +992,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 				case 'getUsers': {
 					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 					let organizationId: string;
 
 					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
@@ -936,7 +1018,26 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 						});
 					}
 
-					const response = await organizationUsersApi.getOrganizationUsers(this, credentials, parseInt(organizationId));
+					// Build options object from additionalFields
+					const options: any = {};
+
+					if (additionalFields.pageNumber) {
+						options.pageNumber = additionalFields.pageNumber;
+					}
+
+					if (additionalFields.pageSize) {
+						options.pageSize = additionalFields.pageSize;
+					}
+
+					if (additionalFields.sortBy) {
+						options.sortBy = additionalFields.sortBy;
+					}
+
+					if (additionalFields.sortType) {
+						options.sortType = additionalFields.sortType;
+					}
+
+					const response = await organizationUsersApi.getOrganizationUsers(this, credentials, parseInt(organizationId), Object.keys(options).length > 0 ? options : undefined);
 					validateApiResponse(response);
 
 					const entities = response.result?.entities || [];
