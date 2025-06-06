@@ -47,10 +47,28 @@ export const OrganizationsOperations: INodeProperties[] = [
 				action: 'Add tags to an organization',
 			},
 			{
+				name: 'Assign Users',
+				value: 'assignUsers',
+				description: 'Assign users to an organization',
+				action: 'Assign users to an organization',
+			},
+			{
+				name: 'Check Name Exists',
+				value: 'checkNameExists',
+				description: 'Check if an organization name already exists',
+				action: 'Check if organization name exists',
+			},
+			{
 				name: 'Create',
 				value: 'create',
 				description: 'Create a new organization',
 				action: 'Create an organization',
+			},
+			{
+				name: 'Delete',
+				value: 'delete',
+				description: 'Delete an organization',
+				action: 'Delete an organization',
 			},
 			{
 				name: 'Get Many',
@@ -65,6 +83,12 @@ export const OrganizationsOperations: INodeProperties[] = [
 				action: 'Get an organization',
 			},
 			{
+				name: 'Get Shareable Deployment Info',
+				value: 'getShareableDeploymentInfo',
+				description: 'Get shareable deployment information',
+				action: 'Get shareable deployment info',
+			},
+			{
 				name: 'Get Users',
 				value: 'getUsers',
 				description: 'Retrieve users assigned to an organization',
@@ -75,6 +99,30 @@ export const OrganizationsOperations: INodeProperties[] = [
 				value: 'removeTags',
 				description: 'Remove tags from an organization',
 				action: 'Remove tags from an organization',
+			},
+			{
+				name: 'Remove User',
+				value: 'removeUser',
+				description: 'Remove a user from an organization',
+				action: 'Remove user from an organization',
+			},
+			{
+				name: 'Update',
+				value: 'update',
+				description: 'Update an organization',
+				action: 'Update an organization',
+			},
+			{
+				name: 'Update Deployment Token',
+				value: 'updateDeploymentToken',
+				description: 'Update organization deployment token',
+				action: 'Update organization deployment token',
+			},
+			{
+				name: 'Update Shareable Deployment',
+				value: 'updateShareableDeployment',
+				description: 'Update organization shareable deployment status',
+				action: 'Update shareable deployment status',
 			},
 		],
 		default: 'getAll',
@@ -88,7 +136,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['get', 'getUsers', 'addTags', 'removeTags'],
+				operation: ['get', 'getUsers', 'addTags', 'removeTags', 'delete', 'assignUsers', 'removeUser', 'update', 'updateShareableDeployment', 'updateDeploymentToken'],
 			},
 		},
 		modes: [
@@ -235,6 +283,183 @@ export const OrganizationsOperations: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Organization Name to Check',
+		name: 'nameToCheck',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter organization name to check',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['checkNameExists'],
+			},
+		},
+		required: true,
+		description: 'Name of the organization to check for existence',
+	},
+	{
+		displayName: 'Deployment Token',
+		name: 'deploymentToken',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter deployment token',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['getShareableDeploymentInfo', 'updateDeploymentToken'],
+			},
+		},
+		required: true,
+		description: 'Deployment token for the organization',
+		typeOptions: {
+			password: true,
+		},
+	},
+	{
+		displayName: 'User IDs',
+		name: 'userIds',
+		type: 'string',
+		default: '',
+		placeholder: 'user1, user2, user3',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['assignUsers'],
+			},
+		},
+		required: true,
+		description: 'Comma-separated list of user IDs to assign to the organization',
+	},
+	{
+		displayName: 'User ID',
+		name: 'userId',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter user ID',
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['removeUser'],
+			},
+		},
+		required: true,
+		description: 'ID of the user to remove from the organization',
+	},
+	{
+		displayName: 'Shareable Deployment Status',
+		name: 'shareableDeploymentStatus',
+		type: 'boolean',
+		default: false,
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['updateShareableDeployment'],
+			},
+		},
+		required: true,
+		description: 'Whether to enable or disable shareable deployment for the organization',
+	},
+	{
+		displayName: 'Update Fields',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['organizations'],
+				operation: ['update'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Contact Email',
+				name: 'contactEmail',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact email',
+				description: 'Email address of the contact person',
+				typeOptions: {
+					validation: [
+						{
+							type: 'regex',
+							properties: {
+								regex: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
+								errorMessage: 'Please enter a valid email address',
+							},
+						},
+					],
+				},
+			},
+			{
+				displayName: 'Contact Mobile',
+				name: 'contactMobile',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact mobile',
+				description: 'Mobile number of the contact person',
+			},
+			{
+				displayName: 'Contact Name',
+				name: 'contactName',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact name',
+				description: 'Name of the contact person for this organization',
+			},
+			{
+				displayName: 'Contact Phone',
+				name: 'contactPhone',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact phone',
+				description: 'Phone number of the contact person',
+			},
+			{
+				displayName: 'Contact Title',
+				name: 'contactTitle',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter contact title',
+				description: 'Title of the contact person',
+			},
+			{
+				displayName: 'Note',
+				name: 'note',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter a note about this organization',
+				description: 'Additional notes about the organization',
+			},
+			{
+				displayName: 'Organization Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter organization name',
+				description: 'Name of the organization (1-50 characters)',
+				typeOptions: {
+					validation: [
+						{
+							type: 'regex',
+							properties: {
+								regex: '^(?!\\s*$).{1,50}$',
+								errorMessage: 'Organization name must be 1-50 characters and cannot be empty or only whitespace',
+							},
+						},
+					],
+				},
+			},
+			{
+				displayName: 'Shareable Deployment Enabled',
+				name: 'shareableDeploymentEnabled',
+				type: 'boolean',
+				default: false,
+				description: 'Whether shareable deployment is enabled for this organization',
+			},
+		],
+	},
+	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',
@@ -248,45 +473,6 @@ export const OrganizationsOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Contact Mobile',
-				name: 'contactMobile',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter contact mobile',
-				displayOptions: {
-					show: {
-						'/operation': ['create'],
-					},
-				},
-				description: 'Mobile number of the contact person',
-			},
-			{
-				displayName: 'Contact Phone',
-				name: 'contactPhone',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter contact phone',
-				displayOptions: {
-					show: {
-						'/operation': ['create'],
-					},
-				},
-				description: 'Phone number of the contact person',
-			},
-			{
-				displayName: 'Contact Title',
-				name: 'contactTitle',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter contact title',
-				displayOptions: {
-					show: {
-						'/operation': ['create'],
-					},
-				},
-				description: 'Title of the contact person',
-			},
-			{
 				displayName: 'Name Filter',
 				name: 'nameFilter',
 				type: 'string',
@@ -297,19 +483,6 @@ export const OrganizationsOperations: INodeProperties[] = [
 						'/operation': ['getAll'],
 					},
 				},
-			},
-			{
-				displayName: 'Note',
-				name: 'note',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter a note about this organization',
-				displayOptions: {
-					show: {
-						'/operation': ['create'],
-					},
-				},
-				description: 'Additional notes about the organization',
 			},
 			{
 				displayName: 'Page Number',
@@ -820,6 +993,414 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					json: processedResult,
 					pairedItem: i,
 				});
+
+			} else if (operation === 'checkNameExists') {
+				const nameToCheck = this.getNodeParameter('nameToCheck', i) as string;
+
+				const trimmedName = nameToCheck.trim();
+				if (!trimmedName) {
+					throw new NodeOperationError(this.getNode(), 'Organization name cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationsApi.checkOrganizationNameExists(this, credentials, trimmedName);
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to check organization name: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				returnData.push({
+					json: {
+						name: trimmedName,
+						exists: response.result,
+						success: response.success,
+						statusCode: response.statusCode,
+					},
+					pairedItem: i,
+				});
+
+			} else if (operation === 'delete') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationsApi.deleteOrganization(this, credentials, parseInt(organizationId));
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to delete organization: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				returnData.push({
+					json: {
+						organizationId: parseInt(organizationId),
+						deleted: true,
+						success: response.success,
+						statusCode: response.statusCode,
+					},
+					pairedItem: i,
+				});
+
+			} else if (operation === 'update') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				const updateFields = this.getNodeParameter('updateFields', i) as any;
+
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
+						itemIndex: i,
+					});
+				}
+
+				// Build update data based on provided fields
+				const updateData: Partial<CreateOrganizationRequest> = {};
+
+				if (updateFields.name) {
+					updateData.name = updateFields.name.trim();
+				}
+
+				if (updateFields.shareableDeploymentEnabled !== undefined) {
+					updateData.shareableDeploymentEnabled = updateFields.shareableDeploymentEnabled;
+				}
+
+				if (updateFields.note) {
+					updateData.note = updateFields.note.trim();
+				}
+
+				// Handle contact updates
+				if (updateFields.contactName || updateFields.contactEmail || updateFields.contactTitle || updateFields.contactPhone || updateFields.contactMobile) {
+					updateData.contact = {
+						name: updateFields.contactName?.trim() || '',
+						email: updateFields.contactEmail?.trim() || '',
+					};
+
+					if (updateFields.contactName) {
+						updateData.contact.name = updateFields.contactName.trim();
+					}
+
+					if (updateFields.contactEmail) {
+						updateData.contact.email = updateFields.contactEmail.trim();
+						// Validate email format
+						const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+						if (!emailRegex.test(updateData.contact.email)) {
+							throw new NodeOperationError(this.getNode(), 'Contact email must be a valid email address', {
+								itemIndex: i,
+							});
+						}
+					}
+
+					if (updateFields.contactTitle) {
+						updateData.contact.title = updateFields.contactTitle.trim();
+					}
+
+					if (updateFields.contactPhone) {
+						updateData.contact.phone = updateFields.contactPhone.trim();
+					}
+
+					if (updateFields.contactMobile) {
+						updateData.contact.mobile = updateFields.contactMobile.trim();
+					}
+				}
+
+				if (Object.keys(updateData).length === 0) {
+					throw new NodeOperationError(this.getNode(), 'At least one field must be provided for update', {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationsApi.updateOrganization(this, credentials, parseInt(organizationId), updateData);
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to update organization: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+
+				returnData.push({
+					json: processedResult,
+					pairedItem: i,
+				});
+
+			} else if (operation === 'getShareableDeploymentInfo') {
+				const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
+
+				const trimmedToken = deploymentToken.trim();
+				if (!trimmedToken) {
+					throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationsApi.getShareableDeploymentInfo(this, credentials, trimmedToken);
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to get shareable deployment info: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				returnData.push({
+					json: response.result,
+					pairedItem: i,
+				});
+
+			} else if (operation === 'updateShareableDeployment') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				const shareableDeploymentStatus = this.getNodeParameter('shareableDeploymentStatus', i) as boolean;
+
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationsApi.updateOrganizationShareableDeployment(this, credentials, parseInt(organizationId), shareableDeploymentStatus);
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to update shareable deployment: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				returnData.push({
+					json: {
+						organizationId: parseInt(organizationId),
+						shareableDeploymentEnabled: shareableDeploymentStatus,
+						success: response.success,
+						statusCode: response.statusCode,
+					},
+					pairedItem: i,
+				});
+
+			} else if (operation === 'updateDeploymentToken') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
+
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
+						itemIndex: i,
+					});
+				}
+
+				const trimmedToken = deploymentToken.trim();
+				if (!trimmedToken) {
+					throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationsApi.updateOrganizationDeploymentToken(this, credentials, parseInt(organizationId), trimmedToken);
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to update deployment token: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				returnData.push({
+					json: {
+						organizationId: parseInt(organizationId),
+						deploymentToken: trimmedToken,
+						success: response.success,
+						statusCode: response.statusCode,
+					},
+					pairedItem: i,
+				});
+
+			} else if (operation === 'assignUsers') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				const userIds = this.getNodeParameter('userIds', i) as string;
+
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
+						itemIndex: i,
+					});
+				}
+
+				// Parse and validate user IDs
+				const userIdList = userIds.split(',').map(userId => userId.trim()).filter(userId => userId.length > 0);
+				if (userIdList.length === 0) {
+					throw new NodeOperationError(this.getNode(), 'At least one user ID must be provided', {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationUsersApi.assignUsersToOrganization(this, credentials, parseInt(organizationId), userIdList);
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to assign users to organization: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				returnData.push({
+					json: {
+						organizationId: parseInt(organizationId),
+						assignedUserIds: userIdList,
+						success: response.success,
+						statusCode: response.statusCode,
+					},
+					pairedItem: i,
+				});
+
+			} else if (operation === 'removeUser') {
+				const organizationResource = this.getNodeParameter('organizationId', i) as any;
+				const userId = this.getNodeParameter('userId', i) as string;
+
+				let organizationId: string;
+
+				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+					organizationId = organizationResource.value;
+				} else if (organizationResource.mode === 'name') {
+					try {
+						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+						itemIndex: i,
+					});
+				}
+
+				try {
+					organizationId = requireValidId(organizationId, 'Organization ID');
+				} catch (error) {
+					throw new NodeOperationError(this.getNode(), error.message, {
+						itemIndex: i,
+					});
+				}
+
+				const trimmedUserId = userId.trim();
+				if (!trimmedUserId) {
+					throw new NodeOperationError(this.getNode(), 'User ID cannot be empty', {
+						itemIndex: i,
+					});
+				}
+
+				const response = await organizationUsersApi.removeUserFromOrganization(this, credentials, parseInt(organizationId), trimmedUserId);
+
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to remove user from organization: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
+
+				returnData.push({
+					json: {
+						organizationId: parseInt(organizationId),
+						removedUserId: trimmedUserId,
+						success: response.success,
+						statusCode: response.statusCode,
+					},
+					pairedItem: i,
+				});
 			}
 
 		} catch (error) {
@@ -829,3 +1410,4 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 	return [returnData];
 }
+
