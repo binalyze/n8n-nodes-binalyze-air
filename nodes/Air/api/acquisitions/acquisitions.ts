@@ -11,7 +11,7 @@
  */
 
 import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
-import { AirCredentials } from '../../credentials/AirCredentialsApi.credentials';
+import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
 
 export interface AcquisitionProfile {
   _id: string;
@@ -233,15 +233,10 @@ export const api = {
         'filter[allOrganizations]': allOrganizations.toString()
       };
 
-      let url = `${credentials.instanceUrl}/api/public/acquisitions/profiles`;
-      const queryString = Object.entries(queryParams)
-        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
-        .join('&');
-      url += `?${queryString}`;
-
       const options: IHttpRequestOptions = {
         method: 'GET',
-        url,
+        url: `${credentials.instanceUrl}/api/public/acquisitions/profiles`,
+        qs: queryParams,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${credentials.token}`

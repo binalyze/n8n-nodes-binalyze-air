@@ -10,7 +10,6 @@ import {
 
 import {
 	getAirCredentials,
-	buildRequestOptions,
 	validateApiResponse,
 	extractEntityId,
 	isValidEntity,
@@ -26,6 +25,8 @@ import {
 } from './helpers';
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
+import { api as organizationsApi, Organization, CreateOrganizationRequest } from '../api/organizations/organizations';
+import { api as organizationUsersApi } from '../api/organizations/users/users';
 
 export const OrganizationsOperations: INodeProperties[] = [
 	{
@@ -429,55 +430,7 @@ export function isValidOrganization(org: any): boolean {
 }
 
 /**
- * Fetch all organizations across multiple pages
- */
-export async function fetchAllOrganizations(
-	context: ILoadOptionsFunctions | IExecuteFunctions,
-	credentials: AirCredentials,
-	searchFilter?: string,
-	pageSize: number = 100
-): Promise<any[]> {
-	const allOrganizations: any[] = [];
-	let currentPage = 1;
-	let hasMorePages = true;
-
-	while (hasMorePages) {
-		const queryParams: Record<string, string | number> = {
-			pageNumber: currentPage,
-			pageSize,
-		};
-
-		if (searchFilter) {
-			queryParams['filter[searchTerm]'] = searchFilter;
-		}
-
-		const options = buildRequestOptions(
-			credentials,
-			'GET',
-			'/api/public/organizations',
-			queryParams
-		);
-
-		const responseData = await context.helpers.httpRequest(options);
-		validateApiResponse(responseData, 'Failed to fetch organizations');
-
-		const organizations = responseData.result?.entities || [];
-		allOrganizations.push(...organizations);
-
-		// Check if there are more pages using the actual API pagination structure
-		const result = responseData.result;
-		if (result && result.currentPage && result.totalPageCount && result.currentPage < result.totalPageCount) {
-			currentPage++;
-		} else {
-			hasMorePages = false;
-		}
-	}
-
-	return allOrganizations;
-}
-
-/**
- * Search for organization by exact name match across all pages
+ * Search for organization by exact name match across all pages using API
  */
 export async function findOrganizationByName(
 	context: IExecuteFunctions,
@@ -490,146 +443,62 @@ export async function findOrganizationByName(
 		throw new Error('Organization name cannot be empty');
 	}
 
-	let currentPage = 1;
-	let foundMatch = false;
-	let organizationId: string | undefined;
-
-	// Search through all pages until we find a match
-	while (!foundMatch) {
-		const queryParams = {
-			pageNumber: currentPage,
-			pageSize: 100,
-			'filter[searchTerm]': searchName,
-		};
-
-		const options = buildRequestOptions(
-			credentials,
-			'GET',
-			'/api/public/organizations',
-			queryParams
-		);
-
-		const searchResponse = await context.helpers.httpRequest(options);
-		validateApiResponse(searchResponse, 'Failed to search for organization');
-
-		const organizations = searchResponse.result?.entities || [];
-
-		if (organizations.length === 0) {
-			break; // No more results
-		}
+	try {
+		// Use the API to get all organizations with search and pagination support
+		const organizations = await organizationsApi.getAllOrganizations(context, credentials, searchName);
 
 		// Look for exact match (case-insensitive)
-		const exactMatch = organizations.find((org: any) =>
+		const exactMatch = organizations.find((org: Organization) =>
 			org.name && org.name.toLowerCase() === searchName.toLowerCase()
 		);
 
-		if (exactMatch) {
-			foundMatch = true;
-			organizationId = extractOrganizationId(exactMatch);
-			break;
-		}
+		if (!exactMatch) {
+			// If no exact match with search term, try getting all organizations and search manually
+			const allOrganizations = await organizationsApi.getAllOrganizations(context, credentials);
 
-		// Check if there are more pages using the actual API pagination structure
-		const result = searchResponse.result;
-		if (result && result.currentPage && result.totalPageCount && result.currentPage < result.totalPageCount) {
-			currentPage++;
-		} else {
-			break; // No more pages
-		}
-	}
+			const exactMatchInAll = allOrganizations.find((org: Organization) =>
+				org.name && org.name.toLowerCase() === searchName.toLowerCase()
+			);
 
-	if (!foundMatch) {
-		// Provide helpful error message with suggestions
-		const suggestionOptions = buildRequestOptions(
-			credentials,
-			'GET',
-			'/api/public/organizations',
-			{
-				pageNumber: 1,
-				pageSize: 10,
-				'filter[searchTerm]': searchName,
+			if (exactMatchInAll) {
+				return extractOrganizationId(exactMatchInAll);
 			}
-		);
 
-		const suggestionResponse = await context.helpers.httpRequest(suggestionOptions);
-		const suggestions = suggestionResponse.success && suggestionResponse.result?.entities
-			? suggestionResponse.result.entities.map((org: any) => org.name).slice(0, 5)
-			: [];
+			// Provide helpful error message with suggestions
+			const suggestions = allOrganizations
+				.filter((org: Organization) =>
+					org.name && org.name.toLowerCase().includes(searchName.toLowerCase())
+				)
+				.map((org: Organization) => org.name)
+				.slice(0, 5);
 
-		let errorMessage = `Organization '${searchName}' not found.`;
-		if (suggestions.length > 0) {
-			errorMessage += ` Similar organizations: ${suggestions.join(', ')}`;
+			let errorMessage = `Organization '${searchName}' not found.`;
+			if (suggestions.length > 0) {
+				errorMessage += ` Similar organizations: ${suggestions.join(', ')}`;
+			}
+
+			throw new Error(errorMessage);
 		}
 
-		throw new Error(errorMessage);
+		return extractOrganizationId(exactMatch);
+	} catch (error) {
+		throw new Error(`Failed to find organization by name: ${error instanceof Error ? error.message : String(error)}`);
 	}
-
-	return organizationId!;
-}
-
-/**
- * Build query parameters for organization list operations
- */
-export function buildOrganizationQueryParams(additionalFields: any): Record<string, string | number> {
-	const queryParams: Record<string, string | number> = {};
-
-	if (additionalFields.nameFilter) {
-		queryParams['filter[name]'] = additionalFields.nameFilter;
-	}
-	if (additionalFields.pageNumber) {
-		queryParams.pageNumber = additionalFields.pageNumber;
-	}
-	if (additionalFields.pageSize) {
-		queryParams.pageSize = additionalFields.pageSize;
-	}
-	if (additionalFields.searchTerm) {
-		queryParams['filter[searchTerm]'] = additionalFields.searchTerm;
-	}
-	if (additionalFields.sortBy) {
-		queryParams.sortBy = additionalFields.sortBy;
-	}
-	if (additionalFields.sortType) {
-		queryParams.sortType = additionalFields.sortType;
-	}
-
-	return queryParams;
-}
-
-/**
- * Build query parameters for organization users operations
- */
-export function buildOrganizationUsersQueryParams(additionalFields: any): Record<string, string | number> {
-	const queryParams: Record<string, string | number> = {};
-
-	if (additionalFields.pageNumber) {
-		queryParams.pageNumber = additionalFields.pageNumber;
-	}
-	if (additionalFields.pageSize) {
-		queryParams.pageSize = additionalFields.pageSize;
-	}
-	if (additionalFields.sortBy) {
-		queryParams.sortBy = additionalFields.sortBy;
-	}
-	if (additionalFields.sortType) {
-		queryParams.sortType = additionalFields.sortType;
-	}
-
-	return queryParams;
 }
 
 // List search method for resource locator
 export async function getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const allOrganizations = await fetchAllOrganizations(this, credentials, filter);
+		const allOrganizations = await organizationsApi.getAllOrganizations(this, credentials, filter);
 
 		return createListSearchResults(
 			allOrganizations,
 			isValidOrganization,
-			(organization: any) => ({
+			(organization: Organization) => ({
 				name: organization.name,
 				value: extractOrganizationId(organization),
-				url: organization.url || '',
+				url: organization.deploymentToken || '',
 			}),
 			filter
 		);
@@ -642,12 +511,12 @@ export async function getOrganizations(this: ILoadOptionsFunctions, filter?: str
 export async function getOrganizationsOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const allOrganizations = await fetchAllOrganizations(this, credentials);
+		const allOrganizations = await organizationsApi.getAllOrganizations(this, credentials);
 
 		return createLoadOptions(
 			allOrganizations,
 			isValidOrganization,
-			(organization) => {
+			(organization: Organization) => {
 				const orgId = extractOrganizationId(organization);
 				const name = organization.name || `Organization ${orgId || 'Unknown'}`;
 
@@ -674,27 +543,18 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 			const operation = this.getNodeParameter('operation', i) as string;
 
 			if (operation === 'getAll') {
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-				const queryParams = buildOrganizationQueryParams(additionalFields);
+				const response = await organizationsApi.getOrganizations(this, credentials);
+				validateApiResponse(response);
 
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					'/api/public/organizations',
-					queryParams
-				);
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
-
-				const entities = responseData.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+				const entities = response.result?.entities || [];
+				const paginationInfo = extractSimplifiedPaginationInfo(response.result);
 
 				// Process organizations to add computed properties
 				const processedEntities = processOrganizationEntities(entities, credentials.instanceUrl);
 
 				// Process entities with simplified pagination attached to each entity
 				processApiResponseEntitiesWithSimplifiedPagination(processedEntities, paginationInfo, returnData, i);
+
 			} else if (operation === 'get') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				let organizationId: string;
@@ -722,43 +582,30 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					});
 				}
 
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					`/api/public/organizations/${organizationId}`
-				);
+				const response = await organizationsApi.getOrganizationById(this, credentials, parseInt(organizationId));
 
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
-
-				// Handle the response based on operation
-				let organizationData;
-
-				if (responseData.result?.entities && Array.isArray(responseData.result.entities)) {
-					// If the result is an array, take the first item
-					organizationData = responseData.result.entities[0];
-				} else if (responseData.result) {
-					// If the result is the organization object directly
-					organizationData = responseData.result;
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Unexpected response format from API', {
+				// Custom validation for single entity response
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to get organization: ${errorMessage}`, {
 						itemIndex: i,
 					});
 				}
 
-				if (!organizationData) {
+				if (!response.result) {
 					throw new NodeOperationError(this.getNode(), 'Organization not found', {
 						itemIndex: i,
 					});
 				}
 
 				// Process organization to add computed properties
-				const processedOrganization = processOrganizationEntity(organizationData, credentials.instanceUrl);
+				const processedOrganization = processOrganizationEntity(response.result, credentials.instanceUrl);
 
 				returnData.push({
 					json: processedOrganization,
 					pairedItem: i,
 				});
+
 			} else if (operation === 'getUsers') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				let organizationId: string;
@@ -786,24 +633,15 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					});
 				}
 
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-				const queryParams = buildOrganizationUsersQueryParams(additionalFields);
+				const response = await organizationUsersApi.getOrganizationUsers(this, credentials, parseInt(organizationId));
+				validateApiResponse(response);
 
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					`/api/public/organizations/${organizationId}/users`,
-					queryParams
-				);
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
-
-				const entities = responseData.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+				const entities = response.result?.entities || [];
+				const paginationInfo = extractSimplifiedPaginationInfo(response.result);
 
 				// Process entities with simplified pagination attached to each entity
 				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+
 			} else if (operation === 'addTags') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				const tags = this.getNodeParameter('tags', i) as string;
@@ -841,27 +679,24 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					});
 				}
 
-				const options = buildRequestOptions(
-					credentials,
-					'PATCH',
-					`/api/public/organizations/${organizationId}/tags`
-				);
+				const response = await organizationsApi.addTagsToOrganization(this, credentials, parseInt(organizationId), tagList);
 
-				// Add the request body
-				options.body = {
-					tags: tagList,
-				};
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
+				// Custom validation for single entity response
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to add tags to organization: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
 
 				// Process organization result to add computed properties
-				const processedResult = responseData.result ? processOrganizationEntity(responseData.result, credentials.instanceUrl) : responseData.result;
+				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
 
 				returnData.push({
 					json: processedResult,
 					pairedItem: i,
 				});
+
 			} else if (operation === 'removeTags') {
 				const organizationResource = this.getNodeParameter('organizationId', i) as any;
 				const tags = this.getNodeParameter('tags', i) as string;
@@ -899,27 +734,24 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					});
 				}
 
-				const options = buildRequestOptions(
-					credentials,
-					'DELETE',
-					`/api/public/organizations/${organizationId}/tags`
-				);
+				const response = await organizationsApi.deleteTagsFromOrganization(this, credentials, parseInt(organizationId), tagList);
 
-				// Add the request body
-				options.body = {
-					tags: tagList,
-				};
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
+				// Custom validation for single entity response
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to remove tags from organization: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
 
 				// Process organization result to add computed properties
-				const processedResult = responseData.result ? processOrganizationEntity(responseData.result, credentials.instanceUrl) : responseData.result;
+				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
 
 				returnData.push({
 					json: processedResult,
 					pairedItem: i,
 				});
+
 			} else if (operation === 'create') {
 				const name = this.getNodeParameter('name', i) as string;
 				const shareableDeploymentEnabled = this.getNodeParameter('shareableDeploymentEnabled', i) as boolean;
@@ -957,8 +789,8 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					});
 				}
 
-				// Build the request body
-				const requestBody: any = {
+				// Build the request data
+				const createData: CreateOrganizationRequest = {
 					name: trimmedName,
 					shareableDeploymentEnabled,
 					contact: {
@@ -971,20 +803,18 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					note: additionalFields.note?.trim() || '',
 				};
 
-				const options = buildRequestOptions(
-					credentials,
-					'POST',
-					'/api/public/organizations'
-				);
+				const response = await organizationsApi.createOrganization(this, credentials, createData);
 
-				// Add the request body
-				options.body = requestBody;
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData, 'Failed to create organization');
+				// Custom validation for single entity response
+				if (!response.success) {
+					const errorMessage = response.errors?.join(', ') || 'API request failed';
+					throw new NodeOperationError(this.getNode(), `Failed to create organization: ${errorMessage}`, {
+						itemIndex: i,
+					});
+				}
 
 				// Process organization result to add computed properties
-				const processedResult = responseData.result ? processOrganizationEntity(responseData.result, credentials.instanceUrl) : responseData.result;
+				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
 
 				returnData.push({
 					json: processedResult,
