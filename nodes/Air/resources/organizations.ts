@@ -16,8 +16,8 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	extractSimplifiedPaginationInfo,
-	processApiResponseEntitiesWithSimplifiedPagination,
+	extractPaginationInfo,
+	processApiResponseEntities,
 	requireValidId,
 	catchAndFormatError,
 } from '../utils/helpers';
@@ -927,13 +927,17 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					validateApiResponse(response);
 
 					const entities = response.result?.entities || [];
-					const paginationInfo = extractSimplifiedPaginationInfo(response.result);
+					const paginationInfo = extractPaginationInfo(response.result);
 
 					// Process organizations to add computed properties
 					const processedEntities = processOrganizationEntities(entities, credentials.instanceUrl);
 
 					// Process entities with simplified pagination attached to each entity
-					processApiResponseEntitiesWithSimplifiedPagination(processedEntities, paginationInfo, returnData, i);
+					processApiResponseEntities(processedEntities, returnData, i, {
+						includePagination: true,
+						paginationData: paginationInfo,
+						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
+					});
 					break;
 				}
 
@@ -1041,10 +1045,14 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					validateApiResponse(response);
 
 					const entities = response.result?.entities || [];
-					const paginationInfo = extractSimplifiedPaginationInfo(response.result);
+					const paginationInfo = extractPaginationInfo(response.result);
 
 					// Process entities with simplified pagination attached to each entity
-					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					processApiResponseEntities(entities, returnData, i, {
+						includePagination: true,
+						paginationData: paginationInfo,
+						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
+					});
 					break;
 				}
 

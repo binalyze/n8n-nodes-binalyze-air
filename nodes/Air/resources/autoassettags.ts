@@ -15,8 +15,8 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	extractSimplifiedPaginationInfo,
-	processApiResponseEntitiesWithSimplifiedPagination,
+	extractPaginationInfo,
+	processApiResponseEntities,
 	requireValidId,
 	catchAndFormatError,
 } from '../utils/helpers';
@@ -414,10 +414,14 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 						validateApiResponse(getAllResponse, 'Failed to get auto asset tags');
 
 						const entities = getAllResponse.result?.entities || [];
-						const paginationInfo = extractSimplifiedPaginationInfo(getAllResponse.result);
+						const paginationInfo = extractPaginationInfo(getAllResponse.result);
 
 						// Process entities with simplified pagination attached to each entity
-						processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+						processApiResponseEntities(entities, returnData, i, {
+							includePagination: true,
+							paginationData: paginationInfo,
+							excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
+						});
 						break;
 
 					case 'get':

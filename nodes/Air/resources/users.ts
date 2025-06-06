@@ -15,8 +15,8 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	extractSimplifiedPaginationInfo,
-	processApiResponseEntitiesWithSimplifiedPagination as attachPaginationInfoToEntities,
+	extractPaginationInfo,
+	processApiResponseEntities,
 	requireValidId,
 	catchAndFormatError,
 } from '../utils/helpers';
@@ -388,10 +388,14 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 					const responseData = await usersApi.getUsers(this, credentials, organizationIds, additionalParams);
 
 					const entities = responseData.result?.entities || [];
-					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+					const paginationInfo = extractPaginationInfo(responseData.result);
 
 					// Attach pagination info to entities
-					attachPaginationInfoToEntities(entities, paginationInfo, returnData, i);
+					processApiResponseEntities(entities, returnData, i, {
+						includePagination: true,
+						paginationData: paginationInfo,
+						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
+					});
 					break;
 				}
 

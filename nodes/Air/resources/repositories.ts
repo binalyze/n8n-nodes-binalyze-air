@@ -17,8 +17,8 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	extractSimplifiedPaginationInfo,
-	processApiResponseEntitiesWithSimplifiedPagination,
+	extractPaginationInfo,
+	processApiResponseEntities,
 	requireValidId,
 	catchAndFormatError,
 } from '../utils/helpers';
@@ -580,10 +580,14 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 					validateApiResponse(responseData);
 
 					const entities = responseData.result?.entities || [];
-					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+					const paginationInfo = extractPaginationInfo(responseData.result);
 
 					// Process entities with simplified pagination attached to each entity
-					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					processApiResponseEntities(entities, returnData, i, {
+						includePagination: true,
+						paginationData: paginationInfo,
+						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
+					});
 					break;
 				}
 

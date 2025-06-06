@@ -23,18 +23,6 @@ export interface PaginationInfo {
 	filters?: any[];
 }
 
-/**
- * Simplified pagination info interface without sortables and filters
- */
-export interface SimplifiedPaginationInfo {
-	totalEntityCount: number;
-	currentPage: number;
-	pageSize: number;
-	previousPage: number;
-	totalPageCount: number;
-	nextPage: number;
-}
-
 export interface ApiResponse {
 	success: boolean;
 	result?: {
@@ -300,31 +288,23 @@ export function hasResponsePagination(responseData: ApiResponse): boolean {
 }
 
 /**
- * Extract simplified pagination information from API result object (without sortables and filters)
+ * Extract pagination information from API response or result object
  */
-export function extractSimplifiedPaginationInfo(result: any): SimplifiedPaginationInfo | null {
-	if (!result || Array.isArray(result)) return null;
+export function extractPaginationInfo(source: ApiResponse | any): PaginationInfo | null {
+	let result: any;
 
-	// Check if pagination properties exist in the result
-	if (result.totalEntityCount !== undefined) {
-		return {
-			totalEntityCount: result.totalEntityCount,
-			currentPage: result.currentPage,
-			pageSize: result.pageSize,
-			previousPage: result.previousPage,
-			totalPageCount: result.totalPageCount,
-			nextPage: result.nextPage,
-		};
+	// Handle ApiResponse vs direct result object
+	if (source && typeof source === 'object' && 'success' in source) {
+		// It's an ApiResponse
+		result = source.result;
+	} else {
+		// It's a direct result object
+		result = source;
 	}
 
-	return null;
-}
-
-/**
- * Extract pagination information from API result object
- */
-export function extractPaginationInfo(result: any): PaginationInfo | null {
-	if (!result || Array.isArray(result)) return null;
+	if (!result || Array.isArray(result)) {
+		return null;
+	}
 
 	// Check if pagination properties exist in the result
 	if (result.totalEntityCount !== undefined) {
@@ -344,85 +324,33 @@ export function extractPaginationInfo(result: any): PaginationInfo | null {
 }
 
 /**
- * Extract simplified pagination information from API response
+ * Process API response entities with optional pagination info inclusion
  */
-export function extractSimplifiedPaginationInfoFromResponse(responseData: ApiResponse): SimplifiedPaginationInfo | null {
-	if (!responseData.result || Array.isArray(responseData.result)) {
-		return null;
-	}
-
-	return extractSimplifiedPaginationInfo(responseData.result);
-}
-
-/**
- * Extract pagination information from API response
- */
-export function extractPaginationInfoFromResponse(responseData: ApiResponse): PaginationInfo | null {
-	if (!responseData.result || Array.isArray(responseData.result)) {
-		return null;
-	}
-
-	return extractPaginationInfo(responseData.result);
-}
-
-/**
- * Process API response entities without adding pagination to each entity
- * This is the preferred method for most cases where pagination shouldn't pollute individual entities
- */
-export function processApiResponseEntitiesClean(
+export function processApiResponseEntities(
 	entities: any[],
 	returnData: INodeExecutionData[],
-	itemIndex: number
-): void {
-	entities.forEach((entity: any) => {
-		returnData.push({
-			json: entity,
-			pairedItem: itemIndex,
-		});
-	});
-}
-
-/**
- * Process API response entities with simplified pagination info included in each entity's JSON
- * This approach includes simplified pagination info (without sortables/filters) within each entity
- */
-export function processApiResponseEntitiesWithSimplifiedPagination(
-	entities: any[],
-	paginationData: SimplifiedPaginationInfo | null,
-	returnData: INodeExecutionData[],
-	itemIndex: number
+	itemIndex: number,
+	options?: {
+		includePagination?: boolean;
+		paginationData?: PaginationInfo | null;
+		excludeFields?: string[]; // Fields to exclude from pagination data
+	}
 ): void {
 	entities.forEach((entity: any) => {
 		const jsonData = { ...entity };
 
-		// Include simplified pagination info in the entity's JSON if available
-		if (paginationData) {
-			jsonData._pagination = paginationData;
-		}
+		// Include pagination info in the entity's JSON if requested and available
+		if (options?.includePagination && options.paginationData) {
+			let paginationToInclude = { ...options.paginationData };
 
-		returnData.push({
-			json: jsonData,
-			pairedItem: itemIndex,
-		});
-	});
-}
+			// Remove specified fields from pagination data if requested
+			if (options.excludeFields) {
+				options.excludeFields.forEach(field => {
+					delete (paginationToInclude as any)[field];
+				});
+			}
 
-/**
- * Process API response entities with pagination info included in each entity's JSON
- * This approach includes pagination info within each entity for downstream access
- */
-export function processApiResponseEntitiesWithPaginationInJson(
-	entities: any[],
-	paginationData: PaginationInfo | null,
-	returnData: INodeExecutionData[],
-	itemIndex: number
-): void {
-	entities.forEach((entity: any) => {
-		const jsonData = { ...entity };
-
-		// Include pagination info in the entity's JSON if available
-		if (paginationData) {
-			jsonData._pagination = paginationData;
+			jsonData._pagination = paginationToInclude;
 		}
 
 		returnData.push({

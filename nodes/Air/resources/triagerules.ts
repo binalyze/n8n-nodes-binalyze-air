@@ -15,8 +15,8 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	extractSimplifiedPaginationInfo,
-	processApiResponseEntitiesWithSimplifiedPagination,
+	extractPaginationInfo,
+	processApiResponseEntities,
 	requireValidId,
 	catchAndFormatError,
 } from '../utils/helpers';
@@ -893,10 +893,14 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					const responseData = await triagesApi.getTriageRules(this, credentials, organizationIds, queryParams);
 
 					const entities = responseData.result?.entities || [];
-					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+					const paginationInfo = extractPaginationInfo(responseData.result);
 
 					// Process entities with simplified pagination attached to each entity
-					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					processApiResponseEntities(entities, returnData, i, {
+						includePagination: true,
+						paginationData: paginationInfo,
+						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
+					});
 					break;
 				}
 
@@ -1152,10 +1156,14 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					const responseData = await tagsApi.getTriageTags(this, credentials, organizationId.toString(), withCount, searchTerm);
 
 					const entities = responseData.result || [];
-					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+					const paginationInfo = extractPaginationInfo(responseData.result);
 
 					// Process entities with simplified pagination attached to each entity
-					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					processApiResponseEntities(entities, returnData, i, {
+						includePagination: true,
+						paginationData: paginationInfo,
+						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
+					});
 					break;
 				}
 
