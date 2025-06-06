@@ -12,6 +12,10 @@ import { NodeConnectionType } from 'n8n-workflow';
 
 // Import operations and functions from resources
 import {
+	BaselinesOperations,
+	executeBaselines
+} from './resources/baselines';
+import {
 	OrganizationsOperations,
 	getOrganizations,
 	getOrganizationsOptions,
@@ -59,7 +63,7 @@ export class Air implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Manage organizations, repositories, users, auto asset tags, triage rules, and tasks in Binalyze AIR',
+		description: 'Manage organizations, repositories, users, auto asset tags, triage rules, baselines, and tasks in Binalyze AIR',
 		defaults: {
 			name: 'Binalyze AIR',
 		},
@@ -82,6 +86,11 @@ export class Air implements INodeType {
 						name: 'Auto Asset Tag',
 						value: 'autoassettags',
 						description: 'Manage auto asset tags',
+					},
+					{
+						name: 'Baseline',
+						value: 'baselines',
+						description: 'Manage baselines and comparisons',
 					},
 					{
 						name: 'Organization',
@@ -113,6 +122,7 @@ export class Air implements INodeType {
 			},
 
 			...AutoAssetTagsOperations,
+			...BaselinesOperations,
 			...OrganizationsOperations,
 			...RepositoriesOperations,
 			...TasksOperations,
@@ -183,6 +193,8 @@ export class Air implements INodeType {
 		switch (resource) {
 			case 'autoassettags':
 				return executeAutoAssetTags.call(this);
+			case 'baselines':
+				return executeBaselines.call(this);
 			case 'organizations':
 				return executeOrganizations.call(this);
 			case 'repositories':
