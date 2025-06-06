@@ -21,7 +21,7 @@ import {
 	processApiResponseEntitiesWithSimplifiedPagination,
 	requireValidId,
 	catchAndFormatError,
-} from './helpers';
+} from '../utils/helpers';
 
 export const RepositoriesOperations: INodeProperties[] = [
 	{

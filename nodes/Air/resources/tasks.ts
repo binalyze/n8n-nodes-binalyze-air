@@ -20,7 +20,7 @@ import {
 	processApiResponseEntitiesWithSimplifiedPagination,
 	requireValidId,
 	catchAndFormatError,
-} from './helpers';
+} from '../utils/helpers';
 
 import { api as tasksApi, Task } from '../api/tasks/tasks';
 import { api as taskAssignmentsApi } from '../api/tasks/assignments/assignments';

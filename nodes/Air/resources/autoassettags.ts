@@ -19,7 +19,7 @@ import {
 	processApiResponseEntitiesWithSimplifiedPagination,
 	requireValidId,
 	catchAndFormatError,
-} from './helpers';
+} from '../utils/helpers';
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
 

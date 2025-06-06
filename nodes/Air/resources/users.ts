@@ -19,7 +19,7 @@ import {
 	processApiResponseEntitiesWithSimplifiedPagination as attachPaginationInfoToEntities,
 	requireValidId,
 	catchAndFormatError,
-} from './helpers';
+} from '../utils/helpers';
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
 import { api as usersApi, User } from '../api/users/users';
