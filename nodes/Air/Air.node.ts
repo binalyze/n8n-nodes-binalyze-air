@@ -24,6 +24,12 @@ import {
 	executeRepositories
 } from './resources/repositories';
 import {
+	TasksOperations,
+	getTasks,
+	getTasksOptions,
+	executeTasks
+} from './resources/tasks';
+import {
 	UsersOperations,
 	getUsers,
 	getUsersOptions,
@@ -53,7 +59,7 @@ export class Air implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Manage organizations, repositories, users, auto asset tags, and triage rules in Binalyze AIR',
+		description: 'Manage organizations, repositories, users, auto asset tags, triage rules, and tasks in Binalyze AIR',
 		defaults: {
 			name: 'Binalyze AIR',
 		},
@@ -88,6 +94,11 @@ export class Air implements INodeType {
 						description: 'Manage evidence repositories',
 					},
 					{
+						name: 'Task',
+						value: 'tasks',
+						description: 'Manage tasks and task assignments',
+					},
+					{
 						name: 'Triage Rule',
 						value: 'triagerules',
 						description: 'Manage triage rules',
@@ -104,6 +115,7 @@ export class Air implements INodeType {
 			...AutoAssetTagsOperations,
 			...OrganizationsOperations,
 			...RepositoriesOperations,
+			...TasksOperations,
 			...TriageRulesOperations,
 			...UsersOperations,
 		],
@@ -122,6 +134,10 @@ export class Air implements INodeType {
 			// Import load options methods from Repositories
 			async getRepositories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getRepositoriesOptions.call(this);
+			},
+			// Import load options methods from Tasks
+			async getTasks(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getTasksOptions.call(this);
 			},
 			// Import load options methods from Triage Rules
 			async getTriageRules(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -145,6 +161,10 @@ export class Air implements INodeType {
 			async getRepositories(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getRepositories.call(this, filter);
 			},
+			// Import list search methods from Tasks for resource locators
+			async getTasks(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getTasks.call(this, filter);
+			},
 			// Import list search methods from Triage Rules for resource locators
 			async getTriageRules(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getTriageRules.call(this, filter);
@@ -167,6 +187,8 @@ export class Air implements INodeType {
 				return executeOrganizations.call(this);
 			case 'repositories':
 				return executeRepositories.call(this);
+			case 'tasks':
+				return executeTasks.call(this);
 			case 'triagerules':
 				return executeTriageRules.call(this);
 			case 'users':

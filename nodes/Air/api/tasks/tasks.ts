@@ -1,17 +1,17 @@
 /**
  * Tasks API Module
- * 
+ *
  * This module provides interfaces and functions to interact with the Binalyze AIR API
  * for retrieving tasks information.
- * 
+ *
  * The module includes:
  * - Task interface: Represents a single task in the system
  * - TasksResponse interface: Represents the API response structure
  * - api object: Contains methods to interact with the Tasks API endpoints
  */
 
-import axios from 'axios';
-import { config } from '../../config';
+import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
 
 export interface Task {
   _id: string;
@@ -135,80 +135,101 @@ export interface DeleteTaskResponse {
 }
 
 export const api = {
-  async getTasks(organizationIds: string | string[] = '0'): Promise<TasksResponse> {
+  async getTasks(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    organizationIds: string | string[] = '0'
+  ): Promise<TasksResponse> {
     try {
       const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
-      const response = await axios.get(
-        `${config.airHost}/api/public/tasks`,
-        {
-          params: {
-            'filter[organizationIds]': orgIds
-          },
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+
+      const requestOptions: IHttpRequestOptions = {
+        method: 'GET',
+        url: `${credentials.instanceUrl}/api/public/tasks`,
+        qs: {
+          'filter[organizationIds]': orgIds
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      return response;
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      throw error;
+      throw new Error(`Failed to fetch tasks: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
-  async getTaskById(id: string): Promise<TaskResponse> {
+  async getTaskById(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    id: string
+  ): Promise<TaskResponse> {
     try {
-      const response = await axios.get(
-        `${config.airHost}/api/public/tasks/${id}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+      const requestOptions: IHttpRequestOptions = {
+        method: 'GET',
+        url: `${credentials.instanceUrl}/api/public/tasks/${id}`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      return response;
     } catch (error) {
-      console.error(`Error fetching task with ID ${id}:`, error);
-      throw error;
+      throw new Error(`Failed to fetch task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
-  async cancelTaskById(id: string): Promise<CancelTaskResponse> {
+  async cancelTaskById(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    id: string
+  ): Promise<CancelTaskResponse> {
     try {
-      const response = await axios.post(
-        `${config.airHost}/api/public/tasks/${id}/cancel`,
-        {},
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+      const requestOptions: IHttpRequestOptions = {
+        method: 'POST',
+        url: `${credentials.instanceUrl}/api/public/tasks/${id}/cancel`,
+        body: {},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      return response;
     } catch (error) {
-      console.error(`Error cancelling task with ID ${id}:`, error);
-      throw error;
+      throw new Error(`Failed to cancel task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
-  async deleteTaskById(id: string): Promise<DeleteTaskResponse> {
+  async deleteTaskById(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    id: string
+  ): Promise<DeleteTaskResponse> {
     try {
-      const response = await axios.delete(
-        `${config.airHost}/api/public/tasks/${id}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+      const requestOptions: IHttpRequestOptions = {
+        method: 'DELETE',
+        url: `${credentials.instanceUrl}/api/public/tasks/${id}`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      return response;
     } catch (error) {
-      console.error(`Error deleting task with ID ${id}:`, error);
-      throw error;
+      throw new Error(`Failed to delete task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 };
