@@ -16,10 +16,14 @@ export interface TriageTag {
 
 export interface TriageTagsResponse {
   success: boolean;
-  result: {
-    entities: TriageTag[];
-    totalEntityCount: number;
-  };
+  result: TriageTag[];
+  statusCode: number;
+  errors: string[];
+}
+
+export interface CreateTriageTagResponse {
+  success: boolean;
+  result: TriageTag;
   statusCode: number;
   errors: string[];
 }
@@ -30,7 +34,7 @@ export const api = {
     credentials: AirCredentials,
     name: string,
     organizationId: string | number = 0
-  ): Promise<boolean> {
+  ): Promise<CreateTriageTagResponse> {
     try {
       const options: IHttpRequestOptions = {
         method: 'POST',
@@ -47,7 +51,7 @@ export const api = {
       };
 
       const response = await context.helpers.httpRequest(options);
-      return response.status >= 200 && response.status < 300;
+      return response;
     } catch (error) {
       throw new Error(`Failed to create triage tag: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -56,19 +60,24 @@ export const api = {
   async getTriageTags(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    organizationId: string | string[] = '0',
-    withCount: boolean = true
+    organizationId: string = '0',
+    withCount: boolean = true,
+    searchTerm?: string
   ): Promise<TriageTagsResponse> {
     try {
-      const orgId = Array.isArray(organizationId) ? organizationId.join(',') : organizationId;
+      const queryParams: any = {
+        'filter[organizationId]': organizationId,
+        'filter[withCount]': withCount
+      };
+
+      if (searchTerm) {
+        queryParams['filter[searchTerm]'] = searchTerm;
+      }
 
       const options: IHttpRequestOptions = {
         method: 'GET',
         url: `${credentials.instanceUrl}/api/public/triages/tags`,
-        qs: {
-          'filter[organizationId]': orgId,
-          'filter[withCount]': withCount
-        },
+        qs: queryParams,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${credentials.token}`

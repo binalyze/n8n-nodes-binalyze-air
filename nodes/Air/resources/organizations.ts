@@ -840,692 +840,727 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 		try {
 			const operation = this.getNodeParameter('operation', i) as string;
 
-			if (operation === 'getAll') {
-				const response = await organizationsApi.getOrganizations(this, credentials);
-				validateApiResponse(response);
+			switch (operation) {
+				case 'getAll': {
+					const response = await organizationsApi.getOrganizations(this, credentials);
+					validateApiResponse(response);
 
-				const entities = response.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(response.result);
+					const entities = response.result?.entities || [];
+					const paginationInfo = extractSimplifiedPaginationInfo(response.result);
 
-				// Process organizations to add computed properties
-				const processedEntities = processOrganizationEntities(entities, credentials.instanceUrl);
+					// Process organizations to add computed properties
+					const processedEntities = processOrganizationEntities(entities, credentials.instanceUrl);
 
-				// Process entities with simplified pagination attached to each entity
-				processApiResponseEntitiesWithSimplifiedPagination(processedEntities, paginationInfo, returnData, i);
+					// Process entities with simplified pagination attached to each entity
+					processApiResponseEntitiesWithSimplifiedPagination(processedEntities, paginationInfo, returnData, i);
+					break;
+				}
 
-			} else if (operation === 'get') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				let organizationId: string;
+				case 'get': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					let organizationId: string;
 
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
-					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
-					});
-				}
 
-				// Validate organization ID
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
-
-				const response = await organizationsApi.getOrganizationById(this, credentials, parseInt(organizationId));
-
-				// Custom validation for single entity response
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to get organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				if (!response.result) {
-					throw new NodeOperationError(this.getNode(), 'Organization not found', {
-						itemIndex: i,
-					});
-				}
-
-				// Process organization to add computed properties
-				const processedOrganization = processOrganizationEntity(response.result, credentials.instanceUrl);
-
-				returnData.push({
-					json: processedOrganization,
-					pairedItem: i,
-				});
-
-			} else if (operation === 'getUsers') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
+					// Validate organization ID
 					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						organizationId = requireValidId(organizationId, 'Organization ID');
 					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
+
+					const response = await organizationsApi.getOrganizationById(this, credentials, parseInt(organizationId));
+
+					// Custom validation for single entity response
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to get organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					if (!response.result) {
+						throw new NodeOperationError(this.getNode(), 'Organization not found', {
+							itemIndex: i,
+						});
+					}
+
+					// Process organization to add computed properties
+					const processedOrganization = processOrganizationEntity(response.result, credentials.instanceUrl);
+
+					returnData.push({
+						json: processedOrganization,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				// Validate organization ID
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
+				case 'getUsers': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					let organizationId: string;
 
-				const response = await organizationUsersApi.getOrganizationUsers(this, credentials, parseInt(organizationId));
-				validateApiResponse(response);
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
-				const entities = response.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(response.result);
-
-				// Process entities with simplified pagination attached to each entity
-				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
-
-			} else if (operation === 'addTags') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				const tags = this.getNodeParameter('tags', i) as string;
-
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
+					// Validate organization ID
 					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						organizationId = requireValidId(organizationId, 'Organization ID');
 					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
-					});
+
+					const response = await organizationUsersApi.getOrganizationUsers(this, credentials, parseInt(organizationId));
+					validateApiResponse(response);
+
+					const entities = response.result?.entities || [];
+					const paginationInfo = extractSimplifiedPaginationInfo(response.result);
+
+					// Process entities with simplified pagination attached to each entity
+					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					break;
 				}
 
-				// Validate organization ID
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
+				case 'addTags': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const tags = this.getNodeParameter('tags', i) as string;
 
-				// Parse and validate tags
-				const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-				if (tagList.length === 0) {
-					throw new NodeOperationError(this.getNode(), 'At least one tag must be provided', {
-						itemIndex: i,
-					});
-				}
+					let organizationId: string;
 
-				const response = await organizationsApi.addTagsToOrganization(this, credentials, parseInt(organizationId), tagList);
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
-				// Custom validation for single entity response
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to add tags to organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				// Process organization result to add computed properties
-				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
-
-				returnData.push({
-					json: processedResult,
-					pairedItem: i,
-				});
-
-			} else if (operation === 'removeTags') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				const tags = this.getNodeParameter('tags', i) as string;
-
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
+					// Validate organization ID
 					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						organizationId = requireValidId(organizationId, 'Organization ID');
 					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
+
+					// Parse and validate tags
+					const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+					if (tagList.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'At least one tag must be provided', {
+							itemIndex: i,
+						});
+					}
+
+					const response = await organizationsApi.addTagsToOrganization(this, credentials, parseInt(organizationId), tagList);
+
+					// Custom validation for single entity response
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to add tags to organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					// Process organization result to add computed properties
+					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+
+					returnData.push({
+						json: processedResult,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				// Validate organization ID
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
+				case 'removeTags': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const tags = this.getNodeParameter('tags', i) as string;
+
+					let organizationId: string;
+
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = requireValidId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// Parse and validate tags
+					const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+					if (tagList.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'At least one tag must be provided', {
+							itemIndex: i,
+						});
+					}
+
+					const response = await organizationsApi.deleteTagsFromOrganization(this, credentials, parseInt(organizationId), tagList);
+
+					// Custom validation for single entity response
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to remove tags from organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					// Process organization result to add computed properties
+					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+
+					returnData.push({
+						json: processedResult,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				// Parse and validate tags
-				const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-				if (tagList.length === 0) {
-					throw new NodeOperationError(this.getNode(), 'At least one tag must be provided', {
-						itemIndex: i,
-					});
-				}
+				case 'create': {
+					const name = this.getNodeParameter('name', i) as string;
+					const shareableDeploymentEnabled = this.getNodeParameter('shareableDeploymentEnabled', i) as boolean;
+					const contactName = this.getNodeParameter('contactName', i) as string;
+					const contactEmail = this.getNodeParameter('contactEmail', i) as string;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
-				const response = await organizationsApi.deleteTagsFromOrganization(this, credentials, parseInt(organizationId), tagList);
+					// Validate required fields
+					const trimmedName = name.trim();
+					if (!trimmedName) {
+						throw new NodeOperationError(this.getNode(), 'Organization name cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
 
-				// Custom validation for single entity response
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to remove tags from organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
+					const trimmedContactName = contactName.trim();
+					if (!trimmedContactName) {
+						throw new NodeOperationError(this.getNode(), 'Contact name cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
 
-				// Process organization result to add computed properties
-				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+					const trimmedContactEmail = contactEmail.trim();
+					if (!trimmedContactEmail) {
+						throw new NodeOperationError(this.getNode(), 'Contact email cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
 
-				returnData.push({
-					json: processedResult,
-					pairedItem: i,
-				});
+					// Basic email validation
+					const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+					if (!emailRegex.test(trimmedContactEmail)) {
+						throw new NodeOperationError(this.getNode(), 'Contact email must be a valid email address', {
+							itemIndex: i,
+						});
+					}
 
-			} else if (operation === 'create') {
-				const name = this.getNodeParameter('name', i) as string;
-				const shareableDeploymentEnabled = this.getNodeParameter('shareableDeploymentEnabled', i) as boolean;
-				const contactName = this.getNodeParameter('contactName', i) as string;
-				const contactEmail = this.getNodeParameter('contactEmail', i) as string;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-
-				// Validate required fields
-				const trimmedName = name.trim();
-				if (!trimmedName) {
-					throw new NodeOperationError(this.getNode(), 'Organization name cannot be empty or whitespace', {
-						itemIndex: i,
-					});
-				}
-
-				const trimmedContactName = contactName.trim();
-				if (!trimmedContactName) {
-					throw new NodeOperationError(this.getNode(), 'Contact name cannot be empty or whitespace', {
-						itemIndex: i,
-					});
-				}
-
-				const trimmedContactEmail = contactEmail.trim();
-				if (!trimmedContactEmail) {
-					throw new NodeOperationError(this.getNode(), 'Contact email cannot be empty or whitespace', {
-						itemIndex: i,
-					});
-				}
-
-				// Basic email validation
-				const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-				if (!emailRegex.test(trimmedContactEmail)) {
-					throw new NodeOperationError(this.getNode(), 'Contact email must be a valid email address', {
-						itemIndex: i,
-					});
-				}
-
-				// Build the request data
-				const createData: CreateOrganizationRequest = {
-					name: trimmedName,
-					shareableDeploymentEnabled,
-					contact: {
-						name: trimmedContactName,
-						title: additionalFields.contactTitle?.trim() || '',
-						phone: additionalFields.contactPhone?.trim() || '',
-						mobile: additionalFields.contactMobile?.trim() || '',
-						email: trimmedContactEmail,
-					},
-					note: additionalFields.note?.trim() || '',
-				};
-
-				const response = await organizationsApi.createOrganization(this, credentials, createData);
-
-				// Custom validation for single entity response
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to create organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				// Process organization result to add computed properties
-				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
-
-				returnData.push({
-					json: processedResult,
-					pairedItem: i,
-				});
-
-			} else if (operation === 'checkNameExists') {
-				const nameToCheck = this.getNodeParameter('nameToCheck', i) as string;
-
-				const trimmedName = nameToCheck.trim();
-				if (!trimmedName) {
-					throw new NodeOperationError(this.getNode(), 'Organization name cannot be empty', {
-						itemIndex: i,
-					});
-				}
-
-				const response = await organizationsApi.checkOrganizationNameExists(this, credentials, trimmedName);
-
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to check organization name: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				returnData.push({
-					json: {
+					// Build the request data
+					const createData: CreateOrganizationRequest = {
 						name: trimmedName,
-						exists: response.result,
-						success: response.success,
-						statusCode: response.statusCode,
-					},
-					pairedItem: i,
-				});
-
-			} else if (operation === 'delete') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
-					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
-					});
-				}
-
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
-
-				const response = await organizationsApi.deleteOrganization(this, credentials, parseInt(organizationId));
-
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to delete organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				returnData.push({
-					json: {
-						organizationId: parseInt(organizationId),
-						deleted: true,
-						success: response.success,
-						statusCode: response.statusCode,
-					},
-					pairedItem: i,
-				});
-
-			} else if (operation === 'update') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				const updateFields = this.getNodeParameter('updateFields', i) as any;
-
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
-					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
-					});
-				}
-
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
-
-				// Build update data based on provided fields
-				const updateData: Partial<CreateOrganizationRequest> = {};
-
-				if (updateFields.name) {
-					updateData.name = updateFields.name.trim();
-				}
-
-				if (updateFields.shareableDeploymentEnabled !== undefined) {
-					updateData.shareableDeploymentEnabled = updateFields.shareableDeploymentEnabled;
-				}
-
-				if (updateFields.note) {
-					updateData.note = updateFields.note.trim();
-				}
-
-				// Handle contact updates
-				if (updateFields.contactName || updateFields.contactEmail || updateFields.contactTitle || updateFields.contactPhone || updateFields.contactMobile) {
-					updateData.contact = {
-						name: updateFields.contactName?.trim() || '',
-						email: updateFields.contactEmail?.trim() || '',
+						shareableDeploymentEnabled,
+						contact: {
+							name: trimmedContactName,
+							title: additionalFields.contactTitle?.trim() || '',
+							phone: additionalFields.contactPhone?.trim() || '',
+							mobile: additionalFields.contactMobile?.trim() || '',
+							email: trimmedContactEmail,
+						},
+						note: additionalFields.note?.trim() || '',
 					};
 
-					if (updateFields.contactName) {
-						updateData.contact.name = updateFields.contactName.trim();
+					const response = await organizationsApi.createOrganization(this, credentials, createData);
+
+					// Custom validation for single entity response
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to create organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
 					}
 
-					if (updateFields.contactEmail) {
-						updateData.contact.email = updateFields.contactEmail.trim();
-						// Validate email format
-						const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-						if (!emailRegex.test(updateData.contact.email)) {
-							throw new NodeOperationError(this.getNode(), 'Contact email must be a valid email address', {
-								itemIndex: i,
-							});
+					// Process organization result to add computed properties
+					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+
+					returnData.push({
+						json: processedResult,
+						pairedItem: i,
+					});
+					break;
+				}
+
+				case 'checkNameExists': {
+					const nameToCheck = this.getNodeParameter('nameToCheck', i) as string;
+
+					const trimmedName = nameToCheck.trim();
+					if (!trimmedName) {
+						throw new NodeOperationError(this.getNode(), 'Organization name cannot be empty', {
+							itemIndex: i,
+						});
+					}
+
+					const response = await organizationsApi.checkOrganizationNameExists(this, credentials, trimmedName);
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to check organization name: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: {
+							name: trimmedName,
+							exists: response.result,
+							success: response.success,
+							statusCode: response.statusCode,
+						},
+						pairedItem: i,
+					});
+					break;
+				}
+
+				case 'delete': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					let organizationId: string;
+
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					try {
+						organizationId = requireValidId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					const response = await organizationsApi.deleteOrganization(this, credentials, parseInt(organizationId));
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to delete organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: {
+							organizationId: parseInt(organizationId),
+							deleted: true,
+							success: response.success,
+							statusCode: response.statusCode,
+						},
+						pairedItem: i,
+					});
+					break;
+				}
+
+				case 'update': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const updateFields = this.getNodeParameter('updateFields', i) as any;
+
+					let organizationId: string;
+
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					try {
+						organizationId = requireValidId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// Build update data based on provided fields
+					const updateData: Partial<CreateOrganizationRequest> = {};
+
+					if (updateFields.name) {
+						updateData.name = updateFields.name.trim();
+					}
+
+					if (updateFields.shareableDeploymentEnabled !== undefined) {
+						updateData.shareableDeploymentEnabled = updateFields.shareableDeploymentEnabled;
+					}
+
+					if (updateFields.note) {
+						updateData.note = updateFields.note.trim();
+					}
+
+					// Handle contact updates
+					if (updateFields.contactName || updateFields.contactEmail || updateFields.contactTitle || updateFields.contactPhone || updateFields.contactMobile) {
+						updateData.contact = {
+							name: updateFields.contactName?.trim() || '',
+							email: updateFields.contactEmail?.trim() || '',
+						};
+
+						if (updateFields.contactName) {
+							updateData.contact.name = updateFields.contactName.trim();
+						}
+
+						if (updateFields.contactEmail) {
+							updateData.contact.email = updateFields.contactEmail.trim();
+							// Validate email format
+							const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+							if (!emailRegex.test(updateData.contact.email)) {
+								throw new NodeOperationError(this.getNode(), 'Contact email must be a valid email address', {
+									itemIndex: i,
+								});
+							}
+						}
+
+						if (updateFields.contactTitle) {
+							updateData.contact.title = updateFields.contactTitle.trim();
+						}
+
+						if (updateFields.contactPhone) {
+							updateData.contact.phone = updateFields.contactPhone.trim();
+						}
+
+						if (updateFields.contactMobile) {
+							updateData.contact.mobile = updateFields.contactMobile.trim();
 						}
 					}
 
-					if (updateFields.contactTitle) {
-						updateData.contact.title = updateFields.contactTitle.trim();
+					if (Object.keys(updateData).length === 0) {
+						throw new NodeOperationError(this.getNode(), 'At least one field must be provided for update', {
+							itemIndex: i,
+						});
 					}
 
-					if (updateFields.contactPhone) {
-						updateData.contact.phone = updateFields.contactPhone.trim();
+					const response = await organizationsApi.updateOrganization(this, credentials, parseInt(organizationId), updateData);
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to update organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
 					}
 
-					if (updateFields.contactMobile) {
-						updateData.contact.mobile = updateFields.contactMobile.trim();
+					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+
+					returnData.push({
+						json: processedResult,
+						pairedItem: i,
+					});
+					break;
+				}
+
+				case 'getShareableDeploymentInfo': {
+					const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
+
+					const trimmedToken = deploymentToken.trim();
+					if (!trimmedToken) {
+						throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
+							itemIndex: i,
+						});
 					}
-				}
 
-				if (Object.keys(updateData).length === 0) {
-					throw new NodeOperationError(this.getNode(), 'At least one field must be provided for update', {
-						itemIndex: i,
+					const response = await organizationsApi.getShareableDeploymentInfo(this, credentials, trimmedToken);
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to get shareable deployment info: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: response.result,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				const response = await organizationsApi.updateOrganization(this, credentials, parseInt(organizationId), updateData);
+				case 'updateShareableDeployment': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const shareableDeploymentStatus = this.getNodeParameter('shareableDeploymentStatus', i) as boolean;
 
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to update organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
+					let organizationId: string;
 
-				const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
-				returnData.push({
-					json: processedResult,
-					pairedItem: i,
-				});
-
-			} else if (operation === 'getShareableDeploymentInfo') {
-				const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
-
-				const trimmedToken = deploymentToken.trim();
-				if (!trimmedToken) {
-					throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
-						itemIndex: i,
-					});
-				}
-
-				const response = await organizationsApi.getShareableDeploymentInfo(this, credentials, trimmedToken);
-
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to get shareable deployment info: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				returnData.push({
-					json: response.result,
-					pairedItem: i,
-				});
-
-			} else if (operation === 'updateShareableDeployment') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				const shareableDeploymentStatus = this.getNodeParameter('shareableDeploymentStatus', i) as boolean;
-
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
 					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						organizationId = requireValidId(organizationId, 'Organization ID');
 					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
+
+					const response = await organizationsApi.updateOrganizationShareableDeployment(this, credentials, parseInt(organizationId), shareableDeploymentStatus);
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to update shareable deployment: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: {
+							organizationId: parseInt(organizationId),
+							shareableDeploymentEnabled: shareableDeploymentStatus,
+							success: response.success,
+							statusCode: response.statusCode,
+						},
+						pairedItem: i,
 					});
+					break;
 				}
 
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
+				case 'updateDeploymentToken': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
 
-				const response = await organizationsApi.updateOrganizationShareableDeployment(this, credentials, parseInt(organizationId), shareableDeploymentStatus);
+					let organizationId: string;
 
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to update shareable deployment: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
-				returnData.push({
-					json: {
-						organizationId: parseInt(organizationId),
-						shareableDeploymentEnabled: shareableDeploymentStatus,
-						success: response.success,
-						statusCode: response.statusCode,
-					},
-					pairedItem: i,
-				});
-
-			} else if (operation === 'updateDeploymentToken') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
-
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
 					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						organizationId = requireValidId(organizationId, 'Organization ID');
 					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
+
+					const trimmedToken = deploymentToken.trim();
+					if (!trimmedToken) {
+						throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
+							itemIndex: i,
+						});
+					}
+
+					const response = await organizationsApi.updateOrganizationDeploymentToken(this, credentials, parseInt(organizationId), trimmedToken);
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to update deployment token: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: {
+							organizationId: parseInt(organizationId),
+							deploymentToken: trimmedToken,
+							success: response.success,
+							statusCode: response.statusCode,
+						},
+						pairedItem: i,
 					});
+					break;
 				}
 
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
+				case 'assignUsers': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const userIds = this.getNodeParameter('userIds', i) as string;
 
-				const trimmedToken = deploymentToken.trim();
-				if (!trimmedToken) {
-					throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
-						itemIndex: i,
-					});
-				}
+					let organizationId: string;
 
-				const response = await organizationsApi.updateOrganizationDeploymentToken(this, credentials, parseInt(organizationId), trimmedToken);
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to update deployment token: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				returnData.push({
-					json: {
-						organizationId: parseInt(organizationId),
-						deploymentToken: trimmedToken,
-						success: response.success,
-						statusCode: response.statusCode,
-					},
-					pairedItem: i,
-				});
-
-			} else if (operation === 'assignUsers') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				const userIds = this.getNodeParameter('userIds', i) as string;
-
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
 					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						organizationId = requireValidId(organizationId, 'Organization ID');
 					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-						itemIndex: i,
+
+					// Parse and validate user IDs
+					const userIdList = userIds.split(',').map(userId => userId.trim()).filter(userId => userId.length > 0);
+					if (userIdList.length === 0) {
+						throw new NodeOperationError(this.getNode(), 'At least one user ID must be provided', {
+							itemIndex: i,
+						});
+					}
+
+					const response = await organizationUsersApi.assignUsersToOrganization(this, credentials, parseInt(organizationId), userIdList);
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to assign users to organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: {
+							organizationId: parseInt(organizationId),
+							assignedUserIds: userIdList,
+							success: response.success,
+							statusCode: response.statusCode,
+						},
+						pairedItem: i,
 					});
+					break;
 				}
 
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
+				case 'removeUser': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const userId = this.getNodeParameter('userId', i) as string;
 
-				// Parse and validate user IDs
-				const userIdList = userIds.split(',').map(userId => userId.trim()).filter(userId => userId.length > 0);
-				if (userIdList.length === 0) {
-					throw new NodeOperationError(this.getNode(), 'At least one user ID must be provided', {
-						itemIndex: i,
-					});
-				}
+					let organizationId: string;
 
-				const response = await organizationUsersApi.assignUsersToOrganization(this, credentials, parseInt(organizationId), userIdList);
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to assign users to organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				returnData.push({
-					json: {
-						organizationId: parseInt(organizationId),
-						assignedUserIds: userIdList,
-						success: response.success,
-						statusCode: response.statusCode,
-					},
-					pairedItem: i,
-				});
-
-			} else if (operation === 'removeUser') {
-				const organizationResource = this.getNodeParameter('organizationId', i) as any;
-				const userId = this.getNodeParameter('userId', i) as string;
-
-				let organizationId: string;
-
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
 					try {
-						organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						organizationId = requireValidId(organizationId, 'Organization ID');
 					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+
+					const trimmedUserId = userId.trim();
+					if (!trimmedUserId) {
+						throw new NodeOperationError(this.getNode(), 'User ID cannot be empty', {
+							itemIndex: i,
+						});
+					}
+
+					const response = await organizationUsersApi.removeUserFromOrganization(this, credentials, parseInt(organizationId), trimmedUserId);
+
+					if (!response.success) {
+						const errorMessage = response.errors?.join(', ') || 'API request failed';
+						throw new NodeOperationError(this.getNode(), `Failed to remove user from organization: ${errorMessage}`, {
+							itemIndex: i,
+						});
+					}
+
+					returnData.push({
+						json: {
+							organizationId: parseInt(organizationId),
+							removedUserId: trimmedUserId,
+							success: response.success,
+							statusCode: response.statusCode,
+						},
+						pairedItem: i,
+					});
+					break;
+				}
+
+				default: {
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
 						itemIndex: i,
 					});
 				}
-
-				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
-
-				const trimmedUserId = userId.trim();
-				if (!trimmedUserId) {
-					throw new NodeOperationError(this.getNode(), 'User ID cannot be empty', {
-						itemIndex: i,
-					});
-				}
-
-				const response = await organizationUsersApi.removeUserFromOrganization(this, credentials, parseInt(organizationId), trimmedUserId);
-
-				if (!response.success) {
-					const errorMessage = response.errors?.join(', ') || 'API request failed';
-					throw new NodeOperationError(this.getNode(), `Failed to remove user from organization: ${errorMessage}`, {
-						itemIndex: i,
-					});
-				}
-
-				returnData.push({
-					json: {
-						organizationId: parseInt(organizationId),
-						removedUserId: trimmedUserId,
-						success: response.success,
-						statusCode: response.statusCode,
-					},
-					pairedItem: i,
-				});
 			}
 
 		} catch (error) {

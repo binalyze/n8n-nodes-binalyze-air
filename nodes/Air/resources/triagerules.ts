@@ -10,8 +10,6 @@ import {
 
 import {
 	getAirCredentials,
-	buildRequestOptions,
-	validateApiResponse,
 	extractEntityId,
 	isValidEntity,
 	createListSearchResults,
@@ -24,6 +22,8 @@ import {
 } from './helpers';
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
+import { api as triagesApi } from '../api/triages/triages';
+import { api as tagsApi } from '../api/triages/tags/tags';
 
 export const TriageRulesOperations: INodeProperties[] = [
 	{
@@ -37,6 +37,12 @@ export const TriageRulesOperations: INodeProperties[] = [
 			},
 		},
 		options: [
+			{
+				name: 'Assign Triage Task',
+				value: 'assignTask',
+				description: 'Assign a triage task',
+				action: 'Assign a triage task',
+			},
 			{
 				name: 'Create',
 				value: 'create',
@@ -78,6 +84,12 @@ export const TriageRulesOperations: INodeProperties[] = [
 				value: 'update',
 				description: 'Update a triage rule',
 				action: 'Update a triage rule',
+			},
+			{
+				name: 'Validate',
+				value: 'validate',
+				description: 'Validate a triage rule',
+				action: 'Validate a triage rule',
 			},
 		],
 		default: 'getAll',
@@ -174,7 +186,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['triagerules'],
-				operation: ['create', 'update'],
+				operation: ['create', 'update', 'validate'],
 			},
 		},
 		typeOptions: {
@@ -254,6 +266,74 @@ export const TriageRulesOperations: INodeProperties[] = [
 		},
 		required: true,
 		description: 'Organization IDs for this triage rule (comma-separated). Use "0" for all organizations.',
+	},
+	// Fields for Assign Triage Task operation
+	{
+		displayName: 'Case ID',
+		name: 'caseId',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter case ID',
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['assignTask'],
+			},
+		},
+		required: true,
+		description: 'ID of the case to assign the triage task to',
+	},
+	{
+		displayName: 'Triage Rule IDs',
+		name: 'triageRuleIds',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter triage rule IDs (comma-separated)',
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['assignTask'],
+			},
+		},
+		required: true,
+		description: 'Comma-separated list of triage rule IDs to assign',
+	},
+	{
+		displayName: 'Task Choice',
+		name: 'taskChoice',
+		type: 'options',
+		default: 'auto',
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['assignTask'],
+			},
+		},
+		options: [
+			{
+				name: 'Auto',
+				value: 'auto',
+			},
+			{
+				name: 'Manual',
+				value: 'manual',
+			},
+		],
+		required: true,
+		description: 'Task configuration choice',
+	},
+	{
+		displayName: 'Enable MITRE ATT&CK',
+		name: 'mitreAttackEnabled',
+		type: 'boolean',
+		default: false,
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['assignTask'],
+			},
+		},
+		description: 'Whether to enable MITRE ATT&CK framework',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -416,6 +496,154 @@ export const TriageRulesOperations: INodeProperties[] = [
 		],
 	},
 	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['assignTask'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Excluded Endpoint IDs',
+				name: 'excludedEndpointIds',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter endpoint IDs (comma-separated)',
+				description: 'Exclude specific endpoint IDs',
+			},
+			{
+				displayName: 'Group Full Path',
+				name: 'groupFullPath',
+				type: 'string',
+				default: '',
+				description: 'Filter by group full path',
+			},
+			{
+				displayName: 'Group ID',
+				name: 'groupId',
+				type: 'string',
+				default: '',
+				description: 'Filter by group ID',
+			},
+			{
+				displayName: 'Included Endpoint IDs',
+				name: 'includedEndpointIds',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter endpoint IDs (comma-separated)',
+				description: 'Include specific endpoint IDs',
+			},
+			{
+				displayName: 'IP Address',
+				name: 'ipAddress',
+				type: 'string',
+				default: '',
+				description: 'Filter by IP address',
+			},
+			{
+				displayName: 'Isolation Status',
+				name: 'isolationStatus',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter by isolation status',
+				options: [
+					{ name: 'Isolated', value: 'isolated' },
+					{ name: 'Not Isolated', value: 'not_isolated' },
+				],
+			},
+			{
+				displayName: 'Issue',
+				name: 'issue',
+				type: 'string',
+				default: '',
+				description: 'Filter by issue',
+			},
+			{
+				displayName: 'Managed Status',
+				name: 'managedStatus',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter by managed status',
+				options: [
+					{ name: 'Managed', value: 'managed' },
+					{ name: 'Unmanaged', value: 'unmanaged' },
+				],
+			},
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				description: 'Filter by endpoint name',
+			},
+			{
+				displayName: 'Online Status',
+				name: 'onlineStatus',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter by online status',
+				options: [
+					{ name: 'Online', value: 'online' },
+					{ name: 'Offline', value: 'offline' },
+				],
+			},
+			{
+				displayName: 'Organization IDs',
+				name: 'organizationIds',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter organization IDs (comma-separated)',
+				description: 'Filter by organization IDs',
+			},
+			{
+				displayName: 'Platform',
+				name: 'platform',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter by platform',
+				options: [
+					{ name: 'Windows', value: 'windows' },
+					{ name: 'Linux', value: 'linux' },
+					{ name: 'MacOS', value: 'macos' },
+				],
+			},
+			{
+				displayName: 'Policy',
+				name: 'policy',
+				type: 'string',
+				default: '',
+				description: 'Filter by policy',
+			},
+			{
+				displayName: 'Search Term',
+				name: 'searchTerm',
+				type: 'string',
+				default: '',
+				description: 'Search term to filter endpoints',
+			},
+			{
+				displayName: 'Tags',
+				name: 'tags',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter tags (comma-separated)',
+				description: 'Filter by tags',
+			},
+			{
+				displayName: 'Version',
+				name: 'version',
+				type: 'string',
+				default: '',
+				description: 'Filter by version',
+			},
+		],
+	},
+	{
 		displayName: 'Tag Name',
 		name: 'tagName',
 		type: 'string',
@@ -513,41 +741,8 @@ export async function fetchAllTriageRules(
 	pageSize: number = 100
 ): Promise<any[]> {
 	try {
-		const allTriageRules: any[] = [];
-		let currentPage = 1;
-		let hasMorePages = true;
-
-		while (hasMorePages) {
-			const queryParams: Record<string, string | number> = {
-				'pageNumber': currentPage,
-				'pageSize': pageSize,
-				'filter[organizationIds]': organizationIds,
-			};
-
-			if (searchFilter) {
-				queryParams['filter[searchTerm]'] = searchFilter;
-			}
-
-			const options = buildRequestOptions(
-				credentials,
-				'GET',
-				'/api/public/triages/rules',
-				queryParams
-			);
-
-			const responseData = await context.helpers.httpRequest(options);
-			validateApiResponse(responseData);
-
-			const entities = responseData.result?.entities || [];
-			allTriageRules.push(...entities);
-
-			// Check if there are more pages
-			const totalPageCount = responseData.result?.totalPageCount || 1;
-			hasMorePages = currentPage < totalPageCount;
-			currentPage++;
-		}
-
-		return allTriageRules;
+		const response = await triagesApi.getTriageRules(context, credentials, organizationIds);
+		return response.result?.entities || [];
 	} catch (error) {
 		throw catchAndFormatError(error, 'Failed to fetch triage rules');
 	}
@@ -610,7 +805,8 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 			organizationIds = '0';
 		}
 
-		const triageRules = await fetchAllTriageRules(this, credentials, organizationIds, filter);
+		const response = await triagesApi.getTriageRules(this, credentials, organizationIds);
+		const triageRules = response.result?.entities || [];
 
 		return createListSearchResults(
 			triageRules,
@@ -630,7 +826,8 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 export async function getTriageRulesOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const triageRules = await fetchAllTriageRules(this, credentials, '0');
+		const response = await triagesApi.getTriageRules(this, credentials, '0');
+		const triageRules = response.result?.entities || [];
 
 		return createLoadOptions(
 			triageRules,
@@ -660,355 +857,401 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 		try {
 			const operation = this.getNodeParameter('operation', i) as string;
 
-			if (operation === 'getAll') {
-				const organizationIds = this.getNodeParameter('organizationIds', i) as string;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-				const queryParams = buildTriageRuleQueryParams(organizationIds, additionalFields);
+			switch (operation) {
+				case 'getAll': {
+					const organizationIds = this.getNodeParameter('organizationIds', i) as string;
 
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					'/api/public/triages/rules',
-					queryParams
-				);
+					// Use the new API method
+					const responseData = await triagesApi.getTriageRules(this, credentials, organizationIds);
 
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
+					const entities = responseData.result?.entities || [];
+					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
 
-				const entities = responseData.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+					// Process entities with simplified pagination attached to each entity
+					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					break;
+				}
 
-				// Process entities with simplified pagination attached to each entity
-				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
-			} else if (operation === 'get') {
-				const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
-				let triageRuleId: string;
+				case 'get': {
+					const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
+					let triageRuleId: string;
 
-				if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
-					triageRuleId = triageRuleResource.value;
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
-						itemIndex: i,
+					if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
+						triageRuleId = triageRuleResource.value;
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate triage rule ID
+					try {
+						triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// Use the new API method
+					const responseData = await triagesApi.getTriageRuleById(this, credentials, triageRuleId);
+
+					returnData.push({
+						json: responseData.result as any,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				// Validate triage rule ID
-				try {
-					triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
+				case 'create': {
+					const description = this.getNodeParameter('description', i) as string;
+					const rule = this.getNodeParameter('rule', i) as string;
+					const engine = this.getNodeParameter('engine', i) as string;
+					const organizationIdsArray = this.getNodeParameter('organizationIdsArray', i) as string;
+
+					// Get searchIn only if engine is 'yara'
+					let searchIn: string | undefined;
+					if (engine === 'yara') {
+						searchIn = this.getNodeParameter('searchIn', i) as string;
+					}
+
+					// Validate required fields
+					const trimmedDescription = description.trim();
+					if (!trimmedDescription) {
+						throw new NodeOperationError(this.getNode(), 'Description cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
+
+					const trimmedRule = rule.trim();
+					if (!trimmedRule) {
+						throw new NodeOperationError(this.getNode(), 'Rule content cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
+
+					// Parse organization IDs
+					let organizationIds: (string | number)[];
+					try {
+						organizationIds = organizationIdsArray.split(',')
+							.map(id => {
+								const trimmed = id.trim();
+								const parsed = parseInt(trimmed, 10);
+								if (isNaN(parsed)) {
+									return trimmed; // Keep as string if not a number
+								}
+								return parsed;
+							});
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(),
+							`Invalid organization IDs format: ${error.message}`, {
+							itemIndex: i,
+						});
+					}
+
+					// Build the request data
+					const requestData: any = {
+						description: trimmedDescription,
+						rule: trimmedRule,
+						engine,
+						organizationIds,
+						searchIn: searchIn || 'both', // Default to 'both' if not specified
+					};
+
+					// Use the new API method
+					const responseData = await triagesApi.createTriageRule(this, credentials, requestData);
+
+					returnData.push({
+						json: responseData.result as any,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					`/api/public/triages/rules/${triageRuleId}`
-				);
+				case 'update': {
+					const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
+					const description = this.getNodeParameter('description', i) as string;
+					const rule = this.getNodeParameter('rule', i) as string;
+					const engine = this.getNodeParameter('engine', i) as string;
+					const organizationIdsArray = this.getNodeParameter('organizationIdsArray', i) as string;
 
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
+					// Get searchIn only if engine is 'yara'
+					let searchIn: string | undefined;
+					if (engine === 'yara') {
+						searchIn = this.getNodeParameter('searchIn', i) as string;
+					}
 
-				// Handle the response
-				let triageRuleData;
+					let triageRuleId: string;
 
-				if (responseData.result?.entities && Array.isArray(responseData.result.entities)) {
-					// If the result is an array, take the first item
-					triageRuleData = responseData.result.entities[0];
-				} else if (responseData.result) {
-					// If the result is the triage rule object directly
-					triageRuleData = responseData.result;
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Unexpected response format from API', {
-						itemIndex: i,
+					if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
+						triageRuleId = triageRuleResource.value;
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate triage rule ID
+					try {
+						triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// Validate required fields
+					const trimmedDescription = description.trim();
+					if (!trimmedDescription) {
+						throw new NodeOperationError(this.getNode(), 'Description cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
+
+					const trimmedRule = rule.trim();
+					if (!trimmedRule) {
+						throw new NodeOperationError(this.getNode(), 'Rule content cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
+
+					// Parse organization IDs
+					let organizationIds: (string | number)[];
+					try {
+						organizationIds = organizationIdsArray.split(',')
+							.map(id => {
+								const trimmed = id.trim();
+								const parsed = parseInt(trimmed, 10);
+								if (isNaN(parsed)) {
+									return trimmed; // Keep as string if not a number
+								}
+								return parsed;
+							});
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(),
+							`Invalid organization IDs format: ${error.message}`, {
+							itemIndex: i,
+						});
+					}
+
+					// Build the request data
+					const requestData: any = {
+						description: trimmedDescription,
+						rule: trimmedRule,
+						searchIn: searchIn || 'both', // Default to 'both' if not specified
+						organizationIds,
+					};
+
+					// Use the new API method
+					const responseData = await triagesApi.updateTriageRule(this, credentials, triageRuleId, requestData);
+
+					returnData.push({
+						json: responseData.result as any,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				if (!triageRuleData) {
-					throw new NodeOperationError(this.getNode(), 'Triage rule not found', {
-						itemIndex: i,
+				case 'delete': {
+					const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
+
+					let triageRuleId: string;
+
+					if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
+						triageRuleId = triageRuleResource.value;
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate triage rule ID
+					try {
+						triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// Use the new API method
+					await triagesApi.deleteTriageRule(this, credentials, triageRuleId);
+
+					returnData.push({
+						json: {
+							success: true,
+							deleted: true,
+							id: triageRuleId,
+							message: 'Triage rule deleted successfully'
+						},
+						pairedItem: i,
 					});
+					break;
 				}
 
-				returnData.push({
-					json: triageRuleData,
-					pairedItem: i,
-				});
-			} else if (operation === 'create') {
-				const description = this.getNodeParameter('description', i) as string;
-				const rule = this.getNodeParameter('rule', i) as string;
-				const engine = this.getNodeParameter('engine', i) as string;
-				const organizationIdsArray = this.getNodeParameter('organizationIdsArray', i) as string;
+				case 'createTag': {
+					const tagName = this.getNodeParameter('tagName', i) as string;
+					const tagOrganizationId = this.getNodeParameter('tagOrganizationId', i) as number;
 
-				// Get searchIn only if engine is 'yara'
-				let searchIn: string | undefined;
-				if (engine === 'yara') {
-					searchIn = this.getNodeParameter('searchIn', i) as string;
-				}
+					// Validate required fields
+					if (!tagName) {
+						throw new NodeOperationError(this.getNode(), 'Tag name cannot be empty', {
+							itemIndex: i,
+						});
+					}
 
-				// Validate required fields
-				const trimmedDescription = description.trim();
-				if (!trimmedDescription) {
-					throw new NodeOperationError(this.getNode(), 'Description cannot be empty or whitespace', {
-						itemIndex: i,
+					// Use the new API method
+					const responseData = await tagsApi.createTriageTag(this, credentials, tagName, tagOrganizationId);
+
+					returnData.push({
+						json: responseData.result as any,
+						pairedItem: i,
 					});
+					break;
 				}
 
-				const trimmedRule = rule.trim();
-				if (!trimmedRule) {
-					throw new NodeOperationError(this.getNode(), 'Rule content cannot be empty or whitespace', {
-						itemIndex: i,
+				case 'getRuleTags': {
+					const organizationId = this.getNodeParameter('organizationId', i) as number;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+
+					// Get withCount, defaulting to true if not specified
+					const withCount = additionalFields.withCount !== undefined ? additionalFields.withCount : true;
+
+					// Get searchTerm from additionalFields
+					const searchTerm = additionalFields.searchTerm || undefined;
+
+					// Use the new API method
+					const responseData = await tagsApi.getTriageTags(this, credentials, organizationId.toString(), withCount, searchTerm);
+
+					const entities = responseData.result || [];
+					const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
+
+					// Process entities with simplified pagination attached to each entity
+					processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
+					break;
+				}
+
+				case 'validate': {
+					const rule = this.getNodeParameter('rule', i) as string;
+
+					// Validate required fields
+					const trimmedRule = rule.trim();
+					if (!trimmedRule) {
+						throw new NodeOperationError(this.getNode(), 'Rule content cannot be empty or whitespace', {
+							itemIndex: i,
+						});
+					}
+
+					// Build the request data
+					const requestData = {
+						rule: trimmedRule,
+					};
+
+					// Use the new API method
+					const responseData = await triagesApi.validateTriageRule(this, credentials, requestData);
+
+					returnData.push({
+						json: {
+							valid: responseData.success,
+							errors: responseData.errors || [],
+							message: responseData.success ? 'Rule is valid' : 'Rule validation failed'
+						},
+						pairedItem: i,
 					});
+					break;
 				}
 
-				// Parse organization IDs
-				let organizationIds: number[];
-				try {
-					organizationIds = organizationIdsArray.split(',')
-						.map(id => {
+				case 'assignTask': {
+					const caseId = this.getNodeParameter('caseId', i) as string;
+					const triageRuleIds = this.getNodeParameter('triageRuleIds', i) as string;
+					const taskChoice = this.getNodeParameter('taskChoice', i) as string;
+					const mitreAttackEnabled = this.getNodeParameter('mitreAttackEnabled', i) as boolean;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+
+					// Validate required fields
+					if (!caseId.trim()) {
+						throw new NodeOperationError(this.getNode(), 'Case ID cannot be empty', {
+							itemIndex: i,
+						});
+					}
+
+					if (!triageRuleIds.trim()) {
+						throw new NodeOperationError(this.getNode(), 'Triage rule IDs cannot be empty', {
+							itemIndex: i,
+						});
+					}
+
+					// Parse triage rule IDs
+					const ruleIds = triageRuleIds.split(',').map(id => id.trim()).filter(id => id.length > 0);
+
+					// Build filter object
+					const filter: any = {};
+
+					if (additionalFields.searchTerm) filter.searchTerm = additionalFields.searchTerm;
+					if (additionalFields.name) filter.name = additionalFields.name;
+					if (additionalFields.ipAddress) filter.ipAddress = additionalFields.ipAddress;
+					if (additionalFields.groupId) filter.groupId = additionalFields.groupId;
+					if (additionalFields.groupFullPath) filter.groupFullPath = additionalFields.groupFullPath;
+					if (additionalFields.managedStatus && additionalFields.managedStatus.length > 0) {
+						filter.managedStatus = additionalFields.managedStatus;
+					}
+					if (additionalFields.isolationStatus && additionalFields.isolationStatus.length > 0) {
+						filter.isolationStatus = additionalFields.isolationStatus;
+					}
+					if (additionalFields.platform && additionalFields.platform.length > 0) {
+						filter.platform = additionalFields.platform;
+					}
+					if (additionalFields.issue) filter.issue = additionalFields.issue;
+					if (additionalFields.onlineStatus && additionalFields.onlineStatus.length > 0) {
+						filter.onlineStatus = additionalFields.onlineStatus;
+					}
+					if (additionalFields.tags) {
+						filter.tags = additionalFields.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0);
+					}
+					if (additionalFields.version) filter.version = additionalFields.version;
+					if (additionalFields.policy) filter.policy = additionalFields.policy;
+					if (additionalFields.includedEndpointIds) {
+						filter.includedEndpointIds = additionalFields.includedEndpointIds.split(',').map((id: string) => id.trim()).filter((id: string) => id.length > 0);
+					}
+					if (additionalFields.excludedEndpointIds) {
+						filter.excludedEndpointIds = additionalFields.excludedEndpointIds.split(',').map((id: string) => id.trim()).filter((id: string) => id.length > 0);
+					}
+					if (additionalFields.organizationIds) {
+						filter.organizationIds = additionalFields.organizationIds.split(',').map((id: string) => {
 							const trimmed = id.trim();
 							const parsed = parseInt(trimmed, 10);
-							if (isNaN(parsed)) {
-								throw new Error(`Invalid organization ID: ${trimmed}`);
-							}
-							return parsed;
-						});
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(),
-						`Invalid organization IDs format: ${error.message}`, {
+							return isNaN(parsed) ? trimmed : parsed;
+						}).filter((id: string | number) => id !== '');
+					}
+
+					// Build the request data
+					const requestData = {
+						caseId: caseId.trim(),
+						triageRuleIds: ruleIds,
+						taskConfig: {
+							choice: taskChoice,
+						},
+						mitreAttack: {
+							enabled: mitreAttackEnabled,
+						},
+						filter,
+					};
+
+					// Use the new API method
+					const responseData = await triagesApi.assignTriageTask(this, credentials, requestData);
+
+					returnData.push({
+						json: responseData.result as any,
+						pairedItem: i,
+					});
+					break;
+				}
+
+				default:
+					throw new NodeOperationError(this.getNode(), `Unsupported operation: ${operation}`, {
 						itemIndex: i,
 					});
-				}
-
-				// Build the request body
-				const requestBody: any = {
-					description: trimmedDescription,
-					rule: trimmedRule,
-					engine,
-					organizationIds,
-				};
-
-				// Only include searchIn for YARA engine
-				if (engine === 'yara' && searchIn) {
-					requestBody.searchIn = searchIn;
-				}
-
-				const options = buildRequestOptions(
-					credentials,
-					'POST',
-					'/api/public/triages/rules'
-				);
-
-				options.body = requestBody;
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData, 'Failed to create triage rule');
-
-				returnData.push({
-					json: responseData.result,
-					pairedItem: i,
-				});
-			} else if (operation === 'update') {
-				const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
-				const description = this.getNodeParameter('description', i) as string;
-				const rule = this.getNodeParameter('rule', i) as string;
-				const engine = this.getNodeParameter('engine', i) as string;
-				const organizationIdsArray = this.getNodeParameter('organizationIdsArray', i) as string;
-
-				// Get searchIn only if engine is 'yara'
-				let searchIn: string | undefined;
-				if (engine === 'yara') {
-					searchIn = this.getNodeParameter('searchIn', i) as string;
-				}
-
-				let triageRuleId: string;
-
-				if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
-					triageRuleId = triageRuleResource.value;
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
-						itemIndex: i,
-					});
-				}
-
-				// Validate triage rule ID
-				try {
-					triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
-
-				// Validate required fields
-				const trimmedDescription = description.trim();
-				if (!trimmedDescription) {
-					throw new NodeOperationError(this.getNode(), 'Description cannot be empty or whitespace', {
-						itemIndex: i,
-					});
-				}
-
-				const trimmedRule = rule.trim();
-				if (!trimmedRule) {
-					throw new NodeOperationError(this.getNode(), 'Rule content cannot be empty or whitespace', {
-						itemIndex: i,
-					});
-				}
-
-				// Parse organization IDs
-				let organizationIds: number[];
-				try {
-					organizationIds = organizationIdsArray.split(',')
-						.map(id => {
-							const trimmed = id.trim();
-							const parsed = parseInt(trimmed, 10);
-							if (isNaN(parsed)) {
-								throw new Error(`Invalid organization ID: ${trimmed}`);
-							}
-							return parsed;
-						});
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(),
-						`Invalid organization IDs format: ${error.message}`, {
-						itemIndex: i,
-					});
-				}
-
-				// Build the request body
-				const requestBody: any = {
-					description: trimmedDescription,
-					rule: trimmedRule,
-					engine,
-					organizationIds,
-				};
-
-				// Only include searchIn for YARA engine
-				if (engine === 'yara' && searchIn) {
-					requestBody.searchIn = searchIn;
-				}
-
-				const options = buildRequestOptions(
-					credentials,
-					'PUT',
-					`/api/public/triages/rules/${triageRuleId}`
-				);
-
-				options.body = requestBody;
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData, 'Failed to update triage rule');
-
-				returnData.push({
-					json: responseData.result,
-					pairedItem: i,
-				});
-			} else if (operation === 'delete') {
-				const triageRuleResource = this.getNodeParameter('triageRuleId', i) as any;
-
-				let triageRuleId: string;
-
-				if (triageRuleResource.mode === 'list' || triageRuleResource.mode === 'id') {
-					triageRuleId = triageRuleResource.value;
-				} else {
-					throw new NodeOperationError(this.getNode(), 'Invalid triage rule selection mode', {
-						itemIndex: i,
-					});
-				}
-
-				// Validate triage rule ID
-				try {
-					triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
-				} catch (error) {
-					throw new NodeOperationError(this.getNode(), error.message, {
-						itemIndex: i,
-					});
-				}
-
-				const options = buildRequestOptions(
-					credentials,
-					'DELETE',
-					`/api/public/triages/rules/${triageRuleId}`
-				);
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData, 'Failed to delete triage rule');
-
-				returnData.push({
-					json: {
-						success: true,
-						deleted: true,
-						id: triageRuleId,
-						message: 'Triage rule deleted successfully'
-					},
-					pairedItem: i,
-				});
-			} else if (operation === 'createTag') {
-				const tagName = this.getNodeParameter('tagName', i) as string;
-				const tagOrganizationId = this.getNodeParameter('tagOrganizationId', i) as number;
-
-				// Validate required fields
-				if (!tagName) {
-					throw new NodeOperationError(this.getNode(), 'Tag name cannot be empty', {
-						itemIndex: i,
-					});
-				}
-
-				// Build the request body
-				const requestBody: any = {
-					name: tagName,
-					organizationId: tagOrganizationId,
-				};
-
-				const options = buildRequestOptions(
-					credentials,
-					'POST',
-					'/api/public/triages/tags'
-				);
-
-				options.body = requestBody;
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData, 'Failed to create tag');
-
-				returnData.push({
-					json: responseData.result,
-					pairedItem: i,
-				});
-			} else if (operation === 'getRuleTags') {
-				const organizationId = this.getNodeParameter('organizationId', i) as number;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-
-				const queryParams: Record<string, string | number> = {
-					'filter[organizationId]': organizationId,
-				};
-
-				// Add optional parameters if provided
-				if (additionalFields.searchTerm) {
-					queryParams['filter[searchTerm]'] = additionalFields.searchTerm;
-				}
-
-				// Always include withCount, defaulting to true if not specified
-				const withCount = additionalFields.withCount !== undefined ? additionalFields.withCount : true;
-				queryParams['filter[withCount]'] = withCount.toString();
-
-				const options = buildRequestOptions(
-					credentials,
-					'GET',
-					'/api/public/triages/tags',
-					queryParams
-				);
-
-				const responseData = await this.helpers.httpRequest(options);
-				validateApiResponse(responseData);
-
-				const entities = responseData.result?.entities || [];
-				const paginationInfo = extractSimplifiedPaginationInfo(responseData.result);
-
-				// Process entities with simplified pagination attached to each entity
-				processApiResponseEntitiesWithSimplifiedPagination(entities, paginationInfo, returnData, i);
 			}
-
 		} catch (error) {
 			handleExecuteError(this, error, i, returnData);
 		}
