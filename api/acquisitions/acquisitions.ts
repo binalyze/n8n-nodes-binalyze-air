@@ -1,17 +1,17 @@
 /**
  * Acquisitions API Module
- * 
+ *
  * This module provides interfaces and functions to interact with the Binalyze AIR API
  * for retrieving acquisition profiles information.
- * 
+ *
  * The module includes:
  * - AcquisitionProfile interface: Represents a single acquisition profile in the system
  * - AcquisitionProfilesResponse interface: Represents the API response structure
  * - api object: Contains methods to interact with the Acquisitions API endpoints
  */
 
-import axios from 'axios';
-import { config } from '../../config';
+import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { AirCredentials } from '../../credentials/AirCredentialsApi.credentials';
 
 export interface AcquisitionProfile {
   _id: string;
@@ -142,8 +142,8 @@ export interface EDiscoveryPattern {
 // Interface for Acquisition Profile Platform specifics (update)
 export interface AcquisitionProfilePlatformDetails {
   evidenceList: string[];
-  artifactList?: string[]; 
-  customContentProfiles: any[]; 
+  artifactList?: string[];
+  customContentProfiles: any[];
   networkCapture?: NetworkCaptureConfig; // Updated type
 }
 
@@ -157,10 +157,10 @@ export interface AcquisitionProfileDetails {
   deletable: boolean;
   windows?: AcquisitionProfilePlatformDetails;
   linux?: AcquisitionProfilePlatformDetails;
-  macos?: AcquisitionProfilePlatformDetails; 
-  aix?: AcquisitionProfilePlatformDetails; 
-  eDiscovery?: { 
-    patterns: any[]; 
+  macos?: AcquisitionProfilePlatformDetails;
+  aix?: AcquisitionProfilePlatformDetails;
+  eDiscovery?: {
+    patterns: any[];
   };
 }
 
@@ -219,109 +219,139 @@ export interface CreateAcquisitionProfileResponse {
 }
 
 export const api = {
-  async getAcquisitionProfiles(organizationIds: string | string[] = '0', allOrganizations: boolean = true): Promise<AcquisitionProfilesResponse> {
+  async getAcquisitionProfiles(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    organizationIds: string | string[] = '0',
+    allOrganizations: boolean = true
+  ): Promise<AcquisitionProfilesResponse> {
     try {
       const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
-      const response = await axios.get(
-        `${config.airHost}/api/public/acquisitions/profiles`,
-        {
-          params: {
-            'filter[organizationIds]': orgIds,
-            'filter[allOrganizations]': allOrganizations
-          },
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+
+      const queryParams: Record<string, string | number> = {
+        'filter[organizationIds]': orgIds,
+        'filter[allOrganizations]': allOrganizations.toString()
+      };
+
+      let url = `${credentials.instanceUrl}/api/public/acquisitions/profiles`;
+      const queryString = Object.entries(queryParams)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+        .join('&');
+      url += `?${queryString}`;
+
+      const options: IHttpRequestOptions = {
+        method: 'GET',
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(options);
+      return response;
     } catch (error) {
-      console.error('Error fetching acquisition profiles:', error);
-      throw error;
+      throw new Error(`Failed to fetch acquisition profiles: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
   // Get Acquisition Profile by ID
-  async getAcquisitionProfileById(profileId: string): Promise<AcquisitionProfileDetailsResponse> {
+  async getAcquisitionProfileById(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    profileId: string
+  ): Promise<AcquisitionProfileDetailsResponse> {
     try {
-      const response = await axios.get(
-        `${config.airHost}/api/public/acquisitions/profiles/${profileId}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+      const options: IHttpRequestOptions = {
+        method: 'GET',
+        url: `${credentials.instanceUrl}/api/public/acquisitions/profiles/${profileId}`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(options);
+      return response;
     } catch (error) {
-      console.error(`Error fetching acquisition profile with ID ${profileId}:`, error);
-      throw error;
+      throw new Error(`Failed to fetch acquisition profile with ID ${profileId}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
   // Assigning evidence acquisition task by filter
-  async assignAcquisitionTask(request: AcquisitionTaskRequest): Promise<AcquisitionTaskResponse> {
+  async assignAcquisitionTask(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    request: AcquisitionTaskRequest
+  ): Promise<AcquisitionTaskResponse> {
     try {
-      const response = await axios.post(
-        `${config.airHost}/api/public/acquisitions/acquire`,
-        request,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+      const options: IHttpRequestOptions = {
+        method: 'POST',
+        url: `${credentials.instanceUrl}/api/public/acquisitions/acquire`,
+        body: request,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(options);
+      return response;
     } catch (error) {
-      console.error('Error assigning acquisition task:', error);
-      throw error;
+      throw new Error(`Failed to assign acquisition task: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
   // Assigning image acquisition task by filter
-  async assignImageAcquisitionTask(request: ImageAcquisitionTaskRequest): Promise<ImageAcquisitionTaskResponse> {
+  async assignImageAcquisitionTask(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    request: ImageAcquisitionTaskRequest
+  ): Promise<ImageAcquisitionTaskResponse> {
     try {
-      const response = await axios.post(
-        `${config.airHost}/api/public/acquisitions/acquire/image`,
-        request,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+      const options: IHttpRequestOptions = {
+        method: 'POST',
+        url: `${credentials.instanceUrl}/api/public/acquisitions/acquire/image`,
+        body: request,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(options);
+      return response;
     } catch (error) {
-      console.error('Error assigning image acquisition task:', error);
-      throw error;
+      throw new Error(`Failed to assign image acquisition task: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
   // Create Acquisition Profile
-  async createAcquisitionProfile(request: CreateAcquisitionProfileRequest): Promise<CreateAcquisitionProfileResponse> {
+  async createAcquisitionProfile(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    request: CreateAcquisitionProfileRequest
+  ): Promise<CreateAcquisitionProfileResponse> {
     try {
-      const response = await axios.post(
-        `${config.airHost}/api/public/acquisitions/profiles`,
-        request,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.airApiToken}`
-          }
-        }
-      );
-      return response.data;
+      const options: IHttpRequestOptions = {
+        method: 'POST',
+        url: `${credentials.instanceUrl}/api/public/acquisitions/profiles`,
+        body: request,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${credentials.token}`
+        },
+        json: true
+      };
+
+      const response = await context.helpers.httpRequest(options);
+      return response;
     } catch (error) {
-      console.error('Error creating acquisition profile:', error);
-      // Attempt to return a structured error if possible
-      if (axios.isAxiosError(error) && error.response) {
-        return error.response.data as CreateAcquisitionProfileResponse; // Assume error response matches structure
-      }
-      throw error; // Rethrow if it's not an Axios error or doesn't have response data
+      throw new Error(`Failed to create acquisition profile: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 };
