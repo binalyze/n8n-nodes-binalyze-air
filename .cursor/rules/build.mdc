@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Build
+
+- Always make sure the code builds after a Chat.

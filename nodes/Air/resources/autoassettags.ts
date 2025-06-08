@@ -22,6 +22,7 @@ import {
 } from '../utils/helpers';
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
+import { findOrganizationByName } from './organizations';
 
 export const AutoAssetTagsOperations: INodeProperties[] = [
 	{
@@ -112,14 +113,45 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Organization ID',
-				name: 'organizationIds',
-				type: 'number',
-				default: 0,
-				description: 'Organization ID to filter tags. Default value 0 fetches tags visible to ALL organizations. Other values fetch tags visible to ALL organizations AND the specified organization.',
-				typeOptions: {
-					minValue: 0,
-				},
+				displayName: 'Organization',
+				name: 'organizationId',
+				type: 'resourceLocator',
+				default: { mode: 'id', value: '0' },
+				placeholder: 'Select an organization...',
+				description: 'Organization to filter tags. Default value 0 fetches tags visible to ALL organizations. Other values fetch tags visible to ALL organizations AND the specified organization.',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[0-9]+$',
+									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
+								},
+							},
+						],
+						placeholder: 'Enter Organization ID (0 for default organization)',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
+					},
+				],
 			},
 			{
 				displayName: 'Page Number',
@@ -249,13 +281,11 @@ export async function findAutoAssetTagByName(
 	}
 }
 
-export function buildAutoAssetTagQueryParams(additionalFields: any): Record<string, string | number> {
+export function buildAutoAssetTagQueryParams(additionalFields: any, organizationId?: number): Record<string, string | number> {
 	const queryParams: Record<string, string | number> = {};
 
 	// Organization ID is required with default value 0
-	queryParams['filter[organizationIds]'] = additionalFields.organizationIds !== undefined
-		? additionalFields.organizationIds
-		: 0;
+	queryParams['filter[organizationIds]'] = organizationId !== undefined ? organizationId : 0;
 
 	if (additionalFields.pageNumber !== undefined) {
 		queryParams.pageNumber = additionalFields.pageNumber;
@@ -270,28 +300,13 @@ export function buildAutoAssetTagQueryParams(additionalFields: any): Record<stri
 	return queryParams;
 }
 
-/**
- * Helper function to get organization ID from context if available
- * Note: For "From List" mode in resource locator, n8n doesn't provide access to current node parameters
- * during the dropdown population, so this will fall back to organizationId 0 (all organizations)
- */
-function getOrganizationIdFromContext(context: ILoadOptionsFunctions | IExecuteFunctions): number {
-	try {
-		// This will only work during execution, not during dropdown population
-		if ('getNodeParameter' in context && typeof (context as any).getNodeParameter === 'function') {
-			return (context as IExecuteFunctions).getNodeParameter('organizationId', 0) as number;
-		}
-	} catch (error) {
-		// If we can't get the parameter (e.g., during dropdown loading), fall back to default
-	}
-	return 0; // Default to all organizations
-}
+
 
 export async function getAutoAssetTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
-		// Try to get organizationId from context, fallback to 0 for all organizations
-		const organizationId = getOrganizationIdFromContext(this);
+		// Use organizationId 0 for all organizations in dropdown loading
+		const organizationId = 0;
 		const tags = await fetchAllAutoAssetTags(this, credentials, organizationId, filter);
 
 		return createListSearchResults(
@@ -345,7 +360,39 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 				switch (operation) {
 					case 'getAll':
 						const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-						const queryParams = buildAutoAssetTagQueryParams(additionalFields);
+
+						// Handle organization resource locator
+						let organizationId: number = 0; // Default to all organizations
+						if (additionalFields.organizationId) {
+							const organizationResource = additionalFields.organizationId;
+							let orgIdString: string;
+
+							if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+								orgIdString = organizationResource.value;
+							} else if (organizationResource.mode === 'name') {
+								try {
+									orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
+								} catch (error) {
+									throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+								}
+							} else {
+								throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+									itemIndex: i,
+								});
+							}
+
+							// Validate and convert organization ID
+							try {
+								orgIdString = requireValidId(orgIdString, 'Organization ID');
+								organizationId = parseInt(orgIdString);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, {
+									itemIndex: i,
+								});
+							}
+						}
+
+						const queryParams = buildAutoAssetTagQueryParams(additionalFields, organizationId);
 
 						const getAllOptions = buildRequestOptions(credentials, 'GET', '/api/public/auto-asset-tag', queryParams);
 						const getAllResponse = await this.helpers.httpRequest(getAllOptions);
