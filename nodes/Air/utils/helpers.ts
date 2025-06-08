@@ -108,14 +108,14 @@ export function validateApiResponse(responseData: ApiResponse, context?: string)
 }
 
 /**
- * Generic function to extract entity ID from entity object with comprehensive field checking
+ * Generic function to extract entity ID from entity object using _id field only
  */
 export function extractEntityId(entity: any, entityType: string = 'entity'): string {
-	const entityId = entity._id ?? entity.id ?? entity[`${entityType}Id`] ?? entity.Id;
+	const entityId = entity._id;
 
 	if (entityId === undefined || entityId === null || entityId === '') {
 		throw new Error(
-			`${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has no valid ID. ID value: ${entityId}, ID type: ${typeof entityId}. ` +
+			`${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has no valid _id. ID value: ${entityId}, ID type: ${typeof entityId}. ` +
 			`Available fields: ${Object.keys(entity).join(', ')}`
 		);
 	}
