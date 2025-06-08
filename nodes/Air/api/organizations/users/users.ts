@@ -1,5 +1,6 @@
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
 
 export interface UserProfile {
   name: string;
@@ -83,27 +84,21 @@ export const api = {
         queryParams.sortType = options.sortType;
       }
 
-      const requestOptions: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/organizations/${organizationId}/users`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
-
-      // Add query parameters if any exist
-      if (Object.keys(queryParams).length > 0) {
-        requestOptions.qs = queryParams;
-      }
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/organizations/${organizationId}/users`,
+        Object.keys(queryParams).length > 0 ? queryParams : undefined
+      );
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch users for organization ${organizationId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch users for organization ${organizationId}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async assignUsersToOrganization(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -116,23 +111,21 @@ export const api = {
     errors: string[];
   }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/organizations/${organizationId}/assign-users`,
-        body: { userIds },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/organizations/${organizationId}/assign-users`
+      );
+      requestOptions.body = { userIds };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `assign users to organization ${organizationId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to assign users to organization ${organizationId}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async removeUserFromOrganization(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -145,17 +138,14 @@ export const api = {
     errors: string[];
   }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/organizations/${organizationId}/remove-user/${userId}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/organizations/${organizationId}/remove-user/${userId}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `remove user ${userId} from organization ${organizationId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to remove user ${userId} from organization ${organizationId}: ${error instanceof Error ? error.message : String(error)}`);

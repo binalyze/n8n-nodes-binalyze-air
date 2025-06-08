@@ -116,7 +116,7 @@ function generateDeploymentPackages(
 /**
  * Process organization entity to add computed shareableDeploymentPage and deploymentPackages properties
  */
-export function processOrganizationEntity(organization: any, instanceUrl: string): any {
+export function enrichOrganizationEntity(organization: any, instanceUrl: string): any {
 	const processedOrg = { ...organization };
 
 	// Add shareableDeploymentPage property based on shareableDeploymentEnabled and deploymentToken
@@ -150,7 +150,7 @@ export function processOrganizationEntity(organization: any, instanceUrl: string
  * Process multiple organization entities to add computed properties
  */
 export function processOrganizationEntities(organizations: any[], instanceUrl: string): any[] {
-	return organizations.map(org => processOrganizationEntity(org, instanceUrl));
+	return organizations.map(org => enrichOrganizationEntity(org, instanceUrl));
 }
 
 export const OrganizationsOperations: INodeProperties[] = [
@@ -784,7 +784,7 @@ export async function getOrganizations(this: ILoadOptionsFunctions, filter?: str
 		const credentials = await getAirCredentials(this);
 
 		// Use API with appropriate parameters - show first 50 organizations by default, or use name filter
-		const options = filter ? { nameFilter: filter, pageSize: 50, pageNumber: 1 } : { pageSize: 50, pageNumber: 1 };
+		const options = filter ? { name: filter, pageSize: 50, pageNumber: 1 } : { pageSize: 50, pageNumber: 1 };
 		const response = await organizationsApi.getOrganizations(this, credentials, options);
 		const organizations = response.result?.entities || [];
 
@@ -886,7 +886,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					break;
 				}
 
-								case 'get': {
+				case 'get': {
 					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					let organizationId: string;
 
@@ -930,10 +930,10 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					// Process organization to add computed properties
-					const processedOrganization = processOrganizationEntity(response.result, credentials.instanceUrl);
+					const enrichedOrganization = enrichOrganizationEntity(response.result, credentials.instanceUrl);
 
 					returnData.push({
-						json: processedOrganization,
+						json: enrichedOrganization,
 						pairedItem: i,
 					});
 					break;
@@ -1041,7 +1041,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					// Process organization result to add computed properties
-					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+					const processedResult = response.result ? enrichOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
 
 					returnData.push({
 						json: processedResult,
@@ -1098,7 +1098,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					// Process organization result to add computed properties
-					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+					const processedResult = response.result ? enrichOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
 
 					returnData.push({
 						json: processedResult,
@@ -1169,7 +1169,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					// Process organization result to add computed properties
-					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+					const processedResult = response.result ? enrichOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
 
 					returnData.push({
 						json: processedResult,
@@ -1349,7 +1349,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 						});
 					}
 
-					const processedResult = response.result ? processOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
+					const processedResult = response.result ? enrichOrganizationEntity(response.result, credentials.instanceUrl) : response.result;
 
 					returnData.push({
 						json: processedResult,

@@ -10,8 +10,9 @@
  * - api object: Contains methods to interact with the Case Notes API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
 
 export interface Note {
   _id: string;
@@ -49,18 +50,15 @@ export const api = {
     noteValue: string
   ): Promise<AddNoteResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/cases/${caseId}/notes`,
-        body: { value: noteValue },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/cases/${caseId}/notes`
+      );
+      requestOptions.body = { value: noteValue };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `add note to case ${caseId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to add note to case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
@@ -75,18 +73,15 @@ export const api = {
     noteValue: string
   ): Promise<UpdateNoteResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/cases/${caseId}/notes/${noteId}`,
-        body: { value: noteValue },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/cases/${caseId}/notes/${noteId}`
+      );
+      requestOptions.body = { value: noteValue };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `update note ${noteId} in case ${caseId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to update note ${noteId} in case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
@@ -100,17 +95,14 @@ export const api = {
     noteId: string
   ): Promise<DeleteNoteResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/cases/${caseId}/notes/${noteId}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/cases/${caseId}/notes/${noteId}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `delete note ${noteId} from case ${caseId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to delete note ${noteId} from case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);

@@ -12,6 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 export interface AcquisitionProfile {
   _id: string;
@@ -233,18 +234,15 @@ export const api = {
         'filter[allOrganizations]': allOrganizations.toString()
       };
 
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/acquisitions/profiles`,
-        qs: queryParams,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/acquisitions/profiles',
+        queryParams
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch acquisition profiles');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch acquisition profiles: ${error instanceof Error ? error.message : String(error)}`);
@@ -258,17 +256,14 @@ export const api = {
     profileId: string
   ): Promise<AcquisitionProfileDetailsResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/acquisitions/profiles/${profileId}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/acquisitions/profiles/${profileId}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch acquisition profile with ID ${profileId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch acquisition profile with ID ${profileId}: ${error instanceof Error ? error.message : String(error)}`);
@@ -282,18 +277,15 @@ export const api = {
     request: AcquisitionTaskRequest
   ): Promise<AcquisitionTaskResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/acquisitions/acquire`,
-        body: request,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/acquisitions/acquire'
+      );
+      requestOptions.body = request;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'assign acquisition task');
       return response;
     } catch (error) {
       throw new Error(`Failed to assign acquisition task: ${error instanceof Error ? error.message : String(error)}`);
@@ -307,18 +299,15 @@ export const api = {
     request: ImageAcquisitionTaskRequest
   ): Promise<ImageAcquisitionTaskResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/acquisitions/acquire/image`,
-        body: request,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/acquisitions/acquire/image'
+      );
+      requestOptions.body = request;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'assign image acquisition task');
       return response;
     } catch (error) {
       throw new Error(`Failed to assign image acquisition task: ${error instanceof Error ? error.message : String(error)}`);
@@ -332,18 +321,15 @@ export const api = {
     request: CreateAcquisitionProfileRequest
   ): Promise<CreateAcquisitionProfileResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/acquisitions/profiles`,
-        body: request,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/acquisitions/profiles'
+      );
+      requestOptions.body = request;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'create acquisition profile');
       return response;
     } catch (error) {
       throw new Error(`Failed to create acquisition profile: ${error instanceof Error ? error.message : String(error)}`);

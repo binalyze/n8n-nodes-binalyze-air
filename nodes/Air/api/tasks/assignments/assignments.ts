@@ -10,8 +10,9 @@
  * - api object: Contains methods to interact with the Task Assignments API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
 
 export interface TaskAssignment {
   _id: string;
@@ -79,17 +80,14 @@ export const api = {
     taskId: string
   ): Promise<TaskAssignmentsResponse> {
     try {
-      const requestOptions: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/tasks/${taskId}/assignments`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/tasks/${taskId}/assignments`
+      );
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch task assignments for task ${taskId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch task assignments: ${error instanceof Error ? error.message : String(error)}`);
@@ -102,18 +100,15 @@ export const api = {
     assignmentId: string
   ): Promise<CancelTaskAssignmentResponse> {
     try {
-      const requestOptions: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/tasks/assignments/${assignmentId}/cancel`,
-        body: {},
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/tasks/assignments/${assignmentId}/cancel`
+      );
+      requestOptions.body = {};
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `cancel task assignment ${assignmentId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to cancel task assignment: ${error instanceof Error ? error.message : String(error)}`);
@@ -126,17 +121,14 @@ export const api = {
     assignmentId: string
   ): Promise<DeleteTaskAssignmentResponse> {
     try {
-      const requestOptions: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/tasks/assignments/${assignmentId}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/tasks/assignments/${assignmentId}`
+      );
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `delete task assignment ${assignmentId}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to delete task assignment: ${error instanceof Error ? error.message : String(error)}`);

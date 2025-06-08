@@ -12,6 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 export interface Case {
   _id: string;
@@ -272,18 +273,15 @@ export const api = {
         }
       }
 
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/cases`,
-        qs: queryParams,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/cases',
+        queryParams
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch cases');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch cases: ${error instanceof Error ? error.message : String(error)}`);
@@ -301,18 +299,15 @@ export const api = {
     }
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/cases`,
-        body: caseData,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/cases'
+      );
+      requestOptions.body = caseData;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'create case');
       return response;
     } catch (error) {
       throw new Error(`Failed to create case: ${error instanceof Error ? error.message : String(error)}`);
@@ -332,18 +327,15 @@ export const api = {
     }>
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}`,
-        body: updateData,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/cases/${id}`
+      );
+      requestOptions.body = updateData;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `update case with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to update case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -356,17 +348,14 @@ export const api = {
     id: string
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/cases/${id}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch case with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -379,17 +368,14 @@ export const api = {
     id: string
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/close`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/cases/${id}/close`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `close case with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to close case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -402,17 +388,14 @@ export const api = {
     id: string
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/open`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/cases/${id}/open`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `open case with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to open case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -425,17 +408,14 @@ export const api = {
     id: string
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/archive`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/cases/${id}/archive`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `archive case with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to archive case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -449,18 +429,15 @@ export const api = {
     newOwnerId: string
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/change-owner`,
-        body: { ownerUserId: newOwnerId },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/cases/${id}/change-owner`
+      );
+      requestOptions.body = { ownerUserId: newOwnerId };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `change owner for case with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to change owner for case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -473,18 +450,15 @@ export const api = {
     name: string
   ): Promise<{ success: boolean; result: boolean; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/cases/check-name`,
-        qs: { name },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/cases/check-name',
+        { name }
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'check case name');
       return response;
     } catch (error) {
       throw new Error(`Failed to check case name: ${error instanceof Error ? error.message : String(error)}`);
@@ -497,20 +471,17 @@ export const api = {
     id: string
   ): Promise<CaseActivitiesResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/activities`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/cases/${id}/activities`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch activities for case with ID ${id}`);
       return response;
     } catch (error) {
-      throw new Error(`Failed to fetch case activities for ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to fetch activities for case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
@@ -522,24 +493,22 @@ export const api = {
   ): Promise<CaseEndpointsResponse> {
     try {
       const orgIds = String(organizationIds);
-
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/endpoints`,
-        qs: {
-          'filter[organizationIds]': orgIds
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
+      const queryParams = {
+        'filter[organizationIds]': orgIds
       };
 
-      const response = await context.helpers.httpRequest(options);
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/cases/${id}/endpoints`,
+        queryParams
+      );
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch endpoints for case with ID ${id}`);
       return response;
     } catch (error) {
-      throw new Error(`Failed to fetch case endpoints for ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to fetch endpoints for case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
@@ -551,24 +520,22 @@ export const api = {
   ): Promise<CaseTasksResponse> {
     try {
       const orgIds = String(organizationIds);
-
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/tasks`,
-        qs: {
-          'filter[organizationIds]': orgIds
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
+      const queryParams = {
+        'filter[organizationIds]': orgIds
       };
 
-      const response = await context.helpers.httpRequest(options);
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/cases/${id}/tasks`,
+        queryParams
+      );
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch tasks for case with ID ${id}`);
       return response;
     } catch (error) {
-      throw new Error(`Failed to fetch case tasks for ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to fetch tasks for case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
@@ -579,23 +546,22 @@ export const api = {
     organizationIds: string = '0'
   ): Promise<CaseUsersResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/cases/${caseId}/users`,
-        qs: {
-          'filter[organizationIds]': organizationIds
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
+      const queryParams = {
+        'filter[organizationIds]': organizationIds
       };
 
-      const response = await context.helpers.httpRequest(options);
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/cases/${caseId}/users`,
+        queryParams
+      );
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch users for case with ID ${caseId}`);
       return response;
     } catch (error) {
-      throw new Error(`Failed to fetch case users for ID ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to fetch users for case with ID ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
@@ -623,18 +589,15 @@ export const api = {
     }
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/cases/${id}/endpoints`,
-        body: { filter },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/cases/${id}/remove-endpoints`
+      );
+      requestOptions.body = { filter };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `remove endpoints from case with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to remove endpoints from case with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -648,20 +611,18 @@ export const api = {
     taskAssignmentId: string
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/cases/${caseId}/task-assignments/${taskAssignmentId}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/cases/${caseId}/remove-task-assignment`
+      );
+      requestOptions.body = { taskAssignmentId };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `remove task assignment from case with ID ${caseId}`);
       return response;
     } catch (error) {
-      throw new Error(`Failed to remove task assignment from case: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to remove task assignment from case with ID ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
 
@@ -672,21 +633,18 @@ export const api = {
     taskAssignmentIds: string[]
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/cases/${caseId}/task-assignments`,
-        body: { taskAssignmentIds },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/cases/${caseId}/import-task-assignments`
+      );
+      requestOptions.body = { taskAssignmentIds };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `import task assignments to case with ID ${caseId}`);
       return response;
     } catch (error) {
-      throw new Error(`Failed to import task assignments to case: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to import task assignments to case with ID ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 };

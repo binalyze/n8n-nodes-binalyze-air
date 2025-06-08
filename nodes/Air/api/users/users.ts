@@ -10,8 +10,9 @@
  * - api object: Contains methods to interact with the Users API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 export interface User {
   _id: string;
@@ -105,18 +106,15 @@ export const api = {
         }
       }
 
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/user-management/users`,
-        qs: queryParams,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/user-management/users',
+        queryParams
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch users');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch users: ${error instanceof Error ? error.message : String(error)}`);
@@ -129,17 +127,14 @@ export const api = {
     id: string
   ): Promise<UserResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/user-management/users/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/user-management/users/${id}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch user with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch user with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
