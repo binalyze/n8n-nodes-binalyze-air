@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# API
+
+- Binalyze AIR API uses _id as the Entity Identifier property name. Do not try use any other property name else while handling HTTP API responses.
+- When needed, you can check the Postman Collection export in [postman.json](mdc:docs/postman.json).

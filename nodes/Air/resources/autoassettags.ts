@@ -156,11 +156,11 @@ export function extractAutoAssetTagId(autoAssetTag: any): string {
 	if (typeof autoAssetTag === 'string') {
 		return autoAssetTag;
 	}
-	return autoAssetTag?._id || autoAssetTag?.id || '';
+	return autoAssetTag?._id || '';
 }
 
 export function isValidAutoAssetTag(tag: any): boolean {
-	return tag && typeof tag === 'object' && (tag._id || tag.id) && tag.tag;
+	return tag && typeof tag === 'object' && tag._id && tag.tag;
 }
 
 export async function fetchAllAutoAssetTags(

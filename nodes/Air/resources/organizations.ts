@@ -711,6 +711,12 @@ export const OrganizationsOperations: INodeProperties[] = [
  * Extract organization ID from organization object with comprehensive field checking
  */
 export function extractOrganizationId(organization: any): string {
+	// Organizations typically use _id field, so check it first
+	if (organization._id !== undefined && organization._id !== null && organization._id !== '') {
+		return String(organization._id);
+	}
+
+	// Fall back to generic extraction for other possible ID fields
 	return extractEntityId(organization, 'organization');
 }
 

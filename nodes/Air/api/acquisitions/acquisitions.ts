@@ -10,7 +10,7 @@
  * - api object: Contains methods to interact with the Acquisitions API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
 import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
