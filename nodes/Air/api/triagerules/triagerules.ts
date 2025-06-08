@@ -53,9 +53,9 @@ export interface TriageRulesResponse {
 export interface CreateTriageRuleRequest {
   description: string;
   rule: string;
-  searchIn: string;
+  searchIn?: string;
   engine: string;
-  organizationIds: (string | number)[];
+  organizationIds: number[];
   tagIds?: string[];
 }
 
@@ -229,6 +229,10 @@ export const api = {
       );
       requestOptions.body = data;
 
+			// Add custom status code handling for validation endpoint
+      // Status code 660 is a custom code used by the API for validation failures
+      requestOptions.ignoreHttpStatusErrors = true;
+
       const response = await context.helpers.httpRequest(requestOptions);
       validateApiResponse(response, 'create triage rule');
       return response;
@@ -250,6 +254,10 @@ export const api = {
         `/api/public/triages/rules/${id}`
       );
       requestOptions.body = data;
+
+			// Add custom status code handling for validation endpoint
+      // Status code 660 is a custom code used by the API for validation failures
+      requestOptions.ignoreHttpStatusErrors = true;
 
       const response = await context.helpers.httpRequest(requestOptions);
       validateApiResponse(response, `update triage rule with ID ${id}`);
