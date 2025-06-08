@@ -136,53 +136,34 @@ export const TriageRulesOperations: INodeProperties[] = [
 		required: true,
 		description: 'The triage rule to operate on',
 	},
+
 	{
-		displayName: 'Organization',
-		name: 'organizationId',
-		type: 'resourceLocator',
-		default: { mode: 'id', value: '0' },
-		placeholder: 'Select an organization...',
+		displayName: 'Rule Engine',
+		name: 'engine',
+		type: 'options',
+		default: 'yara',
 		displayOptions: {
 			show: {
 				resource: ['triagerules'],
-				operation: ['getAll'],
+				operation: ['create', 'update', 'validate'],
 			},
 		},
-		modes: [
+		options: [
 			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				placeholder: 'Select an organization...',
-				typeOptions: {
-					searchListMethod: 'getOrganizations',
-					searchable: true,
-				},
+				name: 'YARA',
+				value: 'yara',
 			},
 			{
-				displayName: 'By ID',
-				name: 'id',
-				type: 'string',
-				validation: [
-					{
-						type: 'regex',
-						properties: {
-							regex: '^[0-9]+$',
-							errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
-						},
-					},
-				],
-				placeholder: 'Enter Organization ID (0 for default organization)',
+				name: 'Sigma',
+				value: 'sigma',
 			},
 			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter organization name',
+				name: 'Osquery',
+				value: 'osquery',
 			},
 		],
 		required: true,
-		description: 'Organization to filter triage rules by (required by API). Use "0" to retrieve rules that are visible to all organizations. Specify a single organization ID to retrieve rules that are visible to that organization only alongside those that are visible to all organizations.',
+		description: 'The engine type for the triage rule',
 	},
 	{
 		displayName: 'Rule Description',
@@ -229,34 +210,6 @@ export const TriageRulesOperations: INodeProperties[] = [
 		description: 'The rule content based on the selected engine (YARA, Sigma, or osquery)',
 	},
 	{
-		displayName: 'Rule Engine',
-		name: 'engine',
-		type: 'options',
-		default: 'yara',
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['create', 'validate'],
-			},
-		},
-		options: [
-			{
-				name: 'YARA',
-				value: 'yara',
-			},
-			{
-				name: 'Sigma',
-				value: 'sigma',
-			},
-			{
-				name: 'Osquery',
-				value: 'osquery',
-			},
-		],
-		required: true,
-		description: 'The engine type for the triage rule',
-	},
-	{
 		displayName: 'Search In',
 		name: 'searchIn',
 		type: 'options',
@@ -285,88 +238,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 		required: true,
 		description: 'Where to search when running the triage rule',
 	},
-	{
-		displayName: 'Notice',
-		name: 'osqueryNotice',
-		type: 'notice',
-		default: 'Scope: System',
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['create', 'update'],
-				engine: ['osquery'],
-			},
-		},
-		typeOptions: {
-			theme: 'info',
-		},
-		description: 'Osquery rules will automatically search in "system" scope',
-	},
-	{
-		displayName: 'Notice',
-		name: 'sigmaNotice',
-		type: 'notice',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['create', 'update'],
-				engine: ['sigma'],
-			},
-		},
-		typeOptions: {
-			theme: 'info',
-		},
-		description: 'Sigma rules will automatically search in "event-records" scope',
-	},
-	{
-		displayName: 'Organization',
-		name: 'organizationId',
-		type: 'resourceLocator',
-		default: { mode: 'id', value: '0' },
-		placeholder: 'Select an organization...',
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['create', 'update'],
-			},
-		},
-		modes: [
-			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				placeholder: 'Select an organization...',
-				typeOptions: {
-					searchListMethod: 'getOrganizations',
-					searchable: true,
-				},
-			},
-			{
-				displayName: 'By ID',
-				name: 'id',
-				type: 'string',
-				validation: [
-					{
-						type: 'regex',
-						properties: {
-							regex: '^[0-9]+$',
-							errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
-						},
-					},
-				],
-				placeholder: 'Enter Organization ID (0 for default organization)',
-			},
-			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter organization name',
-			},
-		],
-		required: true,
-		description: 'Organization for this triage rule. Use "0" for all organizations.',
-	},
+
 
 	// Fields for Assign Triage Task operation
 	{
@@ -450,6 +322,47 @@ export const TriageRulesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Organization',
+				name: 'organizationId',
+				type: 'resourceLocator',
+				default: { mode: 'id', value: '0' },
+				placeholder: 'Select an organization...',
+				description: 'Organization for this triage rule. Use "0" for all organizations.',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[0-9]+$',
+									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
+								},
+							},
+						],
+						placeholder: 'Enter Organization ID (0 for default organization)',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
+					},
+				],
+			},
+			{
 				displayName: 'Rule Tag IDs',
 				name: 'tagIds',
 				type: 'string',
@@ -500,13 +413,53 @@ export const TriageRulesOperations: INodeProperties[] = [
 					},
 				],
 			},
-
 			{
 				displayName: 'Filter: Search Term',
 				name: 'searchTerm',
 				type: 'string',
 				default: '',
 				description: 'Search term to filter triage rules',
+			},
+			{
+				displayName: 'Organization',
+				name: 'organizationId',
+				type: 'resourceLocator',
+				default: { mode: 'id', value: '0' },
+				placeholder: 'Select an organization...',
+				description: 'Organization to filter triage rules by. Use "0" to retrieve rules that are visible to all organizations.',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[0-9]+$',
+									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
+								},
+							},
+						],
+						placeholder: 'Enter Organization ID (0 for default organization)',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
+					},
+				],
 			},
 			{
 				displayName: 'Page Number',
@@ -550,6 +503,62 @@ export const TriageRulesOperations: INodeProperties[] = [
 				default: { mode: 'id', value: '0' },
 				placeholder: 'Select an organization...',
 				description: 'Organization to filter triage rules by when using "From List" selection. Use "0" to retrieve rules that are visible to all organizations.',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[0-9]+$',
+									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
+								},
+							},
+						],
+						placeholder: 'Enter Organization ID (0 for default organization)',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
+					},
+				],
+			},
+		],
+	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['triagerules'],
+				operation: ['update'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Organization',
+				name: 'organizationId',
+				type: 'resourceLocator',
+				default: { mode: 'id', value: '0' },
+				placeholder: 'Select an organization...',
+				description: 'Organization for this triage rule. Use "0" for all organizations.',
 				modes: [
 					{
 						displayName: 'From List',
@@ -783,101 +792,62 @@ export const TriageRulesOperations: INodeProperties[] = [
 		description: 'Name of the tag to create',
 	},
 	{
-		displayName: 'Organization',
-		name: 'tagOrganizationId',
-		type: 'resourceLocator',
-		default: { mode: 'id', value: '0' },
-		placeholder: 'Select an organization...',
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
 		displayOptions: {
 			show: {
 				resource: ['triagerules'],
 				operation: ['createTag'],
 			},
 		},
-		modes: [
+		options: [
 			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
+				displayName: 'Organization',
+				name: 'tagOrganizationId',
+				type: 'resourceLocator',
+				default: { mode: 'id', value: '0' },
 				placeholder: 'Select an organization...',
-				typeOptions: {
-					searchListMethod: 'getOrganizations',
-					searchable: true,
-				},
-			},
-			{
-				displayName: 'By ID',
-				name: 'id',
-				type: 'string',
-				validation: [
+				description: 'Organization for the tag (use 0 for all organizations)',
+				modes: [
 					{
-						type: 'regex',
-						properties: {
-							regex: '^[0-9]+$',
-							errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
 						},
 					},
-				],
-				placeholder: 'Enter Organization ID (0 for default organization)',
-			},
-			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter organization name',
-			},
-		],
-		required: true,
-		description: 'Organization for the tag (use 0 for all organizations)',
-	},
-	{
-		displayName: 'Organization',
-		name: 'organizationId',
-		type: 'resourceLocator',
-		default: { mode: 'id', value: '0' },
-		placeholder: 'Select an organization...',
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['getRuleTags'],
-			},
-		},
-		modes: [
-			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				placeholder: 'Select an organization...',
-				typeOptions: {
-					searchListMethod: 'getOrganizations',
-					searchable: true,
-				},
-			},
-			{
-				displayName: 'By ID',
-				name: 'id',
-				type: 'string',
-				validation: [
 					{
-						type: 'regex',
-						properties: {
-							regex: '^[0-9]+$',
-							errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
-						},
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[0-9]+$',
+									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
+								},
+							},
+						],
+						placeholder: 'Enter Organization ID (0 for default organization)',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
 					},
 				],
-				placeholder: 'Enter Organization ID (0 for default organization)',
-			},
-			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter organization name',
 			},
 		],
-		required: true,
-		description: 'Organization to filter rule tags by (required by API). Use 0 to retrieve tags that are visible to all organizations.',
 	},
+
 	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
@@ -891,6 +861,47 @@ export const TriageRulesOperations: INodeProperties[] = [
 			},
 		},
 		options: [
+			{
+				displayName: 'Organization',
+				name: 'organizationId',
+				type: 'resourceLocator',
+				default: { mode: 'id', value: '0' },
+				placeholder: 'Select an organization...',
+				description: 'Organization to filter rule tags by. Use 0 to retrieve tags that are visible to all organizations.',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[0-9]+$',
+									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
+								},
+							},
+						],
+						placeholder: 'Enter Organization ID (0 for default organization)',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
+					},
+				],
+			},
 			{
 				displayName: 'Filter: Search Term',
 				name: 'searchTerm',
@@ -1166,34 +1177,37 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 			switch (operation) {
 				case 'getAll': {
-					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
-					// Handle organization resource locator
+					// Handle organization resource locator from additional fields
 					let organizationId: string = '0'; // Default to all organizations
-					let orgIdString: string;
 
-					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-						orgIdString = organizationResource.value;
-					} else if (organizationResource.mode === 'name') {
-						try {
-							orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					if (additionalFields.organizationId) {
+						const organizationResource = additionalFields.organizationId;
+						let orgIdString: string;
+
+						if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+							orgIdString = organizationResource.value;
+						} else if (organizationResource.mode === 'name') {
+							try {
+								orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+								itemIndex: i,
+							});
 						}
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-							itemIndex: i,
-						});
-					}
 
-					// Validate and use organization ID
-					try {
-						organizationId = requireValidId(orgIdString, 'Organization ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
+						// Validate and use organization ID
+						try {
+							organizationId = requireValidId(orgIdString, 'Organization ID');
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, {
+								itemIndex: i,
+							});
+						}
 					}
 
 					// Build query parameters from additionalFields
@@ -1249,7 +1263,6 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					const description = this.getNodeParameter('description', i) as string;
 					const rule = this.getNodeParameter('rule', i) as string;
 					const engine = this.getNodeParameter('engine', i) as string;
-					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
 					// Get optional tag IDs from additional fields
@@ -1294,35 +1307,39 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 						});
 					}
 
-					// Handle organization resource locator
+					// Handle organization resource locator from additional fields
 					let organizationId: string = '0'; // Default to all organizations
-					let orgIdString: string;
 
-					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-						orgIdString = organizationResource.value;
-					} else if (organizationResource.mode === 'name') {
-						try {
-							orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					if (additionalFields.organizationId) {
+						const organizationResource = additionalFields.organizationId;
+						let orgIdString: string;
+
+						if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+							orgIdString = organizationResource.value;
+						} else if (organizationResource.mode === 'name') {
+							try {
+								orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+								itemIndex: i,
+							});
 						}
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-							itemIndex: i,
-						});
-					}
 
-					// Validate and convert organization ID
-					try {
-						organizationId = requireValidId(orgIdString, 'Organization ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
+						// Validate and convert organization ID
+						try {
+							organizationId = requireValidId(orgIdString, 'Organization ID');
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, {
+								itemIndex: i,
+							});
+						}
 					}
 
 					// Convert to array for API compatibility
-					const organizationIds: (string | number)[] = [parseInt(organizationId, 10)];
+					const organizationIds: number[] = [parseInt(organizationId, 10)];
 
 					// Build the request data
 					const requestData: any = {
@@ -1330,7 +1347,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 						rule: trimmedRule,
 						engine,
 						organizationIds,
-						searchIn: searchIn, // Always provided based on engine type
+						searchIn,
 					};
 
 					// Add tag IDs if provided
@@ -1340,6 +1357,13 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 					// Use the new API method
 					const responseData = await triageRulesApi.createTriageRule(this, credentials, requestData);
+
+					// Check if the response indicates an error with status code 660
+					if (!responseData.success && responseData.statusCode === 660) {
+						throw new NodeOperationError(this.getNode(), 'Invalid Rule Content or Engine', {
+							itemIndex: i,
+						});
+					}
 
 					returnData.push({
 						json: responseData.result as any,
@@ -1353,7 +1377,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					const description = this.getNodeParameter('description', i) as string;
 					const rule = this.getNodeParameter('rule', i) as string;
 					const engine = this.getNodeParameter('engine', i) as string;
-					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
 					// Get searchIn based on engine type
 					let searchIn: string;
@@ -1404,46 +1428,57 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 						});
 					}
 
-					// Handle organization resource locator
+					// Handle organization resource locator from additional fields
 					let organizationId: string = '0'; // Default to all organizations
-					let orgIdString: string;
 
-					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-						orgIdString = organizationResource.value;
-					} else if (organizationResource.mode === 'name') {
-						try {
-							orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					if (additionalFields.organizationId) {
+						const organizationResource = additionalFields.organizationId;
+						let orgIdString: string;
+
+						if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+							orgIdString = organizationResource.value;
+						} else if (organizationResource.mode === 'name') {
+							try {
+								orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+								itemIndex: i,
+							});
 						}
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-							itemIndex: i,
-						});
-					}
 
-					// Validate and convert organization ID
-					try {
-						organizationId = requireValidId(orgIdString, 'Organization ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
+						// Validate and convert organization ID
+						try {
+							organizationId = requireValidId(orgIdString, 'Organization ID');
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, {
+								itemIndex: i,
+							});
+						}
 					}
 
 					// Convert to array for API compatibility
-					const organizationIds: (string | number)[] = [parseInt(organizationId, 10)];
+					const organizationIds: number[] = [parseInt(organizationId, 10)];
 
 					// Build the request data
 					const requestData: any = {
 						description: trimmedDescription,
 						rule: trimmedRule,
-						searchIn: searchIn, // Always provided based on engine type
 						organizationIds,
+						searchIn,
 					};
 
 					// Use the new API method
 					const responseData = await triageRulesApi.updateTriageRule(this, credentials, triageRuleId, requestData);
+
+					// Check if the response indicates an error with status code 660
+					if (!responseData.success && responseData.statusCode === 660) {
+						throw new NodeOperationError(this.getNode(), 'Invalid Rule Content or Engine', {
+							itemIndex: i,
+						});
+					}
 
 					returnData.push({
 						json: responseData.result as any,
@@ -1491,7 +1526,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 				case 'createTag': {
 					const tagName = this.getNodeParameter('tagName', i) as string;
-					const tagOrganizationResource = this.getNodeParameter('tagOrganizationId', i) as any;
+					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
 					// Validate required fields
 					if (!tagName) {
@@ -1500,31 +1535,35 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 						});
 					}
 
-					// Handle organization resource locator
+					// Handle organization resource locator from additional fields
 					let organizationId: string = '0'; // Default to all organizations
-					let orgIdString: string;
 
-					if (tagOrganizationResource.mode === 'list' || tagOrganizationResource.mode === 'id') {
-						orgIdString = tagOrganizationResource.value;
-					} else if (tagOrganizationResource.mode === 'name') {
-						try {
-							orgIdString = await findOrganizationByName(this, credentials, tagOrganizationResource.value);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					if (additionalFields.tagOrganizationId) {
+						const tagOrganizationResource = additionalFields.tagOrganizationId;
+						let orgIdString: string;
+
+						if (tagOrganizationResource.mode === 'list' || tagOrganizationResource.mode === 'id') {
+							orgIdString = tagOrganizationResource.value;
+						} else if (tagOrganizationResource.mode === 'name') {
+							try {
+								orgIdString = await findOrganizationByName(this, credentials, tagOrganizationResource.value);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+								itemIndex: i,
+							});
 						}
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-							itemIndex: i,
-						});
-					}
 
-					// Validate and convert organization ID
-					try {
-						organizationId = requireValidId(orgIdString, 'Organization ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
+						// Validate and convert organization ID
+						try {
+							organizationId = requireValidId(orgIdString, 'Organization ID');
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, {
+								itemIndex: i,
+							});
+						}
 					}
 
 					// Convert to number for API compatibility
@@ -1541,34 +1580,37 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 				}
 
 				case 'getRuleTags': {
-					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
-					// Handle organization resource locator
+					// Handle organization resource locator from additional fields
 					let organizationId: string = '0'; // Default to all organizations
-					let orgIdString: string;
 
-					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-						orgIdString = organizationResource.value;
-					} else if (organizationResource.mode === 'name') {
-						try {
-							orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					if (additionalFields.organizationId) {
+						const organizationResource = additionalFields.organizationId;
+						let orgIdString: string;
+
+						if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+							orgIdString = organizationResource.value;
+						} else if (organizationResource.mode === 'name') {
+							try {
+								orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+								itemIndex: i,
+							});
 						}
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-							itemIndex: i,
-						});
-					}
 
-					// Validate and convert organization ID
-					try {
-						organizationId = requireValidId(orgIdString, 'Organization ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
+						// Validate and convert organization ID
+						try {
+							organizationId = requireValidId(orgIdString, 'Organization ID');
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, {
+								itemIndex: i,
+							});
+						}
 					}
 
 					// Get searchTerm from additionalFields
