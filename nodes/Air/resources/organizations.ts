@@ -12,7 +12,6 @@ import {
 	getAirCredentials,
 	validateApiResponse,
 	extractEntityId,
-	isValidEntity,
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
@@ -25,133 +24,6 @@ import {
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
 import { api as organizationsApi, Organization, CreateOrganizationRequest } from '../api/organizations/organizations';
 import { api as organizationUsersApi } from '../api/organizations/users/users';
-
-/**
- * Platform enum for deployment packages
- */
-export enum Platform {
-	Windows = 'windows',
-	Linux = 'linux',
-	Darwin = 'darwin',
-}
-
-/**
- * Package extension enum for deployment packages
- */
-export enum PackageExtension {
-	msi = 'msi', // Only available for windows platform
-	deb = 'deb', // Only available for linux platform
-	rpm = 'rpm', // Only available for linux platform
-	pkg = 'pkg', // Only available for darwin platform (macOS)
-}
-
-/**
- * Architecture enum for deployment packages
- */
-export enum Architecture {
-	i386 = '386', // Only available for windows and linux. Not supported for darwin (macOS)
-	amd64 = 'amd64',
-	arm64 = 'arm64',
-}
-
-/**
- * Generate deployment package download links for an organization
- */
-function generateDeploymentPackages(
-	organizationId: string,
-	deploymentToken: string,
-	instanceUrl: string
-): any {
-	// Generate a random value for ckey parameter
-	const generateRandomKey = () => Math.random().toString(36).substring(2, 15);
-
-	const baseUrl = `${instanceUrl}/api/endpoints/download/${organizationId}`;
-
-	const deploymentPackages: any = {};
-
-	// Helper function to convert architecture ID to user-friendly name
-	const getArchLabel = (arch: string): string => {
-		switch (arch) {
-			case Architecture.i386:
-				return '32bit';
-			case Architecture.amd64:
-				return '64bit';
-			case Architecture.arm64:
-				return 'arm64';
-			default:
-				return arch;
-		}
-	};
-
-	// Windows platform (supports i386, amd64 with msi)
-	[Architecture.i386, Architecture.amd64].forEach(arch => {
-		const archLabel = getArchLabel(arch);
-		const key = `windows-${archLabel}-msi`;
-		deploymentPackages[key] = `${baseUrl}/${Platform.Windows}/${PackageExtension.msi}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-	});
-
-	// Linux platform (supports i386, amd64, arm64 with deb and rpm)
-	[Architecture.i386, Architecture.amd64, Architecture.arm64].forEach(arch => {
-		const archLabel = getArchLabel(arch);
-
-		// DEB package
-		const debKey = `linux-${archLabel}-deb`;
-		deploymentPackages[debKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.deb}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-
-		// RPM package
-		const rpmKey = `linux-${archLabel}-rpm`;
-		deploymentPackages[rpmKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.rpm}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-	});
-
-	// Darwin platform (supports amd64, arm64 with pkg - no i386 support)
-	[Architecture.amd64, Architecture.arm64].forEach(arch => {
-		const archLabel = getArchLabel(arch);
-		const key = `macos-${archLabel}-pkg`;
-		deploymentPackages[key] = `${baseUrl}/${Platform.Darwin}/${PackageExtension.pkg}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
-	});
-
-	return deploymentPackages;
-}
-
-/**
- * Process organization entity to add computed shareableDeploymentPage and deploymentPackages properties
- */
-export function enrichOrganizationEntity(organization: any, instanceUrl: string): any {
-	const processedOrg = { ...organization };
-
-	// Add shareableDeploymentPage property based on shareableDeploymentEnabled and deploymentToken
-	if (organization.shareableDeploymentEnabled && organization.deploymentToken) {
-		processedOrg.shareableDeploymentPage = `${instanceUrl}/#/shareable-deploy?token=${organization.deploymentToken}`;
-	} else {
-		processedOrg.shareableDeploymentPage = '';
-	}
-
-	// Add deploymentPackages property with download links for all platforms and architectures
-	if (organization.deploymentToken) {
-		try {
-			const organizationId = extractEntityId(organization, 'organization');
-			processedOrg.deploymentPackages = generateDeploymentPackages(
-				organizationId,
-				organization.deploymentToken,
-				instanceUrl
-			);
-		} catch (error) {
-			// If we can't extract organization ID, set deploymentPackages to empty object
-			processedOrg.deploymentPackages = {};
-		}
-	} else {
-		processedOrg.deploymentPackages = {};
-	}
-
-	return processedOrg;
-}
-
-/**
- * Process multiple organization entities to add computed properties
- */
-export function processOrganizationEntities(organizations: any[], instanceUrl: string): any[] {
-	return organizations.map(org => enrichOrganizationEntity(org, instanceUrl));
-}
 
 export const OrganizationsOperations: INodeProperties[] = [
 	{
@@ -283,12 +155,12 @@ export const OrganizationsOperations: INodeProperties[] = [
 					{
 						type: 'regex',
 						properties: {
-							regex: '^[a-zA-Z0-9-_.]+$',
-							errorMessage: 'Not a valid organization ID (must contain only letters, numbers, hyphens, underscores, and dots)',
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
 						},
 					},
 				],
-				placeholder: 'Enter organization ID (numeric or GUID)',
+				placeholder: 'Enter Organization ID (0 for default organization)',
 			},
 			{
 				displayName: 'By Name',
@@ -712,8 +584,14 @@ export const OrganizationsOperations: INodeProperties[] = [
  */
 export function extractOrganizationId(organization: any): string {
 	// Organizations typically use _id field, so check it first
+	// Handle all valid ID cases including 0
 	if (organization._id !== undefined && organization._id !== null && organization._id !== '') {
 		return String(organization._id);
+	}
+
+	// Explicitly handle the edge case where _id is 0 (which is a valid ID but falsy)
+	if (organization._id === 0) {
+		return '0';
 	}
 
 	// Fall back to generic extraction for other possible ID fields
@@ -724,7 +602,16 @@ export function extractOrganizationId(organization: any): string {
  * Validate that an organization has a valid ID and name
  */
 export function isValidOrganization(org: any): boolean {
-	return isValidEntity(org, ['name']);
+	if (!org) return false;
+
+	try {
+		// Check if we can extract a valid ID
+		extractOrganizationId(org);
+		// For resource locator, we don't strictly require a name since we can show "Organization {id}"
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 /**
@@ -801,9 +688,12 @@ export async function getOrganizations(this: ILoadOptionsFunctions, filter?: str
 				const orgId = extractOrganizationId(organization);
 				const name = organization.name || `Organization ${orgId}`;
 
+				// Ensure ID 0 is properly handled in resource locator
+				const resourceValue = orgId === '0' ? '0' : orgId;
+
 				return {
 					name: name,
-					value: orgId,
+					value: resourceValue,
 					url: organization.deploymentToken || '',
 				};
 			},
@@ -827,7 +717,7 @@ export async function getOrganizationsOptions(this: ILoadOptionsFunctions): Prom
 			isValidOrganization,
 			(organization: Organization) => {
 				const orgId = extractOrganizationId(organization);
-				const name = organization.name || `Organization ${orgId || 'Unknown'}`;
+				const name = organization.name || `Organization ${orgId}`;
 
 				return {
 					name,
@@ -1622,3 +1512,129 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 	return [returnData];
 }
 
+/**
+ * Platform enum for deployment packages
+ */
+enum Platform {
+	Windows = 'windows',
+	Linux = 'linux',
+	Darwin = 'darwin',
+}
+
+/**
+ * Package extension enum for deployment packages
+ */
+enum PackageExtension {
+	msi = 'msi', // Only available for windows platform
+	deb = 'deb', // Only available for linux platform
+	rpm = 'rpm', // Only available for linux platform
+	pkg = 'pkg', // Only available for darwin platform (macOS)
+}
+
+/**
+ * Architecture enum for deployment packages
+ */
+enum Architecture {
+	i386 = '386', // Only available for windows and linux. Not supported for darwin (macOS)
+	amd64 = 'amd64',
+	arm64 = 'arm64',
+}
+
+/**
+ * Generate deployment package download links for an organization
+ */
+function generateDeploymentPackages(
+	organizationId: string,
+	deploymentToken: string,
+	instanceUrl: string
+): any {
+	// Generate a random value for ckey parameter
+	const generateRandomKey = () => Math.random().toString(36).substring(2, 15);
+
+	const baseUrl = `${instanceUrl}/api/endpoints/download/${organizationId}`;
+
+	const deploymentPackages: any = {};
+
+	// Helper function to convert architecture ID to user-friendly name
+	const getArchLabel = (arch: string): string => {
+		switch (arch) {
+			case Architecture.i386:
+				return '32bit';
+			case Architecture.amd64:
+				return '64bit';
+			case Architecture.arm64:
+				return 'arm64';
+			default:
+				return arch;
+		}
+	};
+
+	// Windows platform (supports i386, amd64 with msi)
+	[Architecture.i386, Architecture.amd64].forEach(arch => {
+		const archLabel = getArchLabel(arch);
+		const key = `windows-${archLabel}-msi`;
+		deploymentPackages[key] = `${baseUrl}/${Platform.Windows}/${PackageExtension.msi}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+	});
+
+	// Linux platform (supports i386, amd64, arm64 with deb and rpm)
+	[Architecture.i386, Architecture.amd64, Architecture.arm64].forEach(arch => {
+		const archLabel = getArchLabel(arch);
+
+		// DEB package
+		const debKey = `linux-${archLabel}-deb`;
+		deploymentPackages[debKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.deb}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+
+		// RPM package
+		const rpmKey = `linux-${archLabel}-rpm`;
+		deploymentPackages[rpmKey] = `${baseUrl}/${Platform.Linux}/${PackageExtension.rpm}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+	});
+
+	// Darwin platform (supports amd64, arm64 with pkg - no i386 support)
+	[Architecture.amd64, Architecture.arm64].forEach(arch => {
+		const archLabel = getArchLabel(arch);
+		const key = `macos-${archLabel}-pkg`;
+		deploymentPackages[key] = `${baseUrl}/${Platform.Darwin}/${PackageExtension.pkg}/${arch}?deployment-token=${deploymentToken}&ckey=${generateRandomKey()}`;
+	});
+
+	return deploymentPackages;
+}
+
+/**
+ * Process organization entity to add computed shareableDeploymentPage and deploymentPackages properties
+ */
+function enrichOrganizationEntity(organization: any, instanceUrl: string): any {
+	const processedOrg = { ...organization };
+
+	// Add shareableDeploymentPage property based on shareableDeploymentEnabled and deploymentToken
+	if (organization.shareableDeploymentEnabled && organization.deploymentToken) {
+		processedOrg.shareableDeploymentPage = `${instanceUrl}/#/shareable-deploy?token=${organization.deploymentToken}`;
+	} else {
+		processedOrg.shareableDeploymentPage = '';
+	}
+
+	// Add deploymentPackages property with download links for all platforms and architectures
+	if (organization.deploymentToken) {
+		try {
+			const organizationId = extractEntityId(organization, 'organization');
+			processedOrg.deploymentPackages = generateDeploymentPackages(
+				organizationId,
+				organization.deploymentToken,
+				instanceUrl
+			);
+		} catch (error) {
+			// If we can't extract organization ID, set deploymentPackages to empty object
+			processedOrg.deploymentPackages = {};
+		}
+	} else {
+		processedOrg.deploymentPackages = {};
+	}
+
+	return processedOrg;
+}
+
+/**
+ * Process multiple organization entities to add computed properties
+ */
+function processOrganizationEntities(organizations: any[], instanceUrl: string): any[] {
+	return organizations.map(org => enrichOrganizationEntity(org, instanceUrl));
+}
