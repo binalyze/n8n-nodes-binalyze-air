@@ -55,7 +55,9 @@ import {
 	TriageRulesOperations,
 	getTriageRules,
 	getTriageRulesOptions,
-	executeTriageRules
+	getTriageTags,
+	executeTriageRules,
+	getTriageTagsOptions
 } from './resources/triagerules';
 
 export class Air implements INodeType {
@@ -169,6 +171,10 @@ export class Air implements INodeType {
 			async getTriageRules(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getTriageRulesOptions.call(this);
 			},
+			// Import load options methods from Triage Tags
+			async getTriageTags(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getTriageTagsOptions.call(this);
+			},
 			// Import load options methods from Users
 			async getUsers(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getUsersOptions.call(this);
@@ -198,6 +204,10 @@ export class Air implements INodeType {
 			// Import list search methods from Triage Rules for resource locators
 			async getTriageRules(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getTriageRules.call(this, filter);
+			},
+			// Import list search methods from Triage Tags for resource locators
+			async getTriageTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getTriageTags.call(this, filter);
 			},
 			// Import list search methods from Users for resource locators
 			async getUsers(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {

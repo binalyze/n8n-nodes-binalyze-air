@@ -111,7 +111,7 @@ export function validateApiResponse(responseData: ApiResponse, context?: string)
  * Generic function to extract entity ID from entity object using _id field only
  */
 export function extractEntityId(entity: any, entityType: string = 'entity'): string {
-	const entityId = entity._id;
+	const entityId = entity._id || entity.id;
 
 	if (entityId === undefined || entityId === null || entityId === '') {
 		throw new Error(
