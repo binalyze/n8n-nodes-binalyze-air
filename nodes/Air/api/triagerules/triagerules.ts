@@ -1,18 +1,21 @@
 /**
- * Triages API Module
+ * Triage Rules API Module
  *
  * This module provides interfaces and functions to interact with the Binalyze AIR API
- * for retrieving triage rules information.
+ * for managing triage rules and triage rule tags.
  *
  * The module includes:
  * - TriageRule interface: Represents a single triage rule in the system
- * - TriageRulesResponse interface: Represents the API response structure
- * - api object: Contains methods to interact with the Triage Rules API endpoints
+ * - TriageTag interface: Represents a triage rule tag
+ * - Various response interfaces for API operations
+ * - api object: Contains methods to interact with the Triage Rules and Tags API endpoints
  */
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
 import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+
+// ===== TRIAGE RULE INTERFACES =====
 
 export interface TriageRule {
   _id: string;
@@ -53,6 +56,7 @@ export interface CreateTriageRuleRequest {
   searchIn: string;
   engine: string;
   organizationIds: (string | number)[];
+  tagIds?: string[];
 }
 
 export interface CreateTriageRuleResponse {
@@ -101,6 +105,7 @@ export interface GetTriageRuleResponse {
 
 export interface ValidateTriageRuleRequest {
   rule: string;
+  engine: string;
 }
 
 export interface ValidateTriageRuleResponse {
@@ -150,7 +155,33 @@ export interface AssignTriageTaskResponse {
   errors: string[];
 }
 
+// ===== TRIAGE TAG INTERFACES =====
+
+export interface TriageTag {
+  _id: string;
+  name: string;
+  count?: number;
+}
+
+export interface TriageTagsResponse {
+  success: boolean;
+  result: TriageTag[];
+  statusCode: number;
+  errors: string[];
+}
+
+export interface CreateTriageTagResponse {
+  success: boolean;
+  result: TriageTag;
+  statusCode: number;
+  errors: string[];
+}
+
+// ===== API METHODS =====
+
 export const api = {
+  // ===== TRIAGE RULE METHODS =====
+
   async getTriageRules(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -311,6 +342,64 @@ export const api = {
       return response;
     } catch (error) {
       throw new Error(`Failed to assign triage task: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  },
+
+  // ===== TRIAGE TAG METHODS =====
+
+  async createTriageTag(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    name: string,
+    organizationId: string | number = 0
+  ): Promise<CreateTriageTagResponse> {
+    try {
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/triages/tags'
+      );
+      requestOptions.body = {
+        name,
+        organizationId
+      };
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'create triage tag');
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to create triage tag: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  },
+
+  async getTriageTags(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    organizationId: string = '0',
+    searchTerm?: string
+  ): Promise<TriageTagsResponse> {
+    try {
+      let queryParams: any = {
+        'filter[organizationId]': organizationId,
+        'filter[withCount]': true
+      };
+
+      if (searchTerm) {
+        queryParams['filter[searchTerm]'] = searchTerm;
+      }
+
+      let requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/triages/tags',
+        queryParams
+      );
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch triage tags');
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to fetch triage tags: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 };

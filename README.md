@@ -23,7 +23,6 @@
 - [Development](#development)
   - [Development Setup](#development-setup)
   - [Testing](#testing)
-- [Recent Updates](#recent-updates)
 - [Support and Documentation](#support-and-documentation)
 - [License](#license)
 
@@ -107,21 +106,25 @@ Manage detection and analysis rules for threat hunting:
 
 - **Get Triage Rule** - Retrieve details of a specific triage rule by ID or name
 - **Get Many Triage Rules** - Retrieve multiple triage rules with comprehensive filtering
-- **Create Triage Rule** - Create new triage rules for detection and analysis
+- **Create Triage Rule** - Create new triage rules for detection and analysis with optional tag assignment
 - **Update Triage Rule** - Modify existing triage rules by ID or name
 - **Delete Triage Rule** - Remove triage rules by ID or name
-- **Get Rule Tags** - Retrieve rule tags filtered by organization ID
-- **Create Rule Tag** - Create new rule tags for organizing triage rules
+- **Validate Triage Rule** - Validate rule syntax and content for YARA, Sigma, and osquery engines
+- **Assign Triage Task** - Assign triage tasks to cases with endpoint filtering
+- **Get Rule Tags** - Retrieve rule tags with Resource Locator-based organization filtering
+- **Create Rule Tag** - Create new rule tags with Resource Locator-based organization selection
 
 **Triage Rule Features:**
 - Support for multiple detection engines: YARA, Sigma, and osquery
 - Flexible search locations: file system, memory, both, or event records
-- Organization-scoped rule management with configurable organization access for all operations including individual rule retrieval
+- Organization-scoped rule management with Resource Locator pattern for all operations
+- Optional tag assignment during rule creation using comma-separated tag IDs in Additional Fields for multiple tag association
 - Advanced filtering by description, search location, engine type, and search terms
-- Rule validation and syntax checking
-- Comprehensive CRUD operations with resource locator support
+- Rule validation and syntax checking with detailed error reporting
+- Comprehensive CRUD operations with consistent Resource Locator support
 - Detailed rule content management with multi-line editor support
-- Rule tag management with organization-specific filtering (single organization ID)
+- Rule tag management with Resource Locator-based organization filtering
+- Task assignment capabilities with complex endpoint filtering options
 
 ## Authentication
 
@@ -265,29 +268,7 @@ npm run dev
 
 Test your node locally by following the [n8n local testing guide](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/).
 
-## Recent Updates
 
-### Resource Locator Filter and Page Size Improvements
-- **Enhanced**: Improved "From List" search functionality across all resources for better user experience
-- **Fixed**: Tasks and Triage Rules Resource Locators now properly pass search filters to API calls
-- **Updated**: Default page size increased from 10 to 100 for all "From List" operations to reduce pagination needs
-- **Improvement**: Better search performance with server-side filtering instead of client-side only filtering
-- **Enhancement**: More responsive search results when typing in "From List" dropdowns
-
-### Resource Locator Improvements for Organizations
-- **Fixed**: Organization Resource Locator pattern now works properly for all operations
-- **Enhancement**: Improved validation for organization selection in all three modes (From List, By ID, By Name)
-- **Fix**: Removed problematic search hint items that could cause execution errors when selected
-- **Improvement**: Better error messages for invalid organization selections with specific guidance
-- **Update**: More flexible ID validation to support various organization ID formats including dots
-- **Architecture**: Added standardized validation helper function for consistent organization resource handling across all operations
-
-### Auto Asset Tags Organization ID Filter for Get Operation
-- **Added**: Organization ID parameter to Auto Asset Tags "Get" operation
-- **Feature**: Users can now filter auto asset tags by organization when using "By ID" and "By Name" modes
-- **Limitation**: "From List" mode shows all organizations (ID 0) due to n8n framework limitations during dropdown population
-- **Usage**: Set Organization ID to filter results in "By ID" and "By Name" modes, or use 0 for all organizations
-- **Alignment**: Now matches the Organization ID filtering pattern used in other resources
 
 ## Support and Documentation
 
