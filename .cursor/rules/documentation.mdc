@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Documentation
+- Always update README.md when you implement a new operation or add a new resource under the /resources folder.
+- Do not add 'Recent Updates' to README file. Only update the resources, and supported operations.
+- Do not use emojis in the README file.
