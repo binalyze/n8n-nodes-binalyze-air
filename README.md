@@ -2,6 +2,31 @@
 
 # n8n-nodes-binalyze-air
 
+## Table of Contents
+
+- [What is Binalyze AIR?](#what-is-binalyze-air)
+- [Features](#features)
+  - [Auto Asset Tags](#auto-asset-tags)
+  - [Organizations](#organizations)
+  - [Users](#users)
+  - [Evidence Repositories](#evidence-repositories)
+  - [Triage Rules](#triage-rules)
+- [Authentication](#authentication)
+- [Resource Locators](#resource-locators)
+- [Advanced Features](#advanced-features)
+  - [Pagination Support](#pagination-support)
+  - [Filtering and Sorting](#filtering-and-sorting)
+  - [Error Handling](#error-handling)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage Examples](#usage-examples)
+- [Development](#development)
+  - [Development Setup](#development-setup)
+  - [Testing](#testing)
+- [Recent Updates](#recent-updates)
+- [Support and Documentation](#support-and-documentation)
+- [License](#license)
+
 This package provides comprehensive n8n node integration for [Binalyze AIR](https://binalyze.com), enabling you to automate and integrate AIR's digital investigation and incident response capabilities directly into your n8n workflows.
 
 ## What is Binalyze AIR?
@@ -12,7 +37,7 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 The Binalyze AIR node provides access to five main resource categories with comprehensive operations:
 
-### 🏷️ Auto Asset Tags
+### 🏷️ Auto Asset Tags {#auto-asset-tags}
 
 Manage automated asset tagging rules and processes:
 
@@ -29,7 +54,7 @@ Manage automated asset tagging rules and processes:
 - Advanced endpoint filtering for targeted tagging operations
 - Organization-scoped access with configurable organization ID filtering (default: 0 for all organizations)
 
-### 🏢 Organizations
+### 🏢 Organizations {#organizations}
 
 Manage organizations within your AIR instance:
 
@@ -46,7 +71,7 @@ Manage organizations within your AIR instance:
 - Tag-based organization for improved searchability
 - Flexible identification by ID or name
 
-### 👤 Users
+### 👤 Users {#users}
 
 Manage user accounts and permissions:
 
@@ -61,7 +86,7 @@ Manage user accounts and permissions:
 - Sorting by creation date or username
 - Pagination support for large user bases
 
-### 📁 Evidence Repositories
+### 📁 Evidence Repositories {#evidence-repositories}
 
 Manage evidence storage and repositories:
 
@@ -76,7 +101,7 @@ Manage evidence storage and repositories:
 - Pagination support for large repository collections
 - Support for different repository types and configurations
 
-### 🔍 Triage Rules
+### 🔍 Triage Rules {#triage-rules}
 
 Manage detection and analysis rules for threat hunting:
 
@@ -117,7 +142,7 @@ All resources support flexible identification methods:
 
 ### Pagination Support
 All "Get Many" operations support configurable pagination:
-- Customizable page size (default: 10 items per page)
+- Customizable page size (default: 100 items per page)
 - Page number selection for navigation
 - Efficient handling of large datasets
 
@@ -211,6 +236,15 @@ For detailed guidance on creating and publishing nodes, refer to the [n8n docume
    ```bash
    npm link
    ```
+5. Go to ~/.n8n/nodes/node_modules folder and link to the package:
+   ```bash
+   n8n-nodes-binalyze-air 
+   ```
+
+6. Restart n8n to see Binalyze AIR as a community package
+   ```bash
+   n8n start
+   ```
 
 ### Testing
 
@@ -224,9 +258,29 @@ Auto-fix linting errors when possible:
 npm run lintfix
 ```
 
+Run npm in dev mode to automatically run build when there is a change:
+```bash
+npm run dev
+```
+
 Test your node locally by following the [n8n local testing guide](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/).
 
 ## Recent Updates
+
+### Resource Locator Filter and Page Size Improvements
+- **Enhanced**: Improved "From List" search functionality across all resources for better user experience
+- **Fixed**: Tasks and Triage Rules Resource Locators now properly pass search filters to API calls
+- **Updated**: Default page size increased from 10 to 100 for all "From List" operations to reduce pagination needs
+- **Improvement**: Better search performance with server-side filtering instead of client-side only filtering
+- **Enhancement**: More responsive search results when typing in "From List" dropdowns
+
+### Resource Locator Improvements for Organizations
+- **Fixed**: Organization Resource Locator pattern now works properly for all operations
+- **Enhancement**: Improved validation for organization selection in all three modes (From List, By ID, By Name)
+- **Fix**: Removed problematic search hint items that could cause execution errors when selected
+- **Improvement**: Better error messages for invalid organization selections with specific guidance
+- **Update**: More flexible ID validation to support various organization ID formats including dots
+- **Architecture**: Added standardized validation helper function for consistent organization resource handling across all operations
 
 ### Auto Asset Tags Organization ID Filter for Get Operation
 - **Added**: Organization ID parameter to Auto Asset Tags "Get" operation

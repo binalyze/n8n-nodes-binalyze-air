@@ -389,14 +389,6 @@ export const CasesOperations: INodeProperties[] = [
 		description: 'The visibility of the case',
 	},
 	{
-		displayName: 'Assigned Users',
-		name: 'assignedUserIds',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter user IDs (comma-separated) e.g., user1,user2,user3',
-		description: 'Comma-separated list of user IDs to assign to the case. You can find user IDs from the Users resource.',
-	},
-	{
 		displayName: 'Update Fields',
 		name: 'updateFields',
 		type: 'collection',
@@ -409,14 +401,6 @@ export const CasesOperations: INodeProperties[] = [
 			},
 		},
 		options: [
-			{
-				displayName: 'Assigned Users',
-				name: 'assignedUserIds',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter user IDs (comma-separated) e.g., user1,user2,user3',
-				description: 'Comma-separated list of user IDs to assign to the case. You can find user IDs from the Users resource.',
-			},
 			{
 				displayName: 'Name',
 				name: 'name',
@@ -1085,8 +1069,6 @@ async function executeCreateCase(
 	const organizationResource = this.getNodeParameter('organizationId', itemIndex) as any;
 	const ownerUserResource = this.getNodeParameter('ownerUserId', itemIndex) as any;
 	const visibility = this.getNodeParameter('visibility', itemIndex) as string;
-	const assignedUserIdsParam = this.getNodeParameter('assignedUserIds', itemIndex, '') as string;
-
 	let organizationId: number;
 
 	if (organizationResource.mode === 'id') {
@@ -1103,14 +1085,11 @@ async function executeCreateCase(
 	// Resolve owner user ID using Resource Locator
 	const ownerUserId = await resolveUserResourceLocator(this, credentials, ownerUserResource, itemIndex, organizationId.toString());
 
-	const assignedUserIds = assignedUserIdsParam ? assignedUserIdsParam.split(',').map(id => id.trim()) : [];
-
 	const caseData = {
 		organizationId,
 		name: caseName,
 		ownerUserId,
-		visibility,
-		assignedUserIds
+		visibility
 	};
 
 	const response = await casesApi.createCase(this, credentials, caseData);
@@ -1147,9 +1126,7 @@ async function executeUpdateCase(
 	if (updateFields.status) {
 		updateData.status = updateFields.status;
 	}
-	if (updateFields.assignedUserIds) {
-		updateData.assignedUserIds = updateFields.assignedUserIds.split(',').map((id: string) => id.trim());
-	}
+
 	if (updateFields.notes) {
 		try {
 			updateData.notes = JSON.parse(updateFields.notes);

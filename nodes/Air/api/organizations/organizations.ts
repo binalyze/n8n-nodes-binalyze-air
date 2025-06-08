@@ -136,8 +136,12 @@ export const api = {
       const allOrganizations: Organization[] = [];
       let currentPage = 1;
       let hasMorePages = true;
+      let iterationCount = 0;
+      const maxIterations = 50; // Safety limit to prevent infinite loops
 
-      while (hasMorePages) {
+      while (hasMorePages && iterationCount < maxIterations) {
+        iterationCount++;
+
         const queryParams: Record<string, string | number> = {
           pageNumber: currentPage,
           pageSize,
@@ -164,18 +168,44 @@ export const api = {
           throw new Error(`API request failed: ${responseData.errors?.join(', ') || 'Unknown error'}`);
         }
 
-        const organizations = responseData.result?.entities || [];
+        const result = responseData.result;
+        const organizations = result?.entities || [];
+
+        // Add organizations to our collection
         allOrganizations.push(...organizations);
 
-        // Check if there are more pages using the actual API pagination structure
-        const result = responseData.result;
-        if (result && result.currentPage && result.totalPageCount && result.currentPage < result.totalPageCount) {
-          currentPage++;
+        // Check if there are more pages to fetch
+        // Use multiple conditions to ensure we have proper pagination handling
+        if (result && result.currentPage && result.totalPageCount) {
+          if (result.currentPage < result.totalPageCount) {
+            currentPage++;
+            // Double-check: if this page returned no results, stop
+            if (organizations.length === 0) {
+              hasMorePages = false;
+            }
+          } else {
+            hasMorePages = false;
+          }
         } else {
-          hasMorePages = false;
+          // If pagination info is missing, check if we got any results
+          if (organizations.length === 0) {
+            hasMorePages = false;
+          } else if (organizations.length < pageSize) {
+            // If we got fewer results than the page size, this is likely the last page
+            hasMorePages = false;
+          } else {
+            // Continue to next page but add safety check
+            currentPage++;
+            if (currentPage > 100) { // Safety limit
+              hasMorePages = false;
+            }
+          }
         }
       }
 
+      if (iterationCount >= maxIterations) {
+        // Stopped pagination after max iterations for safety
+      }
       return allOrganizations;
     } catch (error) {
       throw new Error(`Failed to fetch all organizations: ${error instanceof Error ? error.message : String(error)}`);

@@ -390,7 +390,7 @@ export const TriageRulesOperations: INodeProperties[] = [
 				displayName: 'Page Size',
 				name: 'pageSize',
 				type: 'number',
-				default: 10,
+				default: 100,
 				description: 'How many results to return per page',
 				typeOptions: {
 					minValue: 1,
@@ -768,10 +768,14 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 			organizationIds = '0';
 		}
 
-		// Build query parameters
+		// Build query parameters with search filter
 		const queryParams: Record<string, string | number> = {
 			'filter[organizationIds]': organizationIds
 		};
+
+		if (filter) {
+			queryParams['filter[searchTerm]'] = filter;
+		}
 
 		const response = await triagesApi.getTriageRules(this, credentials, organizationIds, queryParams);
 		const triageRules = response.result?.entities || [];

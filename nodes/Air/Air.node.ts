@@ -209,6 +209,8 @@ export class Air implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const resource = this.getNodeParameter('resource', 0) as string;
 
+		this.logger.debug(`Executing: ${this.getNode().name}/${resource} for workflow ${this.getWorkflow().name}`);
+
 		// Delegate execution to the appropriate function based on resource
 		switch (resource) {
 			case 'autoassettags':

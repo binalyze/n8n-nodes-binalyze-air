@@ -283,8 +283,8 @@ export const OrganizationsOperations: INodeProperties[] = [
 					{
 						type: 'regex',
 						properties: {
-							regex: '^[a-zA-Z0-9-_]+$',
-							errorMessage: 'Not a valid organization ID (must contain only letters, numbers, hyphens, and underscores)',
+							regex: '^[a-zA-Z0-9-_.]+$',
+							errorMessage: 'Not a valid organization ID (must contain only letters, numbers, hyphens, underscores, and dots)',
 						},
 					},
 				],
@@ -680,7 +680,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 				displayName: 'Page Size',
 				name: 'pageSize',
 				type: 'number',
-				default: 10,
+				default: 100,
 				description: 'How many results to return per page',
 				displayOptions: {
 					show: {
@@ -782,22 +782,33 @@ export async function findOrganizationByName(
 export async function getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const allOrganizations = await organizationsApi.getAllOrganizations(this, credentials, filter);
+
+		// Use API with appropriate parameters - show first 50 organizations by default, or use name filter
+		const options = filter ? { nameFilter: filter, pageSize: 50, pageNumber: 1 } : { pageSize: 50, pageNumber: 1 };
+		const response = await organizationsApi.getOrganizations(this, credentials, options);
+		const organizations = response.result?.entities || [];
 
 		return createListSearchResults(
-			allOrganizations,
+			organizations,
 			isValidOrganization,
-			(organization: Organization) => ({
-				name: organization.name,
-				value: extractOrganizationId(organization),
-				url: organization.deploymentToken || '',
-			}),
+			(organization: Organization) => {
+				const orgId = extractOrganizationId(organization);
+				const name = organization.name || `Organization ${orgId}`;
+
+				return {
+					name: name,
+					value: orgId,
+					url: organization.deploymentToken || '',
+				};
+			},
 			filter
 		);
 	} catch (error) {
 		throw catchAndFormatError(error, 'load organizations');
 	}
 }
+
+
 
 // Load options method for dropdowns (legacy support)
 export async function getOrganizationsOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -875,7 +886,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					break;
 				}
 
-				case 'get': {
+								case 'get': {
 					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					let organizationId: string;
 
@@ -1526,7 +1537,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					returnData.push({
 						json: {
 							organizationId: parseInt(organizationId),
-							assignedUserIds: userIdList,
 							success: response.success,
 							statusCode: response.statusCode,
 						},

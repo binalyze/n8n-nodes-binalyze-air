@@ -213,7 +213,7 @@ export const TasksOperations: INodeProperties[] = [
 				displayName: 'Page Size',
 				name: 'pageSize',
 				type: 'number',
-				default: 10,
+				default: 100,
 				description: 'How many results to return per page',
 				typeOptions: {
 					minValue: 1,
@@ -475,8 +475,13 @@ export async function getTasks(this: ILoadOptionsFunctions, filter?: string): Pr
 	try {
 		const credentials = await getAirCredentials(this);
 
-		// Get all tasks with default organization filter
-		const response = await tasksApi.getTasks(this, credentials, '0');
+		// Get all tasks with default organization filter and search term
+		const options: any = {};
+		if (filter) {
+			options.searchTerm = filter;
+		}
+
+		const response = await tasksApi.getTasks(this, credentials, '0', options);
 		validateApiResponse(response);
 
 		const allTasks = response.result?.entities || [];

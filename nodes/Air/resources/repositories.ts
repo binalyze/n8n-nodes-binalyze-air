@@ -108,7 +108,7 @@ export const RepositoriesOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['repositories'],
-				operation: ['get', 'getAll'],
+				operation: ['getAll'],
 			},
 		},
 		description: 'The Organization ID to filter repositories by (0 for default organization). Use "0" to retrieve repositories that are visible to all organizations. Specify a single organization ID to retrieve repositories that are visible to that organization only alongside those that are visible to all organizations.',
@@ -150,7 +150,7 @@ export const RepositoriesOperations: INodeProperties[] = [
 				displayName: 'Page Size',
 				name: 'pageSize',
 				type: 'number',
-				default: 10,
+				default: 100,
 				description: 'How many results to return per page',
 				typeOptions: {
 					minValue: 1,
@@ -447,15 +447,9 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 
 			switch (operation) {
 				case 'get': {
-					const organizationId = this.getNodeParameter('organizationId', i) as number;
+					// Use default organization ID (0) for get operation to retrieve repositories visible to all organizations
+					const organizationId = 0;
 					const repositoryResource = this.getNodeParameter('repositoryId', i) as any;
-
-					// Validate organization ID
-					if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
-						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number (0 or greater)', {
-							itemIndex: i,
-						});
-					}
 
 					let repository: any | null = null;
 

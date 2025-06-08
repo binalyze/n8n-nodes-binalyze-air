@@ -23,6 +23,9 @@ import {
 
 import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
 import { api as usersApi, User } from '../api/users/users';
+import {
+	findOrganizationByName,
+} from './organizations';
 
 export const UsersOperations: INodeProperties[] = [
 	{
@@ -100,19 +103,41 @@ export const UsersOperations: INodeProperties[] = [
 		description: 'The user to retrieve',
 	},
 	{
-		displayName: 'Organization Filter',
-		name: 'organizationIds',
-		type: 'string',
-		default: '0',
-		placeholder: 'Enter organization IDs (comma-separated)',
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'id', value: '0' },
+		placeholder: 'Select an organization...',
 		displayOptions: {
 			show: {
 				resource: ['users'],
 				operation: ['getAll'],
 			},
 		},
-		required: true,
-		description: 'Organization IDs to filter users by (required by API). Use "0" for all organizations.',
+		modes: [
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be numeric)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID (use 0 for all organizations)',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		description: 'The organization to filter users by',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -148,7 +173,7 @@ export const UsersOperations: INodeProperties[] = [
 				displayName: 'Page Size',
 				name: 'pageSize',
 				type: 'number',
-				default: 10,
+				default: 100,
 				description: 'How many results to return per page',
 				typeOptions: {
 					minValue: 1,
@@ -164,6 +189,8 @@ export const UsersOperations: INodeProperties[] = [
 		],
 	},
 ];
+
+
 
 /**
  * Extract user ID from user object with comprehensive field checking
@@ -331,12 +358,32 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 
 			switch (operation) {
 				case 'getAll': {
-					const organizationIds = String(this.getNodeParameter('organizationIds', i)).trim();
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
-					// Validate that organizationIds is provided
-					if (!organizationIds) {
-						throw new NodeOperationError(this.getNode(), 'Organization IDs are required', {
+					let organizationId: string;
+
+					if (organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							if (organizationResource.value.toLowerCase() === 'all organizations') {
+								organizationId = '0';
+							} else {
+								organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+							}
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate organization ID (allow 0 for all organizations)
+					if (!organizationId && organizationId !== '0') {
+						throw new NodeOperationError(this.getNode(), 'Organization selection is required', {
 							itemIndex: i,
 						});
 					}
@@ -349,7 +396,7 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 						roles: additionalFields.roles,
 					};
 
-					const responseData = await usersApi.getUsers(this, credentials, organizationIds, additionalParams);
+					const responseData = await usersApi.getUsers(this, credentials, organizationId, additionalParams);
 
 					const entities = responseData.result?.entities || [];
 					const paginationInfo = extractPaginationInfo(responseData.result);
@@ -420,3 +467,4 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 
 	return [returnData];
 }
+// Test comment

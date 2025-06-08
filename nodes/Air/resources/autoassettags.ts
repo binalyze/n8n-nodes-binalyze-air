@@ -99,24 +99,6 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 		description: 'The auto asset tag to work with',
 	},
 	{
-		displayName: 'Organization IDs',
-		name: 'organizationId',
-		type: 'number',
-		required: true,
-		default: 0,
-		placeholder: 'Enter organization ID',
-		displayOptions: {
-			show: {
-				resource: ['autoassettags'],
-				operation: ['get'],
-			},
-		},
-		description: 'The organization ID to filter auto asset tags by (0 for all organizations). Use "0" to retrieve tags that are visible to all organizations. Specify a single organization ID to retrieve tags that are visible to that organization only alongside those that are visible to all organizations.',
-		typeOptions: {
-			minValue: 0,
-		},
-	},
-	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',
@@ -153,7 +135,7 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 				displayName: 'Page Size',
 				name: 'pageSize',
 				type: 'number',
-				default: 10,
+				default: 100,
 				description: 'How many results to return per page',
 				typeOptions: {
 					minValue: 1,
@@ -403,7 +385,7 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 								});
 							}
 							try {
-								const foundTag = await findAutoAssetTagByName(this, credentials, this.getNodeParameter('organizationId', i) as number, tagName.trim());
+								const foundTag = await findAutoAssetTagByName(this, credentials, 0, tagName.trim());
 								if (!foundTag) {
 									throw new NodeOperationError(this.getNode(), `No auto asset tag found with name: ${tagName}`, {
 										itemIndex: i,

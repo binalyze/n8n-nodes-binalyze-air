@@ -192,6 +192,59 @@ export function isValidEntity(entity: any, requiredFields: string[] = ['name']):
 }
 
 /**
+ * Validate and extract organization ID from resource locator
+ * Handles all three modes: list, id, and name
+ */
+export async function validateAndExtractOrganizationId(
+	context: IExecuteFunctions,
+	credentials: AirCredentials,
+	organizationResource: any,
+	itemIndex: number,
+	findOrganizationByNameFn: (context: IExecuteFunctions, credentials: AirCredentials, name: string) => Promise<string>
+): Promise<string> {
+	let organizationId: string;
+
+	if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+		organizationId = organizationResource.value;
+
+		// Check for invalid selections (empty values or search hints)
+		if (!organizationId || String(organizationId).trim() === '' || organizationId === '__search_hint__') {
+			throw new NodeOperationError(context.getNode(), 'Please select a valid organization from the list or enter a valid organization ID', {
+				itemIndex,
+			});
+		}
+	} else if (organizationResource.mode === 'name') {
+		const organizationName = organizationResource.value;
+		if (!organizationName || String(organizationName).trim() === '') {
+			throw new NodeOperationError(context.getNode(), 'Please enter a valid organization name', {
+				itemIndex,
+			});
+		}
+
+		try {
+			organizationId = await findOrganizationByNameFn(context, credentials, organizationName);
+		} catch (error) {
+			throw new NodeOperationError(context.getNode(), error.message, { itemIndex });
+		}
+	} else {
+		throw new NodeOperationError(context.getNode(), 'Invalid organization selection mode', {
+			itemIndex,
+		});
+	}
+
+	// Validate organization ID
+	try {
+		organizationId = requireValidId(organizationId, 'Organization ID');
+	} catch (error) {
+		throw new NodeOperationError(context.getNode(), error.message, {
+			itemIndex,
+		});
+	}
+
+	return organizationId;
+}
+
+/**
  * Generic function to create list search results for n8n resource locators
  */
 export function createListSearchResults(

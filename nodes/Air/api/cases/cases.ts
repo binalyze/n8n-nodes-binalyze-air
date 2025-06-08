@@ -24,7 +24,6 @@ export interface Case {
   status: 'open' | 'closed' | 'archived';
   startedOn: string;
   visibility: string;
-  assignedUserIds: string[];
   source: string;
   totalDays: number;
   totalEndpoints: number;
@@ -236,7 +235,6 @@ export const api = {
       pageSize?: number;
       status?: string;
       ownerUserId?: string;
-      assignedUserId?: string;
       sortBy?: string;
       sortType?: string;
       searchTerm?: string;
@@ -262,9 +260,6 @@ export const api = {
         }
         if (additionalParams.ownerUserId) {
           queryParams['filter[ownerUserId]'] = additionalParams.ownerUserId;
-        }
-        if (additionalParams.assignedUserId) {
-          queryParams['filter[assignedUserId]'] = additionalParams.assignedUserId;
         }
         if (additionalParams.sortBy) {
           queryParams.sortBy = additionalParams.sortBy;
@@ -303,7 +298,6 @@ export const api = {
       name: string;
       ownerUserId: string;
       visibility: string;
-      assignedUserIds: string[];
     }
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
@@ -333,7 +327,6 @@ export const api = {
       name: string;
       ownerUserId: string;
       visibility: string;
-      assignedUserIds: string[];
       status: 'open' | 'closed' | 'archived';
       notes: any[];
     }>

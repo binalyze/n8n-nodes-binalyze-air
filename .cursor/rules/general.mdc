@@ -1,0 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Overview
+
+- Always check the code if a similar implementation exists somewhere else in order not duplicate the code.
+- Simplicity always wins. Keep the code simple, and clean.
