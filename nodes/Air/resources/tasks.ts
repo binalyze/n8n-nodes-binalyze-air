@@ -24,8 +24,7 @@ import {
 
 import { api as tasksApi, Task } from '../api/tasks/tasks';
 import { api as taskAssignmentsApi } from '../api/tasks/assignments/assignments';
-import { api as organizationsApi, Organization } from '../api/organizations/organizations';
-import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
+import { findOrganizationByName } from './organizations';
 
 export const TasksOperations: INodeProperties[] = [
 	{
@@ -406,69 +405,7 @@ export function isValidTaskAssignment(assignment: any): boolean {
 	return isValidEntity(assignment, ['name']);
 }
 
-/**
- * Extract organization ID from organization object with comprehensive field checking
- */
-export function extractOrganizationId(organization: any): string {
-	return extractEntityId(organization, 'organization');
-}
 
-/**
- * Search for organization by exact name match across all pages using API
- */
-export async function findOrganizationByName(
-	context: IExecuteFunctions,
-	credentials: AirCredentials,
-	organizationName: string
-): Promise<string> {
-	const searchName = organizationName.trim();
-
-	if (!searchName) {
-		throw new Error('Organization name cannot be empty');
-	}
-
-	try {
-		// Use the API to get all organizations with search and pagination support
-		const organizations = await organizationsApi.getAllOrganizations(context, credentials, searchName);
-
-		// Look for exact match (case-insensitive)
-		const exactMatch = organizations.find((org: Organization) =>
-			org.name && org.name.toLowerCase() === searchName.toLowerCase()
-		);
-
-		if (!exactMatch) {
-			// If no exact match with search term, try getting all organizations and search manually
-			const allOrganizations = await organizationsApi.getAllOrganizations(context, credentials);
-
-			const exactMatchInAll = allOrganizations.find((org: Organization) =>
-				org.name && org.name.toLowerCase() === searchName.toLowerCase()
-			);
-
-			if (exactMatchInAll) {
-				return extractOrganizationId(exactMatchInAll);
-			}
-
-			// Provide helpful error message with suggestions
-			const suggestions = allOrganizations
-				.filter((org: Organization) =>
-					org.name && org.name.toLowerCase().includes(searchName.toLowerCase())
-				)
-				.map((org: Organization) => org.name)
-				.slice(0, 5);
-
-			let errorMessage = `Organization '${searchName}' not found.`;
-			if (suggestions.length > 0) {
-				errorMessage += ` Similar organizations: ${suggestions.join(', ')}`;
-			}
-
-			throw new Error(errorMessage);
-		}
-
-		return extractOrganizationId(exactMatch);
-	} catch (error) {
-		throw new Error(`Failed to find organization by name: ${error instanceof Error ? error.message : String(error)}`);
-	}
-}
 
 // List search method for resource locator
 export async function getTasks(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
