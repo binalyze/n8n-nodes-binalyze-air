@@ -281,8 +281,12 @@ export const api = {
       );
       requestOptions.body = data;
 
+      // Add custom status code handling for validation endpoint
+      // Status code 660 is a custom code used by the API for validation failures
+      requestOptions.ignoreHttpStatusErrors = true;
+
       const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'validate triage rule');
+
       return response;
     } catch (error) {
       throw new Error(`Failed to validate triage rule: ${error instanceof Error ? error.message : String(error)}`);
