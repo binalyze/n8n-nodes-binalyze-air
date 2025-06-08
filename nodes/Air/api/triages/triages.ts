@@ -10,8 +10,9 @@
  * - api object: Contains methods to interact with the Triage Rules API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 export interface TriageRule {
   _id: string;
@@ -169,18 +170,15 @@ export const api = {
         Object.assign(qs, queryParams);
       }
 
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/triages/rules`,
-        qs,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/triages/rules',
+        qs
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch triage rules');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch triage rules: ${error instanceof Error ? error.message : String(error)}`);
@@ -193,18 +191,15 @@ export const api = {
     data: CreateTriageRuleRequest
   ): Promise<CreateTriageRuleResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/triages/rules`,
-        body: data,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/triages/rules'
+      );
+      requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'create triage rule');
       return response;
     } catch (error) {
       throw new Error(`Failed to create triage rule: ${error instanceof Error ? error.message : String(error)}`);
@@ -218,18 +213,15 @@ export const api = {
     data: UpdateTriageRuleRequest
   ): Promise<UpdateTriageRuleResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PUT',
-        url: `${credentials.instanceUrl}/api/public/triages/rules/${id}`,
-        body: data,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PUT',
+        `/api/public/triages/rules/${id}`
+      );
+      requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `update triage rule with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to update triage rule: ${error instanceof Error ? error.message : String(error)}`);
@@ -242,17 +234,14 @@ export const api = {
     id: string
   ): Promise<DeleteTriageRuleResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/triages/rules/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/triages/rules/${id}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `delete triage rule with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to delete triage rule: ${error instanceof Error ? error.message : String(error)}`);
@@ -265,17 +254,14 @@ export const api = {
     id: string
   ): Promise<GetTriageRuleResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/triages/rules/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/triages/rules/${id}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch triage rule with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch triage rule with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -288,18 +274,15 @@ export const api = {
     data: ValidateTriageRuleRequest
   ): Promise<ValidateTriageRuleResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/triages/rules/validate`,
-        body: data,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/triages/rules/validate'
+      );
+      requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'validate triage rule');
       return response;
     } catch (error) {
       throw new Error(`Failed to validate triage rule: ${error instanceof Error ? error.message : String(error)}`);
@@ -312,18 +295,15 @@ export const api = {
     data: AssignTriageTaskRequest
   ): Promise<AssignTriageTaskResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/triages/triage`,
-        body: data,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/triages/triage'
+      );
+      requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'assign triage task');
       return response;
     } catch (error) {
       throw new Error(`Failed to assign triage task: ${error instanceof Error ? error.message : String(error)}`);

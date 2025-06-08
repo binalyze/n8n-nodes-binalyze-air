@@ -10,8 +10,9 @@
  * - api object: Contains methods to interact with the Organizations API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 export interface Organization {
   _id: number;
@@ -104,22 +105,15 @@ export const api = {
         queryParams.sortType = options.sortType;
       }
 
-      const requestOptions: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/organizations`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
-
-      // Add query parameters if any exist
-      if (Object.keys(queryParams).length > 0) {
-        requestOptions.qs = queryParams;
-      }
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/organizations',
+        Object.keys(queryParams).length > 0 ? queryParams : undefined
+      );
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch organizations');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch organizations: ${error instanceof Error ? error.message : String(error)}`);
@@ -129,7 +123,7 @@ export const api = {
   async getAllOrganizations(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    searchFilter?: string,
+    nameFilter?: string,
     pageSize: number = 100
   ): Promise<Organization[]> {
     try {
@@ -147,26 +141,19 @@ export const api = {
           pageSize,
         };
 
-        if (searchFilter) {
-          queryParams['filter[searchTerm]'] = searchFilter;
+        if (nameFilter) {
+          queryParams['filter[name]'] = nameFilter;
         }
 
-        const options: IHttpRequestOptions = {
-          method: 'GET',
-          url: `${credentials.instanceUrl}/api/public/organizations`,
-          qs: queryParams,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${credentials.token}`
-          },
-          json: true
-        };
+        const requestOptions = buildRequestOptions(
+          credentials,
+          'GET',
+          '/api/public/organizations',
+          queryParams
+        );
 
-        const responseData = await context.helpers.httpRequest(options);
-
-        if (!responseData.success) {
-          throw new Error(`API request failed: ${responseData.errors?.join(', ') || 'Unknown error'}`);
-        }
+        const responseData = await context.helpers.httpRequest(requestOptions);
+        validateApiResponse(responseData, `fetch organizations page ${currentPage}`);
 
         const result = responseData.result;
         const organizations = result?.entities || [];
@@ -218,23 +205,21 @@ export const api = {
     data: CreateOrganizationRequest
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/organizations`,
-        body: data,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/organizations'
+      );
+      requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'create organization');
       return response;
     } catch (error) {
       throw new Error(`Failed to create organization: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async updateOrganization(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -242,68 +227,62 @@ export const api = {
     data: Partial<CreateOrganizationRequest>
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/organizations/${id}`,
-        body: data,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/organizations/${id}`
+      );
+      requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `update organization ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to update organization: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async getOrganizationById(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
     id: number
   ): Promise<{ success: boolean; result: Organization & { note?: string; contact?: OrganizationContact; statistics?: { endpoint: { total: number; managed: number }; case: { total: number; open: number; closed: number; archived: number } } }; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/organizations/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/organizations/${id}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch organization with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async checkOrganizationNameExists(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
     name: string
   ): Promise<{ success: boolean; result: boolean; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/organizations/check`,
-        qs: { name },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/organizations/check',
+        { name }
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'check organization name');
       return response;
     } catch (error) {
       throw new Error(`Failed to check organization name: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async getShareableDeploymentInfo(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -319,22 +298,20 @@ export const api = {
     errors: string[]
   }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/organizations/shareable-deployment-info/${deploymentToken}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/organizations/shareable-deployment-info/${deploymentToken}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch shareable deployment info');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch shareable deployment info: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async updateOrganizationShareableDeployment(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -342,23 +319,21 @@ export const api = {
     status: boolean
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/organizations/${id}/shareable-deployment`,
-        body: { status },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/organizations/${id}/shareable-deployment`
+      );
+      requestOptions.body = { status };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `update organization ${id} shareable deployment`);
       return response;
     } catch (error) {
       throw new Error(`Failed to update organization ${id} shareable deployment: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async updateOrganizationDeploymentToken(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -366,45 +341,41 @@ export const api = {
     deploymentToken: string
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/organizations/${id}/deployment-token`,
-        body: { deploymentToken },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/organizations/${id}/deployment-token`
+      );
+      requestOptions.body = { deploymentToken };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `update organization ${id} deployment token`);
       return response;
     } catch (error) {
       throw new Error(`Failed to update organization ${id} deployment token: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async deleteOrganization(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
     id: number
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/organizations/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/organizations/${id}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `delete organization with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to delete organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async addTagsToOrganization(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -412,23 +383,21 @@ export const api = {
     tags: string[]
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'PATCH',
-        url: `${credentials.instanceUrl}/api/public/organizations/${id}/tags`,
-        body: { tags },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PATCH',
+        `/api/public/organizations/${id}/tags`
+      );
+      requestOptions.body = { tags };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `add tags to organization with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to add tags to organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
   },
+
   async deleteTagsFromOrganization(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -436,18 +405,15 @@ export const api = {
     tags: string[]
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/organizations/${id}/tags`,
-        body: { tags },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/organizations/${id}/tags`
+      );
+      requestOptions.body = { tags };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `delete tags from organization with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to delete tags from organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);

@@ -13,8 +13,9 @@
  * - api object: Contains methods to interact with the Baseline API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 export interface BaselineFilter {
   searchTerm?: string;
@@ -65,18 +66,15 @@ export const api = {
     request: BaselineAcquisitionRequest
   ): Promise<BaselineResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/baseline/acquire`,
-        body: request,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/baseline/acquire'
+      );
+      requestOptions.body = request;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'acquire baseline');
       return response;
     } catch (error) {
       throw new Error(`Failed to acquire baseline: ${error instanceof Error ? error.message : String(error)}`);
@@ -89,18 +87,15 @@ export const api = {
     request: BaselineComparisonRequest
   ): Promise<BaselineResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/baseline/compare`,
-        body: request,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/baseline/compare'
+      );
+      requestOptions.body = request;
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'compare baseline');
       return response;
     } catch (error) {
       throw new Error(`Failed to compare baseline: ${error instanceof Error ? error.message : String(error)}`);
@@ -114,16 +109,13 @@ export const api = {
     taskId: string
   ): Promise<void> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/baseline/comparison/report/${endpointId}/${taskId}`,
-        headers: {
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/baseline/comparison/report/${endpointId}/${taskId}`
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
 
       // The endpoint doesn't return a response body, but we can check the status
       if (!response || typeof response !== 'object') {

@@ -113,7 +113,7 @@ export function validateApiResponse(responseData: ApiResponse, context?: string)
 export function extractEntityId(entity: any, entityType: string = 'entity'): string {
 	const entityId = entity._id ?? entity.id ?? entity[`${entityType}Id`] ?? entity.Id;
 
-	if (entityId === undefined || entityId === null || entityId === '' || entityId === 0) {
+	if (entityId === undefined || entityId === null || entityId === '') {
 		throw new Error(
 			`${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has no valid ID. ID value: ${entityId}, ID type: ${typeof entityId}. ` +
 			`Available fields: ${Object.keys(entity).join(', ')}`

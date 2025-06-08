@@ -5,8 +5,9 @@
  * for retrieving triage rule tags.
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
 
 export interface TriageTag {
   _id: string;
@@ -36,21 +37,18 @@ export const api = {
     organizationId: string | number = 0
   ): Promise<CreateTriageTagResponse> {
     try {
-      const options: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/triages/tags`,
-        body: {
-          name,
-          organizationId
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/triages/tags'
+      );
+      requestOptions.body = {
+        name,
+        organizationId
       };
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'create triage tag');
       return response;
     } catch (error) {
       throw new Error(`Failed to create triage tag: ${error instanceof Error ? error.message : String(error)}`);
@@ -74,18 +72,15 @@ export const api = {
         queryParams['filter[searchTerm]'] = searchTerm;
       }
 
-      const options: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/triages/tags`,
-        qs: queryParams,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/triages/tags',
+        queryParams
+      );
 
-      const response = await context.helpers.httpRequest(options);
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch triage tags');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch triage tags: ${error instanceof Error ? error.message : String(error)}`);

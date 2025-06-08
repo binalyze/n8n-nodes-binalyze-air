@@ -10,8 +10,9 @@
  * - api object: Contains methods to interact with the Tasks API endpoints
  */
 
-import { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirCredentialsApi.credentials';
+import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 export interface Task {
   _id: string;
@@ -223,18 +224,15 @@ export const api = {
         queryParams.sortType = options.sortType;
       }
 
-      const requestOptions: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/tasks`,
-        qs: queryParams,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        '/api/public/tasks',
+        queryParams
+      );
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'fetch tasks');
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch tasks: ${error instanceof Error ? error.message : String(error)}`);
@@ -247,17 +245,14 @@ export const api = {
     id: string
   ): Promise<TaskResponse> {
     try {
-      const requestOptions: IHttpRequestOptions = {
-        method: 'GET',
-        url: `${credentials.instanceUrl}/api/public/tasks/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/tasks/${id}`
+      );
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `fetch task with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to fetch task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -270,18 +265,17 @@ export const api = {
     id: string
   ): Promise<CancelTaskResponse> {
     try {
-      const requestOptions: IHttpRequestOptions = {
-        method: 'POST',
-        url: `${credentials.instanceUrl}/api/public/tasks/${id}/cancel`,
-        body: {},
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        `/api/public/tasks/${id}/cancel`
+      );
+
+      // Add empty body for POST request
+      requestOptions.body = {};
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `cancel task with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to cancel task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
@@ -294,17 +288,14 @@ export const api = {
     id: string
   ): Promise<DeleteTaskResponse> {
     try {
-      const requestOptions: IHttpRequestOptions = {
-        method: 'DELETE',
-        url: `${credentials.instanceUrl}/api/public/tasks/${id}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${credentials.token}`
-        },
-        json: true
-      };
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/tasks/${id}`
+      );
 
       const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, `delete task with ID ${id}`);
       return response;
     } catch (error) {
       throw new Error(`Failed to delete task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
