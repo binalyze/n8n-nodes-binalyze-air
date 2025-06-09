@@ -1355,20 +1355,60 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 						requestData.tagIds = tagIds;
 					}
 
-					// Use the new API method
-					const responseData = await triageRulesApi.createTriageRule(this, credentials, requestData);
+					try {
+						// Use the new API method
+						const responseData = await triageRulesApi.createTriageRule(this, credentials, requestData);
 
-					// Check if the response indicates an error with status code 660
-					if (!responseData.success && responseData.statusCode === 660) {
-						throw new NodeOperationError(this.getNode(), 'Invalid Rule Content or Engine', {
-							itemIndex: i,
-						});
+						// Check if the response indicates success
+						if (responseData.success) {
+							returnData.push({
+								json: responseData.result as any,
+								pairedItem: i,
+							});
+						} else {
+							// Handle API error responses
+							returnData.push({
+								json: {
+									success: false,
+									error: true,
+									message: 'Failed to create triage rule',
+									errors: responseData.errors || [],
+									statusCode: responseData.statusCode || 400,
+									result: responseData.result || null
+								},
+								pairedItem: i,
+							});
+						}
+					} catch (error: any) {
+						// Handle validation errors and other exceptions
+						if (error.response?.data) {
+							const errorData = error.response.data;
+							returnData.push({
+								json: {
+									success: false,
+									error: true,
+									message: errorData.message || 'Failed to create triage rule',
+									errors: errorData.errors || [error.message || 'Unknown validation error'],
+									statusCode: errorData.statusCode || error.response.status,
+									result: errorData.result || null
+								},
+								pairedItem: i,
+							});
+						} else {
+							// Handle other types of errors (like validation errors in the message)
+							returnData.push({
+								json: {
+									success: false,
+									error: true,
+									message: 'Failed to create triage rule',
+									errors: [error.message || 'Unknown error occurred during rule creation'],
+									statusCode: error.statusCode || 500,
+									result: null
+								},
+								pairedItem: i,
+							});
+						}
 					}
-
-					returnData.push({
-						json: responseData.result as any,
-						pairedItem: i,
-					});
 					break;
 				}
 
@@ -1470,20 +1510,60 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 						searchIn,
 					};
 
-					// Use the new API method
-					const responseData = await triageRulesApi.updateTriageRule(this, credentials, triageRuleId, requestData);
+					try {
+						// Use the new API method
+						const responseData = await triageRulesApi.updateTriageRule(this, credentials, triageRuleId, requestData);
 
-					// Check if the response indicates an error with status code 660
-					if (!responseData.success && responseData.statusCode === 660) {
-						throw new NodeOperationError(this.getNode(), 'Invalid Rule Content or Engine', {
-							itemIndex: i,
-						});
+						// Check if the response indicates success
+						if (responseData.success) {
+							returnData.push({
+								json: responseData.result as any,
+								pairedItem: i,
+							});
+						} else {
+							// Handle API error responses
+							returnData.push({
+								json: {
+									success: false,
+									error: true,
+									message: 'Failed to update triage rule',
+									errors: responseData.errors || [],
+									statusCode: responseData.statusCode || 400,
+									result: responseData.result || null
+								},
+								pairedItem: i,
+							});
+						}
+					} catch (error: any) {
+						// Handle validation errors and other exceptions
+						if (error.response?.data) {
+							const errorData = error.response.data;
+							returnData.push({
+								json: {
+									success: false,
+									error: true,
+									message: errorData.message || 'Failed to update triage rule',
+									errors: errorData.errors || [error.message || 'Unknown validation error'],
+									statusCode: errorData.statusCode || error.response.status,
+									result: errorData.result || null
+								},
+								pairedItem: i,
+							});
+						} else {
+							// Handle other types of errors (like validation errors in the message)
+							returnData.push({
+								json: {
+									success: false,
+									error: true,
+									message: 'Failed to update triage rule',
+									errors: [error.message || 'Unknown error occurred during rule update'],
+									statusCode: error.statusCode || 500,
+									result: null
+								},
+								pairedItem: i,
+							});
+						}
 					}
-
-					returnData.push({
-						json: responseData.result as any,
-						pairedItem: i,
-					});
 					break;
 				}
 

@@ -162,6 +162,8 @@ Robust error handling with detailed error messages for:
 - Missing or invalid resource identifiers
 - API rate limits and connectivity issues
 - Data validation errors
+- Triage rule validation errors with specific syntax feedback for YARA, Sigma, and osquery rules
+- Structured error responses for create/update operations that preserve error details instead of throwing exceptions
 
 ## Prerequisites
 
