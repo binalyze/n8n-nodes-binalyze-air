@@ -21,7 +21,7 @@ import {
 	catchAndFormatError,
 } from '../utils/helpers';
 
-import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
+import { AirCredentials } from '../../../credentials/Air/AirCredentialsApi.credentials';
 import { findOrganizationByName } from './organizations';
 
 export const AutoAssetTagsOperations: INodeProperties[] = [

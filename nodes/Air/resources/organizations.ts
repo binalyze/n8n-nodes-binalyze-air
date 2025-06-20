@@ -21,7 +21,7 @@ import {
 	catchAndFormatError,
 } from '../utils/helpers';
 
-import { AirCredentials } from '../../../credentials/AirCredentialsApi.credentials';
+import { AirCredentials } from '../../../credentials/Air/AirCredentialsApi.credentials';
 import { api as organizationsApi, Organization, CreateOrganizationRequest } from '../api/organizations/organizations';
 import { api as organizationUsersApi } from '../api/organizations/users/users';
 
