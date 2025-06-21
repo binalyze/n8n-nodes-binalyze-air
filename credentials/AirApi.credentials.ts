@@ -10,8 +10,8 @@ export interface AirCredentials {
 	token: string;
 }
 
-export class AirCredentialsApi implements ICredentialType {
-	name = 'airCredentialsApi';
+export class AirApi implements ICredentialType {
+	name = 'airApi';
 	displayName = 'Binalyze AIR Credentials API';
 	documentationUrl = 'https://kb.binalyze.com'; //TODO: Add KB url once available
 	icon = {

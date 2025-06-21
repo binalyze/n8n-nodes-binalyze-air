@@ -23,7 +23,7 @@ import {
 // Import user utilities for Resource Locator pattern
 import { findUserByUsername, fetchAllUsers, isValidUser, extractUserId } from './users';
 
-import { AirCredentials } from '../../../credentials/Air/AirCredentialsApi.credentials';
+import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import {
 	api as casesApi,
 	Case,

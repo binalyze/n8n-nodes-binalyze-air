@@ -10,7 +10,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { AirCredentials } from '../../../credentials/Air/AirCredentialsApi.credentials';
+import { AirCredentials } from '../../../credentials/AirApi.credentials';
 
 export interface PaginationInfo {
 	totalEntityCount: number;
