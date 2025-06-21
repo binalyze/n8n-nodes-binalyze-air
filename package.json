@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-binalyze-air",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Complete implementation of Binalyze AIR for automating DFIR with n8n workflows.",
   "keywords": [
     "n8n-community-node-package",
@@ -46,7 +46,7 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/AirCredentialsApi.credentials.js"
+      "dist/credentials/AirApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/Air/Air.node.js"

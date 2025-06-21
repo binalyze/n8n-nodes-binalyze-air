@@ -12,7 +12,7 @@
  */
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
-import { AirCredentials } from '../../../../credentials/Air/AirCredentialsApi.credentials';
+import { AirCredentials } from '../../../../credentials/AirApi.credentials';
 import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
 // ===== TRIAGE RULE INTERFACES =====
