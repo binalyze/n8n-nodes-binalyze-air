@@ -19,7 +19,7 @@ import {
 	handleExecuteError,
 	extractPaginationInfo,
 	processApiResponseEntities,
-	requireValidId,
+	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
 
@@ -457,7 +457,7 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 						// For both list and id modes, the value should be the repository ID
 						const repositoryId = repositoryResource.value;
 						try {
-							const validatedRepositoryId = requireValidId(repositoryId, 'Repository ID');
+							const validatedRepositoryId = normalizeAndValidateId(repositoryId, 'Repository ID');
 							repository = await getRepositoryById(this, credentials, organizationId, validatedRepositoryId);
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, {

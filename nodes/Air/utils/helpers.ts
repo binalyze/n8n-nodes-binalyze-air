@@ -127,7 +127,7 @@ export function extractEntityId(entity: any, entityType: string = 'entity'): str
  * Validate and normalize an ID value that can be a number, string, or GUID
  * Returns null if the ID is invalid, otherwise returns the normalized string representation
  */
-export function validateAndNormalizeId(id: any): string | null {
+function normalizeId(id: any): string | null {
 	// Handle null, undefined, or empty values
 	if (id === null || id === undefined) {
 		return null;
@@ -167,8 +167,8 @@ export function validateAndNormalizeId(id: any): string | null {
  * Validate that an ID is not empty/null and return normalized string
  * Throws an error if the ID is invalid
  */
-export function requireValidId(id: any, fieldName: string = 'ID'): string {
-	const normalizedId = validateAndNormalizeId(id);
+export function normalizeAndValidateId(id: any, fieldName: string = 'ID'): string {
+	const normalizedId = normalizeId(id);
 
 	if (normalizedId === null) {
 		throw new Error(`${fieldName} cannot be empty or invalid. Received: ${id} (type: ${typeof id})`);
@@ -234,7 +234,7 @@ export async function validateAndExtractOrganizationId(
 
 	// Validate organization ID
 	try {
-		organizationId = requireValidId(organizationId, 'Organization ID');
+		organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 	} catch (error) {
 		throw new NodeOperationError(context.getNode(), error.message, {
 			itemIndex,

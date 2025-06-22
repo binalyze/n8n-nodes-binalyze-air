@@ -17,7 +17,7 @@ import {
 	handleExecuteError,
 	extractPaginationInfo,
 	processApiResponseEntities,
-	requireValidId,
+	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
 
@@ -802,7 +802,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 					// Validate organization ID
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -856,7 +856,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 					// Validate organization ID
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -911,7 +911,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 					// Validate organization ID
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -968,7 +968,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 
 					// Validate organization ID
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1124,7 +1124,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1173,7 +1173,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1301,7 +1301,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1350,7 +1350,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1406,7 +1406,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1462,7 +1462,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					}
 
 					try {
-						organizationId = requireValidId(organizationId, 'Organization ID');
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,

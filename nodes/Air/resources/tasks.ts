@@ -18,7 +18,7 @@ import {
 	handleExecuteError,
 	extractPaginationInfo,
 	processApiResponseEntities,
-	requireValidId,
+	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
 
@@ -558,7 +558,7 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Validate task ID
 					try {
-						requireValidId(taskId, 'Task ID');
+						normalizeAndValidateId(taskId, 'Task ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -593,7 +593,7 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Validate task ID
 					try {
-						requireValidId(taskId, 'Task ID');
+						normalizeAndValidateId(taskId, 'Task ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -626,7 +626,7 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Validate task ID
 					try {
-						requireValidId(taskId, 'Task ID');
+						normalizeAndValidateId(taskId, 'Task ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -659,7 +659,7 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Validate task ID
 					try {
-						requireValidId(taskId, 'Task ID');
+						normalizeAndValidateId(taskId, 'Task ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -686,7 +686,7 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Validate task assignment ID
 					try {
-						requireValidId(taskAssignmentId, 'Task Assignment ID');
+						normalizeAndValidateId(taskAssignmentId, 'Task Assignment ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -719,7 +719,7 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Validate task assignment ID
 					try {
-						requireValidId(taskAssignmentId, 'Task Assignment ID');
+						normalizeAndValidateId(taskAssignmentId, 'Task Assignment ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,

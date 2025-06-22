@@ -10,7 +10,7 @@ import {
 	extractEntityId,
 	isValidEntity,
 	handleExecuteError,
-	requireValidId,
+	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
 
@@ -367,7 +367,7 @@ async function executeAcquireBaseline(
 	const filterOptions = this.getNodeParameter('filter', itemIndex, {}) as any;
 
 	// Validate required parameters
-	requireValidId(caseId, 'Case ID');
+	normalizeAndValidateId(caseId, 'Case ID');
 
 	// Build filter object
 	const filter: any = {};
@@ -432,7 +432,7 @@ async function executeCompareBaseline(
 	const taskIdsString = this.getNodeParameter('taskIds', itemIndex) as string;
 
 	// Validate required parameters
-	requireValidId(endpointId, 'Endpoint ID');
+	normalizeAndValidateId(endpointId, 'Endpoint ID');
 
 	if (!taskIdsString || taskIdsString.trim() === '') {
 		throw new Error('Task IDs cannot be empty');
@@ -472,8 +472,8 @@ async function executeGetComparisonReport(
 	const taskId = this.getNodeParameter('taskId', itemIndex) as string;
 
 	// Validate required parameters
-	requireValidId(endpointId, 'Endpoint ID');
-	requireValidId(taskId, 'Task ID');
+	normalizeAndValidateId(endpointId, 'Endpoint ID');
+	normalizeAndValidateId(taskId, 'Task ID');
 
 	// Make API call
 	await baselinesApi.getComparisonReport(this, credentials, endpointId, taskId);

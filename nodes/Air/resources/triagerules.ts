@@ -17,7 +17,7 @@ import {
 	handleExecuteError,
 	extractPaginationInfo,
 	processApiResponseEntities,
-	requireValidId,
+	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
 
@@ -991,7 +991,7 @@ export function buildTriageRuleQueryParams(organizationIds: string, additionalFi
 	return queryParams;
 }
 
-export async function getTriageRules(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+export async function getTriageRules(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
 
@@ -1011,7 +1011,7 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 					orgIdString = '0';
 				}
 
-				organizationId = requireValidId(orgIdString, 'Organization ID');
+				organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
 			}
 		} catch (error) {
 			// If we can't get the current node parameters, use default
@@ -1023,8 +1023,8 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 			'filter[organizationIds]': organizationId
 		};
 
-		if (filter) {
-			queryParams['filter[searchTerm]'] = filter;
+		if (searchTerm) {
+			queryParams['filter[searchTerm]'] = searchTerm;
 		}
 
 		const response = await triageRulesApi.getTriageRules(this, credentials, organizationId, queryParams);
@@ -1038,7 +1038,7 @@ export async function getTriageRules(this: ILoadOptionsFunctions, filter?: strin
 				value: extractTriageRuleId(rule),
 				url: rule.url || '',
 			}),
-			filter
+			searchTerm
 		);
 	} catch (error) {
 		throw catchAndFormatError(error, 'Failed to load triage rules for selection');
@@ -1075,7 +1075,7 @@ export async function getTriageRulesOptions(this: ILoadOptionsFunctions): Promis
 	}
 }
 
-export async function getTriageTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+export async function getTriageTags(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
 
@@ -1094,7 +1094,7 @@ export async function getTriageTags(this: ILoadOptionsFunctions, filter?: string
 
 				// Validate the organization ID
 				try {
-					organizationId = requireValidId(organizationId, 'Organization ID');
+					organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
 				} catch (error) {
 					// If validation fails, use default
 					organizationId = '0';
@@ -1104,9 +1104,6 @@ export async function getTriageTags(this: ILoadOptionsFunctions, filter?: string
 			// If we can't get the current node parameters, use default
 			organizationId = '0';
 		}
-
-		// Get searchTerm from filter parameter
-		const searchTerm = filter || undefined;
 
 		const response = await triageRulesApi.getTriageTags(this, credentials, organizationId, searchTerm);
 		const tags = response.result || [];
@@ -1118,7 +1115,7 @@ export async function getTriageTags(this: ILoadOptionsFunctions, filter?: string
 				name: tag.name,
 				value: tag._id
 			}),
-			filter
+			searchTerm
 		);
 	} catch (error) {
 		throw catchAndFormatError(error, 'Failed to load triage tags for selection');
@@ -1190,7 +1187,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 						// Validate and use organization ID
 						try {
-							organizationId = requireValidId(orgIdString, 'Organization ID');
+							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, {
 								itemIndex: i,
@@ -1230,7 +1227,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 					// Validate triage rule ID
 					try {
-						triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
+						triageRuleId = normalizeAndValidateId(triageRuleId, 'Triage Rule ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1318,7 +1315,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 						// Validate and convert organization ID
 						try {
-							organizationId = requireValidId(orgIdString, 'Organization ID');
+							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, {
 								itemIndex: i,
@@ -1434,7 +1431,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 					// Validate triage rule ID
 					try {
-						triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
+						triageRuleId = normalizeAndValidateId(triageRuleId, 'Triage Rule ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1479,7 +1476,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 						// Validate and convert organization ID
 						try {
-							organizationId = requireValidId(orgIdString, 'Organization ID');
+							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, {
 								itemIndex: i,
@@ -1570,7 +1567,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 					// Validate triage rule ID
 					try {
-						triageRuleId = requireValidId(triageRuleId, 'Triage Rule ID');
+						triageRuleId = normalizeAndValidateId(triageRuleId, 'Triage Rule ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
@@ -1626,7 +1623,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 						// Validate and convert organization ID
 						try {
-							organizationId = requireValidId(orgIdString, 'Organization ID');
+							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, {
 								itemIndex: i,
@@ -1673,7 +1670,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 						// Validate and convert organization ID
 						try {
-							organizationId = requireValidId(orgIdString, 'Organization ID');
+							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, {
 								itemIndex: i,
@@ -1832,7 +1829,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 
 						// Validate and use organization ID
 						try {
-							const validatedOrgId = requireValidId(orgIdString, 'Organization ID');
+							const validatedOrgId = normalizeAndValidateId(orgIdString, 'Organization ID');
 							filter.organizationIds = [parseInt(validatedOrgId, 10)];
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, {

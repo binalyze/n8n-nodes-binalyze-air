@@ -17,7 +17,7 @@ import {
 	handleExecuteError,
 	extractPaginationInfo,
 	processApiResponseEntities,
-	requireValidId,
+	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
 
@@ -430,7 +430,7 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Validate user ID
 					try {
-						userId = requireValidId(userId, 'User ID');
+						userId = normalizeAndValidateId(userId, 'User ID');
 					} catch (error) {
 						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,

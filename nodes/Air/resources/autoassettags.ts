@@ -17,7 +17,7 @@ import {
 	handleExecuteError,
 	extractPaginationInfo,
 	processApiResponseEntities,
-	requireValidId,
+	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
 
@@ -383,7 +383,7 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 
 							// Validate and convert organization ID
 							try {
-								orgIdString = requireValidId(orgIdString, 'Organization ID');
+								orgIdString = normalizeAndValidateId(orgIdString, 'Organization ID');
 								organizationId = parseInt(orgIdString);
 							} catch (error) {
 								throw new NodeOperationError(this.getNode(), error.message, {
@@ -417,7 +417,7 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 							// For both list and id modes, the value should be the auto asset tag ID
 							const tagId = autoAssetTagResource.value;
 							try {
-								autoAssetTagId = requireValidId(tagId, 'Auto Asset Tag ID');
+								autoAssetTagId = normalizeAndValidateId(tagId, 'Auto Asset Tag ID');
 							} catch (error) {
 								throw new NodeOperationError(this.getNode(), error.message, {
 									itemIndex: i,
