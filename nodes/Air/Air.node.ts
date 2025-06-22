@@ -71,7 +71,7 @@ export class Air implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Manage organizations, repositories, users, auto asset tags, triage rules, baselines, cases, and tasks in Binalyze AIR',
+		description: 'Manage Binalyze AIR resources',
 		defaults: {
 			name: 'Binalyze AIR',
 		},

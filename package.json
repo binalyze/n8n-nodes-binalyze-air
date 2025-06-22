@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-binalyze-air",
-  "version": "1.0.5",
-  "description": "Complete implementation of Binalyze AIR for automating DFIR with n8n workflows.",
+  "version": "1.1.0",
+  "description": "Binalyze AIR nodes for automating DFIR with n8n workflows",
   "keywords": [
     "n8n-community-node-package",
     "binalyze",
@@ -35,10 +35,13 @@
     "watch:ts": "tsc --watch --preserveWatchOutput",
     "watch:restart": "chokidar \"**/*.ts\" -c \"./restart-n8n.sh\" --ignore \"dist/**/*.d.ts\" --ignore \"dist/**/*.map\" --initial",
     "restart:n8n": "./restart-n8n.sh",
+    "setup-dev": "./setup-dev-link.sh",
+    "check-node": "./check-node-loaded.sh",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "npm run build && npm run lint -- -c .eslintrc.prepublish.js nodes credentials package.json"
+    "prepublishOnly": "npm run build && npm run lint -- -c .eslintrc.prepublish.js nodes credentials package.json",
+    "test:download": "cd test && pip install -r requirements.txt && python download_test_suite.py"
   },
   "files": [
     "dist"
