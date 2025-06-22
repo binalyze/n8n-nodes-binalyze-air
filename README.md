@@ -6,6 +6,7 @@
 
 - [What is Binalyze AIR?](#what-is-binalyze-air)
 - [Features](#features)
+  - [Acquisitions](#acquisitions)
   - [Assets](#assets)
   - [Auto Asset Tags](#auto-asset-tags)
   - [Baselines](#baselines)
@@ -31,7 +32,20 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 ## Features
 
-The Binalyze AIR node provides access to nine main resource categories with comprehensive operations:
+The Binalyze AIR node provides access to ten main resource categories with comprehensive operations:
+
+### Acquisitions
+
+Manage acquisition profiles and evidence collection tasks:
+
+- **Assign Evidence Acquisition Task** - Schedule evidence collection tasks on endpoints using predefined acquisition profiles with comprehensive filtering options including group, IP, platform, online status, and management status
+- **Assign Image Acquisition Task** - Create disk imaging tasks for forensic analysis using acquisition profiles with endpoint filtering and volume selection capabilities
+- **Create Acquisition Profile** - Build new acquisition profiles with custom artifact and evidence collection settings for different investigation scenarios
+- **Create Off-Network Acquisition Task** - Generate acquisition tasks for offline or disconnected endpoints that can be executed when connectivity is restored
+- **Delete Acquisition Profile** - Remove acquisition profiles and associated configurations from the system
+- **Get** - Retrieve detailed information about specific acquisition profiles including settings, artifacts, and evidence types
+- **Get Many** - Browse multiple acquisition profiles with filtering by organization and comprehensive search capabilities
+- **Update Acquisition Profile** - Modify existing acquisition profiles including artifact settings, evidence types, and organizational assignments
 
 ### Assets
 

@@ -65,14 +65,20 @@ import {
 	getAssetsOptions,
 	executeAssets
 } from './resources/assets';
+import {
+	AcquisitionsOperations,
+	getAcquisitionProfiles,
+	getAcquisitionProfilesOptions,
+	executeAcquisitions
+} from './resources/acquisitions';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Binalyze AIR',
 		name: 'air',
 		icon: {
-			light: 'file:logo.black.svg',
-			dark: 'file:logo.white.svg',
+			light: 'file:b-logo-dark.svg',
+			dark: 'file:b-logo-light.svg',
 		} as const,
 		group: ['input'],
 		version: 1,
@@ -145,6 +151,7 @@ export class Air implements INodeType {
 				default: 'organizations',
 			},
 
+			...AcquisitionsOperations,
 			...AssetsOperations,
 			...AutoAssetTagsOperations,
 			...BaselinesOperations,
@@ -159,6 +166,10 @@ export class Air implements INodeType {
 
 	methods = {
 		loadOptions: {
+			// Import load options methods from Acquisitions
+			async getAcquisitionProfiles(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getAcquisitionProfilesOptions.call(this);
+			},
 			// Import load options methods from Assets
 			async getAssets(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getAssetsOptions.call(this);
@@ -197,6 +208,10 @@ export class Air implements INodeType {
 			},
 		},
 		listSearch: {
+			// Import list search methods from Acquisitions for resource locators
+			async getAcquisitionProfiles(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getAcquisitionProfiles.call(this, filter);
+			},
 			// Import list search methods from Assets for resource locators
 			async getAssets(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAssets.call(this, filter);
@@ -243,6 +258,8 @@ export class Air implements INodeType {
 
 		// Delegate execution to the appropriate function based on resource
 		switch (resource) {
+			case 'acquisitions':
+				return executeAcquisitions.call(this);
 			case 'assets':
 				return executeAssets.call(this);
 			case 'autoassettags':

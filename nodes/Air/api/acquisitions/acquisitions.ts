@@ -2,11 +2,11 @@
  * Acquisitions API Module
  *
  * This module provides interfaces and functions to interact with the Binalyze AIR API
- * for retrieving acquisition profiles information.
+ * for managing acquisition profiles and evidence collection tasks.
  *
  * The module includes:
  * - AcquisitionProfile interface: Represents a single acquisition profile in the system
- * - AcquisitionProfilesResponse interface: Represents the API response structure
+ * - Various response interfaces for API operations
  * - api object: Contains methods to interact with the Acquisitions API endpoints
  */
 
@@ -14,13 +14,23 @@ import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
 import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
 
+// ===== ACQUISITION PROFILE INTERFACES =====
+
 export interface AcquisitionProfile {
   _id: string;
   name: string;
-  organizationIds: string[];
+  description?: string;
+  organizationId: number;
   createdAt: string;
   createdBy: string;
-  deletable: boolean;
+  updatedAt?: string;
+  updatedBy?: string;
+  isDefault?: boolean;
+  settings?: {
+    artifacts?: string[];
+    evidence?: string[];
+    [key: string]: any;
+  };
 }
 
 export interface AcquisitionProfilesResponse {
@@ -45,77 +55,110 @@ export interface AcquisitionProfilesResponse {
   errors: string[];
 }
 
-// Interface for the save location configuration
-export interface SaveLocationConfig {
-  location: string;
-  useMostFreeVolume: boolean;
-  repositoryId: string | null;
-  path: string;
-  volume?: string;
-  tmp: string;
-  directCollection: boolean;
-}
-
-// Interface for the task configuration
-export interface TaskConfig {
-  choice: string;
-  saveTo: {
-    windows: SaveLocationConfig;
-    linux: SaveLocationConfig;
-    macos: SaveLocationConfig;
-    aix: SaveLocationConfig;
-  };
-  cpu: {
-    limit: number;
-  };
-  compression: {
-    enabled: boolean;
-    encryption: {
-      enabled: boolean;
-      password: string;
-    };
-  };
-}
-
-// Interface for the drone configuration
-export interface DroneConfig {
-  autoPilot: boolean;
-  enabled: boolean;
-  analyzers: string[];
-  keywords: string[];
-}
-
-// Interface for the filter configuration
-export interface FilterConfig {
-  searchTerm: string;
+export interface CreateAcquisitionProfileRequest {
   name: string;
-  ipAddress: string;
-  groupId: string;
-  groupFullPath: string;
-  managedStatus: string[];
-  isolationStatus: string[];
-  platform: string[];
-  issue: string;
-  onlineStatus: string[];
-  tags: string[];
-  version: string;
-  policy: string;
-  includedEndpointIds: string[];
-  excludedEndpointIds: string[];
-  organizationIds: number[];
+  description?: string;
+  organizationId: number;
+  settings?: {
+    artifacts?: string[];
+    evidence?: string[];
+    [key: string]: any;
+  };
 }
 
-// Interface for the acquisition task request
-export interface AcquisitionTaskRequest {
+export interface CreateAcquisitionProfileResponse {
+  success: boolean;
+  result: AcquisitionProfile;
+  statusCode: number;
+  errors: string[];
+}
+
+export interface UpdateAcquisitionProfileRequest {
+  name: string;
+  description?: string;
+  settings?: {
+    artifacts?: string[];
+    evidence?: string[];
+    [key: string]: any;
+  };
+}
+
+export interface UpdateAcquisitionProfileResponse {
+  success: boolean;
+  result: AcquisitionProfile;
+  statusCode: number;
+  errors: string[];
+}
+
+export interface DeleteAcquisitionProfileResponse {
+  success: boolean;
+  result: null;
+  statusCode: number;
+  errors: string[];
+}
+
+export interface GetAcquisitionProfileResponse {
+  success: boolean;
+  result: AcquisitionProfile;
+  statusCode: number;
+  errors: string[];
+}
+
+export interface AssignEvidenceAcquisitionTaskRequest {
   caseId: string;
-  droneConfig: DroneConfig;
-  taskConfig: TaskConfig;
   acquisitionProfileId: string;
-  filter: FilterConfig;
+  filter: {
+    searchTerm?: string;
+    name?: string;
+    ipAddress?: string;
+    groupId?: string;
+    groupFullPath?: string;
+    managedStatus?: string[];
+    isolationStatus?: string[];
+    platform?: string[];
+    issue?: string;
+    onlineStatus?: string[];
+    tags?: string[];
+    version?: string;
+    policy?: string;
+    includedEndpointIds?: string[];
+    excludedEndpointIds?: string[];
+    organizationIds?: (string | number)[];
+  };
 }
 
-// Interface for the acquisition task response
-export interface AcquisitionTaskResponse {
+export interface AssignImageAcquisitionTaskRequest {
+  caseId: string;
+  acquisitionProfileId: string;
+  filter: {
+    searchTerm?: string;
+    name?: string;
+    ipAddress?: string;
+    groupId?: string;
+    groupFullPath?: string;
+    managedStatus?: string[];
+    isolationStatus?: string[];
+    platform?: string[];
+    issue?: string;
+    onlineStatus?: string[];
+    tags?: string[];
+    version?: string;
+    policy?: string;
+    includedEndpointIds?: string[];
+    excludedEndpointIds?: string[];
+    organizationIds?: (string | number)[];
+  };
+}
+
+export interface CreateOffNetworkAcquisitionTaskRequest {
+  caseId: string;
+  acquisitionProfileId: string;
+  organizationId: number;
+  name: string;
+  description?: string;
+}
+
+export interface AssignAcquisitionTaskResponse {
   success: boolean;
   result: Array<{
     _id: string;
@@ -126,199 +169,63 @@ export interface AcquisitionTaskResponse {
   errors: string[];
 }
 
-// Interface for Network Capture configuration
-export interface NetworkCaptureConfig {
-  enabled: boolean;
-  duration: number;
-  pcap: { enabled: boolean };
-  networkFlow: { enabled: boolean };
-}
-
-// Interface for eDiscovery Pattern
-export interface EDiscoveryPattern {
-  pattern: string;
-  category: string;
-}
-
-// Interface for Acquisition Profile Platform specifics (update)
-export interface AcquisitionProfilePlatformDetails {
-  evidenceList: string[];
-  artifactList?: string[];
-  customContentProfiles: any[];
-  networkCapture?: NetworkCaptureConfig; // Updated type
-}
-
-export interface AcquisitionProfileDetails {
-  _id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  organizationIds: string[];
-  deletable: boolean;
-  windows?: AcquisitionProfilePlatformDetails;
-  linux?: AcquisitionProfilePlatformDetails;
-  macos?: AcquisitionProfilePlatformDetails;
-  aix?: AcquisitionProfilePlatformDetails;
-  eDiscovery?: {
-    patterns: any[];
-  };
-}
-
-// Interface for the response of getting a single acquisition profile by ID
-export interface AcquisitionProfileDetailsResponse {
+export interface CreateOffNetworkTaskResponse {
   success: boolean;
-  result: AcquisitionProfileDetails;
+  result: {
+    _id: string;
+    name: string;
+    organizationId: number;
+    caseId: string;
+    acquisitionProfileId: string;
+  };
   statusCode: number;
   errors: string[];
 }
 
-// Interface for endpoint and volume configuration for disk image acquisition
-export interface EndpointVolumeConfig {
-  endpointId: string;
-  volumes: string[];
-}
-
-// Interface for disk image options
-export interface DiskImageOptions {
-  chunkSize: number;
-  chunkCount: number;
-  startOffset: number;
-  endpoints: EndpointVolumeConfig[];
-}
-
-// Interface for the image acquisition task request
-export interface ImageAcquisitionTaskRequest {
-  caseId: string | null;
-  taskConfig: TaskConfig; // Reusing existing TaskConfig, assuming structure is similar enough or adaptable
-  diskImageOptions: DiskImageOptions;
-  filter: FilterConfig; // Reusing existing FilterConfig
-}
-
-// Interface for the image acquisition task response (structure matches AcquisitionTaskResponse)
-export type ImageAcquisitionTaskResponse = AcquisitionTaskResponse;
-
-// Interface for the request body of creating an acquisition profile
-export interface CreateAcquisitionProfileRequest {
-  name: string;
-  organizationIds: string[];
-  windows?: AcquisitionProfilePlatformDetails;
-  linux?: AcquisitionProfilePlatformDetails;
-  macos?: AcquisitionProfilePlatformDetails;
-  aix?: Omit<AcquisitionProfilePlatformDetails, 'networkCapture'>; // AIX doesn't have networkCapture
-  eDiscovery?: {
-    patterns: EDiscoveryPattern[];
-  };
-}
-
-// Interface for the response of creating an acquisition profile
-export interface CreateAcquisitionProfileResponse {
-  success: boolean;
-  result: null; // Typically null on successful creation
-  statusCode: number;
-  errors: string[];
-}
+// ===== API METHODS =====
 
 export const api = {
+  // ===== ACQUISITION PROFILE METHODS =====
+
   async getAcquisitionProfiles(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
     organizationIds: string | string[] = '0',
-    allOrganizations: boolean = true
+    queryParams?: Record<string, string | number>
   ): Promise<AcquisitionProfilesResponse> {
     try {
       const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      const queryParams: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds,
-        'filter[allOrganizations]': allOrganizations.toString()
+      // Build the query string parameters
+      const qs: Record<string, string | number> = {
+        'filter[organizationIds]': orgIds
       };
+
+      // Add additional query parameters if provided
+      if (queryParams) {
+        Object.assign(qs, queryParams);
+      }
 
       const requestOptions = buildRequestOptions(
         credentials,
         'GET',
         '/api/public/acquisitions/profiles',
-        queryParams
+        qs
       );
 
       const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch acquisition profiles');
+      validateApiResponse(response, 'Get Acquisition Profiles');
+
       return response;
     } catch (error) {
-      throw new Error(`Failed to fetch acquisition profiles: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to get acquisition profiles: ${error.message}`);
     }
   },
 
-  // Get Acquisition Profile by ID
-  async getAcquisitionProfileById(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    profileId: string
-  ): Promise<AcquisitionProfileDetailsResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/acquisitions/profiles/${profileId}`
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch acquisition profile with ID ${profileId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch acquisition profile with ID ${profileId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  },
-
-  // Assigning evidence acquisition task by filter
-  async assignAcquisitionTask(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    request: AcquisitionTaskRequest
-  ): Promise<AcquisitionTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/acquisitions/acquire'
-      );
-      requestOptions.body = request;
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'assign acquisition task');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to assign acquisition task: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  },
-
-  // Assigning image acquisition task by filter
-  async assignImageAcquisitionTask(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    request: ImageAcquisitionTaskRequest
-  ): Promise<ImageAcquisitionTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/acquisitions/acquire/image'
-      );
-      requestOptions.body = request;
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'assign image acquisition task');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to assign image acquisition task: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  },
-
-  // Create Acquisition Profile
   async createAcquisitionProfile(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    request: CreateAcquisitionProfileRequest
+    data: CreateAcquisitionProfileRequest
   ): Promise<CreateAcquisitionProfileResponse> {
     try {
       const requestOptions = buildRequestOptions(
@@ -326,13 +233,150 @@ export const api = {
         'POST',
         '/api/public/acquisitions/profiles'
       );
-      requestOptions.body = request;
+
+      requestOptions.body = data;
 
       const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'create acquisition profile');
+      validateApiResponse(response, 'Create Acquisition Profile');
+
       return response;
     } catch (error) {
-      throw new Error(`Failed to create acquisition profile: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to create acquisition profile: ${error.message}`);
+    }
+  },
+
+  async updateAcquisitionProfile(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    id: string,
+    data: UpdateAcquisitionProfileRequest
+  ): Promise<UpdateAcquisitionProfileResponse> {
+    try {
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'PUT',
+        `/api/public/acquisitions/profiles/${id}`
+      );
+
+      requestOptions.body = data;
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'Update Acquisition Profile');
+
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to update acquisition profile: ${error.message}`);
+    }
+  },
+
+  async deleteAcquisitionProfile(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    id: string
+  ): Promise<DeleteAcquisitionProfileResponse> {
+    try {
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'DELETE',
+        `/api/public/acquisitions/profiles/${id}`
+      );
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'Delete Acquisition Profile');
+
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to delete acquisition profile: ${error.message}`);
+    }
+  },
+
+  async getAcquisitionProfileById(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    id: string
+  ): Promise<GetAcquisitionProfileResponse> {
+    try {
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'GET',
+        `/api/public/acquisitions/profiles/${id}`
+      );
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'Get Acquisition Profile');
+
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to get acquisition profile: ${error.message}`);
+    }
+  },
+
+  async assignEvidenceAcquisitionTask(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    data: AssignEvidenceAcquisitionTaskRequest
+  ): Promise<AssignAcquisitionTaskResponse> {
+    try {
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/acquisitions/acquire'
+      );
+
+      requestOptions.body = data;
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'Assign Evidence Acquisition Task');
+
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to assign evidence acquisition task: ${error.message}`);
+    }
+  },
+
+  async assignImageAcquisitionTask(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    data: AssignImageAcquisitionTaskRequest
+  ): Promise<AssignAcquisitionTaskResponse> {
+    try {
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/acquisitions/acquire/image'
+      );
+
+      requestOptions.body = data;
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'Assign Image Acquisition Task');
+
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to assign image acquisition task: ${error.message}`);
+    }
+  },
+
+  async createOffNetworkAcquisitionTask(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    data: CreateOffNetworkAcquisitionTaskRequest
+  ): Promise<CreateOffNetworkTaskResponse> {
+    try {
+      const requestOptions = buildRequestOptions(
+        credentials,
+        'POST',
+        '/api/public/acquisitions/acquire/off-network'
+      );
+
+      requestOptions.body = data;
+
+      const response = await context.helpers.httpRequest(requestOptions);
+      validateApiResponse(response, 'Create Off-Network Acquisition Task');
+
+      return response;
+    } catch (error) {
+      throw new Error(`Failed to create off-network acquisition task: ${error.message}`);
     }
   },
 };

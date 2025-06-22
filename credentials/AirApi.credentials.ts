@@ -15,8 +15,8 @@ export class AirApi implements ICredentialType {
 	displayName = 'Binalyze AIR API';
 	documentationUrl = 'https://kb.binalyze.com'; //TODO: Add KB url once available
 	icon = {
-		light: 'file:logo.black.svg',
-		dark: 'file:logo.white.svg',
+		light: 'file:b-logo-dark.svg',
+		dark: 'file:b-logo-light.svg',
 	} as const;
 	properties: INodeProperties[] = [
 		{
