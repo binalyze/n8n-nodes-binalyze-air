@@ -46,7 +46,7 @@ export interface ApiResponse {
 export async function getAirCredentials(
 	context: IExecuteFunctions | ILoadOptionsFunctions
 ): Promise<AirCredentials> {
-	const credentials = await context.getCredentials('airCredentialsApi');
+	const credentials = await context.getCredentials('airApi');
 
 	if (!credentials) {
 		throw new Error('No credentials provided for Binalyze AIR');

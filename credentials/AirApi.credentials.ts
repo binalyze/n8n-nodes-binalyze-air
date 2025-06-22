@@ -12,7 +12,7 @@ export interface AirCredentials {
 
 export class AirApi implements ICredentialType {
 	name = 'airApi';
-	displayName = 'Binalyze AIR Credentials API';
+	displayName = 'Binalyze AIR API';
 	documentationUrl = 'https://kb.binalyze.com'; //TODO: Add KB url once available
 	icon = {
 		light: 'file:logo.black.svg',

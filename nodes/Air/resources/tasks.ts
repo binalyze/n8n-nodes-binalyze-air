@@ -485,7 +485,7 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 					let organizationIds: string;
 
 					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-						organizationIds = organizationResource.value;
+						organizationIds = String(organizationResource.value);
 					} else if (organizationResource.mode === 'name') {
 						try {
 							const orgId = await findOrganizationByName(this, credentials, organizationResource.value);

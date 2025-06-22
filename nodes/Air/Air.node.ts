@@ -79,7 +79,7 @@ export class Air implements INodeType {
 		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
-				name: 'airCredentialsApi',
+				name: 'airApi',
 				required: true,
 			},
 		],
