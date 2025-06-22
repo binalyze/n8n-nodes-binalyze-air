@@ -59,10 +59,10 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				name: 'Create Off-Network Acquisition Task',
 				value: 'createOffNetworkTask',
 				description: 'Create an off-network acquisition task',
-				action: 'Create an off-network acquisition task',
+				action: 'Create an off network acquisition task',
 			},
 			{
-				name: 'Delete Acquisition Profile',
+				name: 'Delete',
 				value: 'delete',
 				description: 'Delete an acquisition profile',
 				action: 'Delete an acquisition profile',
@@ -80,7 +80,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				action: 'Get many acquisition profiles',
 			},
 			{
-				name: 'Update Acquisition Profile',
+				name: 'Update',
 				value: 'update',
 				description: 'Update an acquisition profile',
 				action: 'Update an acquisition profile',
@@ -399,41 +399,6 @@ export const AcquisitionsOperations: INodeProperties[] = [
 			},
 		},
 		options: [
-			// Filter by fields for getAll
-			{
-				displayName: 'Filter By Organization',
-				name: 'organizationIds',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select organizations to filter by',
-				displayOptions: {
-					show: {
-						'/operation': ['getAll'],
-					},
-				},
-				typeOptions: {
-					loadOptionsMethod: 'getOrganizationsOptions',
-				},
-				description: 'Filter acquisition profiles by specific organizations',
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				default: 50,
-				displayOptions: {
-					show: {
-						'/operation': ['getAll'],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-					maxValue: 1000,
-				},
-				description: 'Max number of results to return',
-			},
-
-			// Profile settings for create/update
 			{
 				displayName: 'Artifacts',
 				name: 'artifacts',
@@ -451,12 +416,12 @@ export const AcquisitionsOperations: INodeProperties[] = [
 						value: 'browser_history',
 					},
 					{
-						name: 'Registry',
-						value: 'registry',
-					},
-					{
 						name: 'File System',
 						value: 'file_system',
+					},
+					{
+						name: 'Installed Software',
+						value: 'installed_software',
 					},
 					{
 						name: 'Memory Dump',
@@ -467,8 +432,8 @@ export const AcquisitionsOperations: INodeProperties[] = [
 						value: 'network_connections',
 					},
 					{
-						name: 'Installed Software',
-						value: 'installed_software',
+						name: 'Registry',
+						value: 'registry',
 					},
 					{
 						name: 'System Information',
@@ -490,18 +455,6 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				},
 				options: [
 					{
-						name: 'Files',
-						value: 'files',
-					},
-					{
-						name: 'Logs',
-						value: 'logs',
-					},
-					{
-						name: 'Images',
-						value: 'images',
-					},
-					{
 						name: 'Documents',
 						value: 'documents',
 					},
@@ -509,23 +462,20 @@ export const AcquisitionsOperations: INodeProperties[] = [
 						name: 'Executables',
 						value: 'executables',
 					},
+					{
+						name: 'Files',
+						value: 'files',
+					},
+					{
+						name: 'Images',
+						value: 'images',
+					},
+					{
+						name: 'Logs',
+						value: 'logs',
+					},
 				],
 				description: 'Evidence types to collect during acquisition',
-			},
-
-			// Asset filter fields for task operations
-			{
-				displayName: 'Filter By Search Term',
-				name: 'searchTerm',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter search term',
-				displayOptions: {
-					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
-					},
-				},
-				description: 'Filter assets by search term',
 			},
 			{
 				displayName: 'Filter By Asset Name',
@@ -552,6 +502,84 @@ export const AcquisitionsOperations: INodeProperties[] = [
 					},
 				},
 				description: 'Filter assets by IP address',
+			},
+			{
+				displayName: 'Filter By Management Status',
+				name: 'managedStatus',
+				type: 'multiOptions',
+				default: [],
+				placeholder: 'Select management status',
+				displayOptions: {
+					show: {
+						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+					},
+				},
+				options: [
+					{
+						name: 'Managed',
+						value: 'managed',
+					},
+					{
+						name: 'Unmanaged',
+						value: 'unmanaged',
+					},
+				],
+				description: 'Filter assets by management status',
+			},
+			{
+				displayName: 'Filter By Online Status',
+				name: 'onlineStatus',
+				type: 'multiOptions',
+				default: [],
+				placeholder: 'Select online status',
+				displayOptions: {
+					show: {
+						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+					},
+				},
+				options: [
+					{
+						name: 'Online',
+						value: 'online',
+					},
+					{
+						name: 'Offline',
+						value: 'offline',
+					},
+				],
+				description: 'Filter assets by online status',
+			},
+			{
+				displayName: 'Filter By Organization',
+				name: 'filterOrganizationIds',
+				type: 'multiOptions',
+				default: [],
+				placeholder: 'Select organizations to filter by',
+				displayOptions: {
+					show: {
+						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+					},
+				},
+				typeOptions: {
+					loadOptionsMethod: 'getOrganizationsOptions',
+				},
+				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+			},
+			{
+				displayName: 'Filter By Organization',
+				name: 'organizationIds',
+				type: 'multiOptions',
+				default: [],
+				placeholder: 'Select organizations to filter by',
+				displayOptions: {
+					show: {
+						'/operation': ['getAll'],
+					},
+				},
+				typeOptions: {
+					loadOptionsMethod: 'getOrganizationsOptions',
+				},
+				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
 				displayName: 'Filter By Platform',
@@ -585,50 +613,17 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				description: 'Filter assets by platform',
 			},
 			{
-				displayName: 'Filter By Online Status',
-				name: 'onlineStatus',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select online status',
+				displayName: 'Filter By Search Term',
+				name: 'searchTerm',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter search term',
 				displayOptions: {
 					show: {
 						'/operation': ['assignEvidenceTask', 'assignImageTask'],
 					},
 				},
-				options: [
-					{
-						name: 'Online',
-						value: 'online',
-					},
-					{
-						name: 'Offline',
-						value: 'offline',
-					},
-				],
-				description: 'Filter assets by online status',
-			},
-			{
-				displayName: 'Filter By Management Status',
-				name: 'managedStatus',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select management status',
-				displayOptions: {
-					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
-					},
-				},
-				options: [
-					{
-						name: 'Managed',
-						value: 'managed',
-					},
-					{
-						name: 'Unmanaged',
-						value: 'unmanaged',
-					},
-				],
-				description: 'Filter assets by management status',
+				description: 'Filter assets by search term',
 			},
 			{
 				displayName: 'Filter By Tags',
@@ -644,20 +639,19 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				description: 'Filter assets by tags (comma-separated)',
 			},
 			{
-				displayName: 'Filter By Organization',
-				name: 'filterOrganizationIds',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select organizations to filter by',
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				default: 50,
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['getAll'],
 					},
 				},
 				typeOptions: {
-					loadOptionsMethod: 'getOrganizationsOptions',
+					minValue: 1,
 				},
-				description: 'Filter assets by specific organizations',
+				description: 'Max number of results to return',
 			},
 		],
 	},

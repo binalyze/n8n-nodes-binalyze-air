@@ -103,6 +103,11 @@ export class Air implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Acquisition',
+						value: 'acquisitions',
+						description: 'Manage acquisition profiles and remote acquisitions',
+					},
+					{
 						name: 'Asset',
 						value: 'assets',
 						description: 'Manage endpoint assets and their operations',
