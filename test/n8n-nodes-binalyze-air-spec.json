@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-06-22T09:28:38.297Z",
-  "updatedAt": "2025-06-22T13:34:17.000Z",
+  "updatedAt": "2025-06-22T19:03:21.000Z",
   "id": "8cLdwBFE3AC1wv2E",
   "name": "n8n-nodes-binalyze-air-spec",
   "active": false,
@@ -11,8 +11,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        0,
-        260
+        -1140,
+        480
       ],
       "id": "00d96ab3-fde4-433c-8848-7d2fc7b36f18",
       "name": "When clicking ‘Execute workflow’"
@@ -30,11 +30,12 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        220,
+        -420,
         860
       ],
       "id": "7c7d3171-26d7-40f7-b0a4-842902388f9e",
       "name": "Asset Tags / Get Many",
+      "executeOnce": true,
       "credentials": {
         "airApi": {
           "id": "HRFJVg9kKyaIJx0w",
@@ -55,7 +56,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        440,
+        -200,
         760
       ],
       "id": "563ecc67-49c4-4700-9c43-5168f8dc6d76",
@@ -81,7 +82,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        440,
+        -200,
         960
       ],
       "id": "5b706d18-fa7b-499f-9155-90a88cf52c86",
@@ -107,11 +108,12 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        440,
+        -200,
         560
       ],
       "id": "19c72c67-25c9-4177-a9e0-1c934a44777c",
       "name": "Case / Get Many",
+      "executeOnce": true,
       "credentials": {
         "airApi": {
           "id": "HRFJVg9kKyaIJx0w",
@@ -128,7 +130,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        660,
+        20,
         460
       ],
       "id": "49230ecf-a6a0-43e8-a9c4-b50404ac5e3b",
@@ -150,7 +152,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        660,
+        20,
         660
       ],
       "id": "5d5c4d96-6a64-4caf-a51e-e97fd399da50",
@@ -183,7 +185,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        220,
+        -420,
         560
       ],
       "id": "3b5766d4-e8c2-4ef7-be7d-31d40d2383f4",
@@ -207,7 +209,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        660,
+        20,
         -140
       ],
       "id": "0327c121-cdc2-4c7e-bf9a-ef6daf9dac3c",
@@ -228,7 +230,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        220,
+        -420,
         -140
       ],
       "id": "9cfe25bb-d37a-4b59-8c3c-c0637b141bdf",
@@ -268,7 +270,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        440,
+        -200,
         -140
       ],
       "id": "69f56cdb-90a9-438a-ab06-86483aae65d6",
@@ -291,7 +293,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        220,
+        -420,
         60
       ],
       "id": "9d46e3e7-90b0-4f72-8bc7-dabe4f2d31f4",
@@ -316,7 +318,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        440,
+        -200,
         60
       ],
       "id": "11632fd7-a7ed-49b4-aacf-002ff7945e9d",
@@ -341,7 +343,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        660,
+        20,
         60
       ],
       "id": "1ae74646-68d5-471b-9495-be7ac0071fb4",
@@ -360,11 +362,12 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        220,
+        -420,
         260
       ],
       "id": "ec314adb-4ecd-4dc7-8bd7-758b67a8c29d",
       "name": "Organization / Get Many",
+      "executeOnce": true,
       "credentials": {
         "airApi": {
           "id": "HRFJVg9kKyaIJx0w",
@@ -384,7 +387,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        440,
+        -200,
         260
       ],
       "id": "e219229e-8f9d-4394-9557-bc312a271499",
@@ -410,11 +413,105 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        660,
+        20,
         260
       ],
       "id": "eb9c0238-0c26-4272-9440-e4cf96f00f85",
       "name": "Organization / Get Users",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "assets",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        1160
+      ],
+      "id": "37b941be-6c12-4669-87f8-de085da052fa",
+      "name": "Asset / Get Many",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "assets",
+        "operation": "get",
+        "assetId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        1160
+      ],
+      "id": "f7b8c1da-058c-4c9c-8e13-764345774fae",
+      "name": "Asset / Get By ID",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "acquisitions",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        1420
+      ],
+      "id": "542ad98f-c494-4702-a95f-5075b503646b",
+      "name": "Acquisition / Get Many",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "acquisitions",
+        "operation": "get",
+        "acquisitionProfileId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        1420
+      ],
+      "id": "17c0731e-5a45-4ef2-bb03-bfd3c30ec690",
+      "name": "Acquisition / Get Profile",
+      "executeOnce": true,
       "credentials": {
         "airApi": {
           "id": "HRFJVg9kKyaIJx0w",
@@ -449,6 +546,16 @@
           },
           {
             "node": "Asset Tags / Get Many",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Asset / Get Many",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Acquisition / Get Many",
             "type": "main",
             "index": 0
           }
@@ -574,6 +681,28 @@
           }
         ]
       ]
+    },
+    "Asset / Get Many": {
+      "main": [
+        [
+          {
+            "node": "Asset / Get By ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acquisition / Get Many": {
+      "main": [
+        [
+          {
+            "node": "Acquisition / Get Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -584,7 +713,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "3d11714b-f509-408a-b57e-2468aac2eceb",
+  "versionId": "0b9e51d6-f713-45c0-bba7-230b11bf878d",
   "triggerCount": 0,
   "shared": [
     {

@@ -8,11 +8,17 @@
 - [Features](#features)
   - [Acquisitions](#acquisitions)
   - [Assets](#assets)
+  - [Auth](#auth)
   - [Auto Asset Tags](#auto-asset-tags)
   - [Baselines](#baselines)
   - [Cases](#cases)
+  - [Evidence](#evidence)
+  - [Notifications](#notifications)
   - [Organizations](#organizations)
+  - [Params](#params)
+  - [Policies](#policies)
   - [Repositories](#repositories)
+  - [Settings](#settings)
   - [Tasks](#tasks)
   - [Triage Rules](#triage-rules)
   - [Users](#users)
@@ -32,7 +38,7 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 ## Features
 
-The Binalyze AIR node provides access to ten main resource categories with comprehensive operations:
+The Binalyze AIR node provides access to fifteen main resource categories with comprehensive operations:
 
 ### Acquisitions
 
@@ -59,6 +65,12 @@ Manage endpoint assets and their operations:
 - **Purge and Uninstall** - Completely remove assets from the system including all associated data and configurations
 - **Remove Tags** - Remove existing metadata tags from assets based on filter criteria for bulk tag management
 - **Uninstall** - Remove assets from management without purging historical data and configurations
+
+### Auth
+
+Authentication and session management:
+
+- **Check Authentication** - Verify current authentication status and retrieve user session information including user details, permissions, and session expiration
 
 ### Auto Asset Tags
 
@@ -96,6 +108,23 @@ Comprehensive case management for digital investigations:
 - **Remove Task Assignment** - Unassign specific tasks from cases
 - **Update** - Modify case details, metadata, and configuration settings
 
+### Evidence
+
+Manage evidence files and downloads for digital forensics:
+
+- **Download PPC File** - Download endpoint PPC (Portable Case) files containing collected evidence with comprehensive filtering options including group, IP, platform, online status, and management status
+- **Download Task Report** - Download detailed task execution reports in multiple formats (PDF, HTML, JSON) with endpoint filtering and customizable reporting options
+- **Get PPC File Info** - Retrieve detailed information about PPC files including file size, path, creation date, and associated task metadata
+
+### Notifications
+
+Manage user notifications and notification status:
+
+- **Delete All Notifications** - Remove all notifications for the current user to clear notification history
+- **Get Many** - Retrieve multiple notifications with filtering by read status, type, and comprehensive search capabilities
+- **Mark All as Read** - Mark all notifications as read for the current user to clear unread indicators
+- **Mark as Read by ID** - Mark a specific notification as read by its unique identifier
+
 ### Organizations
 
 Manage organizational structure and user assignments:
@@ -115,12 +144,40 @@ Manage organizational structure and user assignments:
 - **Update Deployment Token** - Regenerate deployment tokens for enhanced security
 - **Update Shareable Deployment** - Configure shareable deployment settings and access permissions
 
+### Params
+
+Retrieve system configuration parameters and data for integration with other tools and processes:
+
+- **Get Acquisition Artifacts** - Retrieve the list of available acquisition artifacts including file types, registry keys, and system information that can be collected during evidence acquisition processes
+- **Get Acquisition Evidence** - Retrieve the list of available evidence types that can be collected during acquisition tasks including memory dumps, disk images, and system logs
+- **Get Drone Analyzers** - Retrieve the list of available analysis engines and tools that can be used to process collected evidence and generate insights
+- **Get E-Discovery Patterns** - Retrieve predefined e-discovery search patterns and filters for legal and compliance investigations including keyword searches and content filters
+- **Get MITRE ATT&CK Techniques** - Retrieve the complete list of MITRE ATT&CK framework techniques and tactics available for threat hunting and security analysis
+
+### Policies
+
+Manage security policies for endpoint protection and compliance:
+
+- **Create Policy** - Create new security policies with custom rules, priority settings, and organizational assignments for comprehensive endpoint protection
+- **Delete Policy** - Remove security policies and associated configurations from the system while preserving historical data
+- **Get** - Retrieve detailed information about specific policies including rules, priority, enabled status, and metadata
+- **Get Many** - Browse multiple policies with filtering by organization, enabled status, name, description, and comprehensive search capabilities
+- **Get Policy Match Stats** - Generate statistics showing how many endpoints match specific policy criteria with detailed filtering options including group, IP, platform, online status, isolation status, and management status
+- **Update Policy** - Modify existing policies including rules, priority, enabled status, and organizational assignments
+- **Update Policies Priorities** - Bulk update priority settings for multiple policies to optimize policy execution order and system performance
+
 ### Repositories
 
 Manage evidence storage and repository configurations:
 
 - **Get** - Retrieve details of specific evidence repositories by ID or name
 - **Get Many** - Browse multiple repositories with filtering by type, organization, host, path, and search capabilities
+
+### Settings
+
+Manage system settings and configuration:
+
+- **Update Banner Message** - Update the system banner message that is displayed to users, with options to enable or disable the banner and customize the message content
 
 ### Tasks
 
