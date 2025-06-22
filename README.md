@@ -12,17 +12,10 @@
   - [Evidence Repositories](#evidence-repositories)
   - [Triage Rules](#triage-rules)
 - [Authentication](#authentication)
-- [Resource Locators](#resource-locators)
-- [Advanced Features](#advanced-features)
-  - [Pagination Support](#pagination-support)
-  - [Filtering and Sorting](#filtering-and-sorting)
-  - [Error Handling](#error-handling)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Usage Examples](#usage-examples)
+- [Testing](#testing)
 - [Development](#development)
-  - [Development Setup](#development-setup)
-  - [Testing](#testing)
 - [Support and Documentation](#support-and-documentation)
 - [License](#license)
 
@@ -36,7 +29,7 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 The Binalyze AIR node provides access to five main resource categories with comprehensive operations:
 
-### 🏷️ Auto Asset Tags {#auto-asset-tags}
+### Auto Asset Tags
 
 Manage automated asset tagging rules and processes:
 
@@ -44,16 +37,9 @@ Manage automated asset tagging rules and processes:
 - **Get Many** - Retrieve multiple auto asset tags with filtering and pagination
 - **Start Tagging** - Initiate automated tagging processes on filtered endpoints
 
-**Auto Asset Tag Features:**
-- Platform-specific conditions for Linux, Windows, and macOS systems
-- Complex condition logic with AND/OR operators
-- Support for various condition types: hostname, IP address, subnet, osquery, process, file, directory
-- Flexible condition operators: running, exist, is, contains, starts-with, ends-with, in-range, has-result, not-running, not-exist, has-no-result
-- Scheduled tagging operations with immediate or scheduled execution
-- Advanced endpoint filtering for targeted tagging operations
-- Organization-scoped access with configurable organization ID filtering (default: 0 for all organizations)
+Features include platform-specific conditions for Linux, Windows, and macOS systems, complex condition logic with AND/OR operators, and support for various condition types including hostname, IP address, subnet, osquery, process, file, and directory.
 
-### 🏢 Organizations {#organizations}
+### Organizations
 
 Manage organizations within your AIR instance:
 
@@ -64,118 +50,62 @@ Manage organizations within your AIR instance:
 - **Add Tags** - Add metadata tags to organizations for better categorization
 - **Remove Tags** - Remove existing tags from organizations
 
-**Organization Features:**
-- Support for shareable deployment configuration
-- Contact person management
-- Tag-based organization for improved searchability
-- Flexible identification by ID or name
-
-### 👤 Users {#users}
+### Users
 
 Manage user accounts and permissions:
 
 - **Get User** - Retrieve details of a specific user by ID, username, or email
 - **Get Many Users** - Retrieve multiple users with advanced filtering options
 
-**User Management Features:**
-- Filter users by organization membership
-- Role-based filtering capabilities
-- Search by username or email address
-- Include users not assigned to any organization
-- Sorting by creation date or username
-- Pagination support for large user bases
+Features include filtering by organization membership, role-based filtering, search by username or email, and sorting capabilities.
 
-### 📁 Evidence Repositories {#evidence-repositories}
+### Evidence Repositories
 
 Manage evidence storage and repositories:
 
 - **Get Repository** - Retrieve details of a specific evidence repository by ID or name
 - **Get Many Repositories** - Retrieve multiple repositories with comprehensive filtering
 
-**Repository Management Features:**
-- Organization-scoped repository access
-- Filter repositories by host, path, or name
-- Search repositories with partial name matching
-- Sort repositories by creation date, host, name, path, or type
-- Pagination support for large repository collections
-- Support for different repository types and configurations
+Features include organization-scoped repository access, filtering by host, path, or name, and support for different repository types.
 
-### 🔍 Triage Rules {#triage-rules}
+### Triage Rules
 
 Manage detection and analysis rules for threat hunting:
 
 - **Get Triage Rule** - Retrieve details of a specific triage rule by ID or name
 - **Get Many Triage Rules** - Retrieve multiple triage rules with comprehensive filtering
-- **Create Triage Rule** - Create new triage rules for detection and analysis with optional tag assignment
+- **Create Triage Rule** - Create new triage rules for detection and analysis
 - **Update Triage Rule** - Modify existing triage rules by ID or name
 - **Delete Triage Rule** - Remove triage rules by ID or name
 - **Validate Triage Rule** - Validate rule syntax and content for YARA, Sigma, and osquery engines
 - **Assign Triage Task** - Assign triage tasks to cases with endpoint filtering
-- **Get Rule Tags** - Retrieve rule tags with Resource Locator-based organization filtering
-- **Create Rule Tag** - Create new rule tags with Resource Locator-based organization selection
+- **Get Rule Tags** - Retrieve rule tags with organization filtering
+- **Create Rule Tag** - Create new rule tags with organization selection
 
-**Triage Rule Features:**
-- Support for multiple detection engines: YARA, Sigma, and osquery
-- Flexible search locations: file system, memory, both, or event records
-- Organization-scoped rule management with Resource Locator pattern for all operations
-- Optional tag assignment during rule creation using comma-separated tag IDs in Additional Fields for multiple tag association
-- Advanced filtering by description, search location, engine type, and search terms
-- Rule validation and syntax checking with detailed error reporting
-- Comprehensive CRUD operations with consistent Resource Locator support
-- Detailed rule content management with multi-line editor support
-- Rule tag management with Resource Locator-based organization filtering
-- Task assignment capabilities with complex endpoint filtering options
+Features include support for multiple detection engines (YARA, Sigma, and osquery), flexible search locations, and comprehensive CRUD operations.
 
 ## Authentication
 
-The node uses API token-based authentication with the following requirements:
+The node uses API token-based authentication:
 
 - **AIR Instance URL** - The base URL of your Binalyze AIR instance (e.g., `https://air-demo.binalyze.com`)
 - **AIR API Token** - A valid API token generated from your AIR instance's Integrations > API Tokens section
 
-## Resource Locators
-
 All resources support flexible identification methods:
-
 - **From List** - Select from a searchable dropdown of available items
 - **By ID** - Direct identification using numeric or GUID identifiers
 - **By Name/Username** - Human-readable identification using names or usernames
-
-## Advanced Features
-
-### Pagination Support
-All "Get Many" operations support configurable pagination:
-- Customizable page size (default: 100 items per page)
-- Page number selection for navigation
-- Efficient handling of large datasets
-
-### Filtering and Sorting
-Comprehensive filtering options across all resources:
-- **Organizations**: Sort by creation date or name
-- **Users**: Filter by roles, organization membership, sort by creation date or username
-- **Repositories**: Filter by host, path, search term, sort by multiple attributes
-- **Triage Rules**: Filter by description, search location, engine type, sort by creation date, description, or search location
-
-### Error Handling
-Robust error handling with detailed error messages for:
-- Invalid credentials or instance URLs
-- Missing or invalid resource identifiers
-- API rate limits and connectivity issues
-- Data validation errors
-- Triage rule validation errors with specific syntax feedback for YARA, Sigma, and osquery rules
-- Structured error responses for create/update operations that preserve error details instead of throwing exceptions
 
 ## Prerequisites
 
 You need the following installed on your development machine:
 
 * [git](https://git-scm.com/downloads)
-* Node.js and pnpm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
+* Node.js and npm. Minimum version Node 20. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
 * Install n8n with:
   ```
   npm install n8n -g
   ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
 
 ## Installation
 
@@ -193,28 +123,30 @@ To use this node in your n8n instance:
    - Add new credential for "Binalyze AIR Credentials API"
    - Enter your AIR instance URL and API token
 
-## Usage Examples
+## Testing
 
-### Basic Organization Management
-- Retrieve all organizations and their details
-- Create new organizations for different investigation teams
-- Manage organization tags for better categorization
+The project includes a test suite workflow that demonstrates all available operations and provides comprehensive testing scenarios.
 
-### User Administration
-- Get user lists filtered by specific organizations
-- Retrieve user details for access management
-- Monitor user assignments across organizations
+### Download Test Suite
 
-### Evidence Repository Operations
-- List all repositories within an organization
-- Search for specific repositories by name or path
-- Monitor repository status and configurations
+1. Create a `.env.local.yml` file in the root directory with your n8n API token:
+   ```yaml
+   N8N:
+     API_TOKEN: your_actual_api_token_here
+   ```
 
-### Triage Rule Management
-- Create and manage YARA, Sigma, and osquery detection rules
-- Update existing rules for improved threat detection
-- Filter rules by engine type and search location
-- Delete outdated or unnecessary rules
+2. Generate an API token in your n8n instance:
+   - Go to Settings → API → Personal access tokens
+   - Create a new token with appropriate permissions
+
+3. Download the test suite workflow:
+   ```bash
+   npm run test:download
+   ```
+
+This downloads the `n8n-nodes-binalyze-air-spec` workflow from your local n8n instance at http://localhost:5678 and saves it as `n8n-nodes-binalyze-air-spec.json` in the test directory.
+
+The test suite workflow includes comprehensive examples for all supported operations across auto asset tags, organizations, users, evidence repositories, and triage rules.
 
 ## Development
 
@@ -241,36 +173,24 @@ For detailed guidance on creating and publishing nodes, refer to the [n8n docume
    ```bash
    npm link
    ```
+
 5. Go to ~/.n8n/nodes/node_modules folder and link to the package:
    ```bash
-   n8n-nodes-binalyze-air 
+   npm link n8n-nodes-binalyze-air 
    ```
 
-6. Restart n8n to see Binalyze AIR as a community package
+6. Restart n8n to see Binalyze AIR as a community package:
    ```bash
    n8n start
    ```
 
-### Testing
+### Development Commands
 
-Run linting to check for errors:
-```bash
-npm run lint
-```
-
-Auto-fix linting errors when possible:
-```bash
-npm run lintfix
-```
-
-Run npm in dev mode to automatically run build when there is a change:
-```bash
-npm run dev
-```
-
-Test your node locally by following the [n8n local testing guide](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/).
-
-
+- **Build**: `npm run build`
+- **Development**: `npm run dev`
+- **Linting**: `npm run lint`
+- **Auto-fix linting**: `npm run lintfix`
+- **Download n8n test suite workflow**: `npm run test:download`
 
 ## Support and Documentation
 

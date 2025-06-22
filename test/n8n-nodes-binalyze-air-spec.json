@@ -15,7 +15,7 @@
         0
       ],
       "id": "00d96ab3-fde4-433c-8848-7d2fc7b36f18",
-      "name": "When clicking ‘Execute workflow’"
+      "name": "When clicking 'Execute workflow'"
     },
     {
       "parameters": {
@@ -96,7 +96,7 @@
     }
   ],
   "connections": {
-    "When clicking ‘Execute workflow’": {
+    "When clicking 'Execute workflow'": {
       "main": [
         [
           {
@@ -145,7 +145,7 @@
         "createdAt": "2025-05-28T13:26:44.924Z",
         "updatedAt": "2025-05-28T13:27:17.681Z",
         "id": "ruqBk4A4CrNidITj",
-        "name": "Emre TINAZTEPE <emre@binalyze.com>",
+        "name": "Test User <test@example.com>",
         "type": "personal",
         "icon": null,
         "projectRelations": [
@@ -159,9 +159,9 @@
               "createdAt": "2025-05-28T13:26:44.706Z",
               "updatedAt": "2025-06-10T08:21:04.472Z",
               "id": "39c4a85b-f852-44a1-8e02-2deeaa8d667a",
-              "email": "emre@binalyze.com",
-              "firstName": "Emre",
-              "lastName": "TINAZTEPE",
+              "email": "test@example.com",
+              "firstName": "Test",
+              "lastName": "User",
               "personalizationAnswers": {
                 "version": "v4",
                 "personalization_survey_submitted_at": "2025-05-28T13:27:26.919Z",

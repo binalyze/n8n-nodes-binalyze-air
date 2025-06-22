@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-binalyze-air",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "Binalyze AIR nodes for automating DFIR with n8n workflows",
   "keywords": [
     "n8n-community-node-package",
@@ -30,13 +30,13 @@
   "main": "index.js",
   "scripts": {
     "build": "npx rimraf dist && tsc && gulp build:icons",
-    "dev": "./dev-watch.sh",
+    "dev": "./scripts/dev-watch.sh",
     "dev:old": "npm run build && concurrently \"tsc --watch\" \"npm run watch:restart\"",
     "watch:ts": "tsc --watch --preserveWatchOutput",
-    "watch:restart": "chokidar \"**/*.ts\" -c \"./restart-n8n.sh\" --ignore \"dist/**/*.d.ts\" --ignore \"dist/**/*.map\" --initial",
-    "restart:n8n": "./restart-n8n.sh",
-    "setup-dev": "./setup-dev-link.sh",
-    "check-node": "./check-node-loaded.sh",
+    "watch:restart": "chokidar \"**/*.ts\" -c \"./scripts/restart-n8n.sh\" --ignore \"dist/**/*.d.ts\" --ignore \"dist/**/*.map\" --initial",
+    "restart:n8n": "./scripts/restart-n8n.sh",
+    "setup-dev": "./scripts/setup-dev-link.sh",
+    "check-node": "./scripts/check-node-loaded.sh",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",

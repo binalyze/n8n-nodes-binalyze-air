@@ -13,7 +13,7 @@ echo -e "${BLUE}=================================${NC}"
 # Check if n8n is running
 if ! pgrep -f "n8n" > /dev/null; then
     echo -e "${RED}❌ n8n is not running${NC}"
-    echo -e "${YELLOW}💡 Start n8n with: ./restart-n8n.sh${NC}"
+    echo -e "${YELLOW}💡 Start n8n with: ./scripts/restart-n8n.sh${NC}"
     exit 1
 fi
 
@@ -25,7 +25,7 @@ if [ -L ~/.n8n/nodes/node_modules/n8n-nodes-binalyze-air ]; then
     echo -e "${BLUE}   Link target: $(readlink ~/.n8n/nodes/node_modules/n8n-nodes-binalyze-air)${NC}"
 else
     echo -e "${RED}❌ Node is not linked in ~/.n8n/nodes${NC}"
-    echo -e "${YELLOW}💡 Run: ./setup-dev-link.sh${NC}"
+    echo -e "${YELLOW}💡 Run: ./scripts/setup-dev-link.sh${NC}"
 fi
 
 # Check if dist folder exists and has the required files

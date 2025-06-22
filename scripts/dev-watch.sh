@@ -46,7 +46,7 @@ echo -e "${GREEN}✅ Initial build completed${NC}"
 
 # Start n8n
 echo -e "${YELLOW}🌐 Starting n8n...${NC}"
-./restart-n8n.sh
+./scripts/restart-n8n.sh
 
 # Function to build and restart on file changes
 watch_and_restart() {
@@ -67,7 +67,7 @@ watch_and_restart() {
 
             if [ $BUILD_STATUS -eq 0 ]; then
                 echo -e "${GREEN}✅ Build successful, restarting n8n...${NC}"
-                ./restart-n8n.sh
+                ./scripts/restart-n8n.sh
                 echo -e "${GREEN}🌐 n8n restarted and available at: http://localhost:5678${NC}"
             else
                 echo -e "${RED}❌ Build failed! Fix the errors before n8n will be restarted.${NC}"
@@ -101,7 +101,7 @@ watch_and_restart() {
 
                 if [ $BUILD_STATUS -eq 0 ]; then
                     echo -e "${GREEN}✅ Build successful, restarting n8n...${NC}"
-                    ./restart-n8n.sh
+                    ./scripts/restart-n8n.sh
                     echo -e "${GREEN}🌐 n8n restarted and available at: http://localhost:5678${NC}"
                 else
                     echo -e "${RED}❌ Build failed! Fix the errors before n8n will be restarted.${NC}"
