@@ -31,7 +31,6 @@
   "scripts": {
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "./scripts/dev-watch.sh",
-    "dev:old": "npm run build && concurrently \"tsc --watch\" \"npm run watch:restart\"",
     "watch:ts": "tsc --watch --preserveWatchOutput",
     "watch:restart": "chokidar \"**/*.ts\" -c \"./scripts/restart-n8n.sh\" --ignore \"dist/**/*.d.ts\" --ignore \"dist/**/*.map\" --initial",
     "restart:n8n": "./scripts/restart-n8n.sh",
@@ -41,6 +40,7 @@
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint -- -c .eslintrc.prepublish.js nodes credentials package.json",
+    "release": "npm version patch && npm publish",
     "test:download": "cd test && pip install -r requirements.txt && python download_test_suite.py"
   },
   "files": [

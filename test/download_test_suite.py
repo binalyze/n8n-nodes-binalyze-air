@@ -96,7 +96,7 @@ def save_workflow_json(workflow_data, output_path):
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(workflow_data, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Workflow saved to: {output_path}")
+    print(f"Workflow saved to: {output_path}")
 
 
 def main():

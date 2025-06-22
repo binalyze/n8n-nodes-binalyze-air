@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-06-22T09:28:38.297Z",
-  "updatedAt": "2025-06-22T13:17:09.000Z",
+  "updatedAt": "2025-06-22T13:32:24.000Z",
   "id": "8cLdwBFE3AC1wv2E",
   "name": "n8n-nodes-binalyze-air-spec",
   "active": false,
@@ -12,7 +12,7 @@
       "typeVersion": 1,
       "position": [
         0,
-        60
+        260
       ],
       "id": "00d96ab3-fde4-433c-8848-7d2fc7b36f18",
       "name": "When clicking ‘Execute workflow’"
@@ -31,7 +31,7 @@
       "typeVersion": 1,
       "position": [
         220,
-        660
+        860
       ],
       "id": "7c7d3171-26d7-40f7-b0a4-842902388f9e",
       "name": "Asset Tags / Get Many",
@@ -56,7 +56,7 @@
       "typeVersion": 1,
       "position": [
         440,
-        560
+        760
       ],
       "id": "563ecc67-49c4-4700-9c43-5168f8dc6d76",
       "name": "Asset Tags / Get By ID",
@@ -82,7 +82,7 @@
       "typeVersion": 1,
       "position": [
         440,
-        760
+        960
       ],
       "id": "5b706d18-fa7b-499f-9155-90a88cf52c86",
       "name": "Asset Tags / Get By Name",
@@ -108,7 +108,7 @@
       "typeVersion": 1,
       "position": [
         440,
-        360
+        560
       ],
       "id": "19c72c67-25c9-4177-a9e0-1c934a44777c",
       "name": "Case / Get Many",
@@ -129,7 +129,7 @@
       "typeVersion": 1,
       "position": [
         660,
-        260
+        460
       ],
       "id": "49230ecf-a6a0-43e8-a9c4-b50404ac5e3b",
       "name": "Case / Get By ID",
@@ -151,7 +151,7 @@
       "typeVersion": 1,
       "position": [
         660,
-        460
+        660
       ],
       "id": "5d5c4d96-6a64-4caf-a51e-e97fd399da50",
       "name": "Case / Check Name",
@@ -184,7 +184,7 @@
       "typeVersion": 1,
       "position": [
         220,
-        360
+        560
       ],
       "id": "3b5766d4-e8c2-4ef7-be7d-31d40d2383f4",
       "name": "Case Create",
@@ -208,7 +208,7 @@
       "typeVersion": 1,
       "position": [
         660,
-        -340
+        -140
       ],
       "id": "0327c121-cdc2-4c7e-bf9a-ef6daf9dac3c",
       "name": "Organization / Delete",
@@ -229,7 +229,7 @@
       "typeVersion": 1,
       "position": [
         220,
-        -340
+        -140
       ],
       "id": "9cfe25bb-d37a-4b59-8c3c-c0637b141bdf",
       "name": "Orgnization / Check Name",
@@ -269,7 +269,7 @@
       "typeVersion": 2.2,
       "position": [
         440,
-        -340
+        -140
       ],
       "id": "69f56cdb-90a9-438a-ab06-86483aae65d6",
       "name": "If"
@@ -292,7 +292,7 @@
       "typeVersion": 1,
       "position": [
         220,
-        -140
+        60
       ],
       "id": "9d46e3e7-90b0-4f72-8bc7-dabe4f2d31f4",
       "name": "Organization / Create",
@@ -317,7 +317,7 @@
       "typeVersion": 1,
       "position": [
         440,
-        -140
+        60
       ],
       "id": "11632fd7-a7ed-49b4-aacf-002ff7945e9d",
       "name": "Organization / Add Tags",
@@ -342,7 +342,7 @@
       "typeVersion": 1,
       "position": [
         660,
-        -140
+        60
       ],
       "id": "1ae74646-68d5-471b-9495-be7ac0071fb4",
       "name": "Organization / Remove Tags",
@@ -361,7 +361,7 @@
       "typeVersion": 1,
       "position": [
         220,
-        60
+        260
       ],
       "id": "ec314adb-4ecd-4dc7-8bd7-758b67a8c29d",
       "name": "Organization / Get Many",
@@ -385,7 +385,7 @@
       "typeVersion": 1,
       "position": [
         440,
-        60
+        260
       ],
       "id": "e219229e-8f9d-4394-9557-bc312a271499",
       "name": "Organization / Get By Name",
@@ -411,30 +411,10 @@
       "typeVersion": 1,
       "position": [
         660,
-        60
+        260
       ],
       "id": "eb9c0238-0c26-4272-9440-e4cf96f00f85",
       "name": "Organization / Get Users",
-      "credentials": {
-        "airApi": {
-          "id": "HRFJVg9kKyaIJx0w",
-          "name": "Binalyze AIR Credentials account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        1180,
-        -400
-      ],
-      "id": "b94c50aa-4a76-43b0-a084-975eb7d02987",
-      "name": "Organization / Delete1",
-      "alwaysOutputData": false,
       "credentials": {
         "airApi": {
           "id": "HRFJVg9kKyaIJx0w",
@@ -604,7 +584,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "3cdde747-0f65-4881-a1c8-bd1b67411966",
+  "versionId": "96a2b330-bfa1-4c9b-ba44-3453f850df1d",
   "triggerCount": 0,
   "shared": [
     {
