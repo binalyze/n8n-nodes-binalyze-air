@@ -6,6 +6,7 @@
 
 - [What is Binalyze AIR?](#what-is-binalyze-air)
 - [Features](#features)
+  - [Assets](#assets)
   - [Auto Asset Tags](#auto-asset-tags)
   - [Baselines](#baselines)
   - [Cases](#cases)
@@ -30,7 +31,20 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 ## Features
 
-The Binalyze AIR node provides access to eight main resource categories with comprehensive operations:
+The Binalyze AIR node provides access to nine main resource categories with comprehensive operations:
+
+### Assets
+
+Manage endpoint assets and their operations:
+
+- **Add Tags** - Apply metadata tags to assets based on filter criteria for bulk categorization and organization
+- **Assign Task** - Create and assign tasks to assets with comprehensive filtering options including group, IP, platform, and status criteria
+- **Get** - Retrieve detailed information about specific assets including system details, status, and metadata
+- **Get Asset Tasks** - View all tasks associated with a specific asset for tracking and management
+- **Get Many** - Browse multiple assets with advanced filtering by organization, platform, online status, isolation status, and comprehensive search capabilities
+- **Purge and Uninstall** - Completely remove assets from the system including all associated data and configurations
+- **Remove Tags** - Remove existing metadata tags from assets based on filter criteria for bulk tag management
+- **Uninstall** - Remove assets from management without purging historical data and configurations
 
 ### Auto Asset Tags
 

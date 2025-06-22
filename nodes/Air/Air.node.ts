@@ -59,6 +59,12 @@ import {
 	executeTriageRules,
 	getTriageTagsOptions
 } from './resources/triagerules';
+import {
+	AssetsOperations,
+	getAssets,
+	getAssetsOptions,
+	executeAssets
+} from './resources/assets';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
@@ -90,6 +96,11 @@ export class Air implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
+					{
+						name: 'Asset',
+						value: 'assets',
+						description: 'Manage endpoint assets and their operations',
+					},
 					{
 						name: 'Auto Asset Tag',
 						value: 'autoassettags',
@@ -134,6 +145,7 @@ export class Air implements INodeType {
 				default: 'organizations',
 			},
 
+			...AssetsOperations,
 			...AutoAssetTagsOperations,
 			...BaselinesOperations,
 			...CasesOperations,
@@ -147,6 +159,10 @@ export class Air implements INodeType {
 
 	methods = {
 		loadOptions: {
+			// Import load options methods from Assets
+			async getAssets(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getAssetsOptions.call(this);
+			},
 			// Import load options methods from Auto Asset Tags
 			async getAutoAssetTags(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getAutoAssetTagsOptions.call(this);
@@ -181,6 +197,10 @@ export class Air implements INodeType {
 			},
 		},
 		listSearch: {
+			// Import list search methods from Assets for resource locators
+			async getAssets(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getAssets.call(this, filter);
+			},
 			// Import list search methods from Auto Asset Tags for resource locators
 			async getAutoAssetTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAutoAssetTags.call(this, filter);
@@ -223,6 +243,8 @@ export class Air implements INodeType {
 
 		// Delegate execution to the appropriate function based on resource
 		switch (resource) {
+			case 'assets':
+				return executeAssets.call(this);
 			case 'autoassettags':
 				return executeAutoAssetTags.call(this);
 			case 'baselines':
