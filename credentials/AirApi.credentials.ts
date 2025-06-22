@@ -25,7 +25,7 @@ export class AirApi implements ICredentialType {
 			type: 'string',
 			default: '',
 			required: true,
-			description: 'The URL of the AIR instance that you want to connect to. Example: https://air-demo.binalyze.com.',
+			description: 'The URL of the AIR instance that you want to connect to. Example: https://my-air.binalyze.io.',
 			validateType: 'url',
 		},
 		{
@@ -38,7 +38,7 @@ export class AirApi implements ICredentialType {
 			},
 			required: true,
 			placeholder: '',
-			description: 'The API token of the AIR instance that you want to connect to. You can create it from Integrations / API Tokens. Example: api_52b3d27fe33ddbc85890cfebda413a8d.',
+			description: 'The API token of the AIR instance that you want to connect to. You can create it from Integrations / API Tokens. Example: api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.',
 			validateType: 'string',
 		},
 	];
