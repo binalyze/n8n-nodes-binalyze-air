@@ -7,10 +7,13 @@
 - [What is Binalyze AIR?](#what-is-binalyze-air)
 - [Features](#features)
   - [Auto Asset Tags](#auto-asset-tags)
+  - [Baselines](#baselines)
+  - [Cases](#cases)
   - [Organizations](#organizations)
-  - [Users](#users)
-  - [Evidence Repositories](#evidence-repositories)
+  - [Repositories](#repositories)
+  - [Tasks](#tasks)
   - [Triage Rules](#triage-rules)
+  - [Users](#users)
 - [Authentication](#authentication)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -27,62 +30,102 @@ Binalyze AIR is a comprehensive digital investigation and incident response plat
 
 ## Features
 
-The Binalyze AIR node provides access to five main resource categories with comprehensive operations:
+The Binalyze AIR node provides access to eight main resource categories with comprehensive operations:
 
 ### Auto Asset Tags
 
 Manage automated asset tagging rules and processes:
 
-- **Get** - Retrieve details of a specific auto asset tag by ID
-- **Get Many** - Retrieve multiple auto asset tags with filtering and pagination
-- **Start Tagging** - Initiate automated tagging processes on filtered endpoints
+- **Get** - Retrieve details of a specific auto asset tag by ID or name
+- **Get Many** - Retrieve multiple auto asset tags with filtering, pagination, and organization-scoped access
 
-Features include platform-specific conditions for Linux, Windows, and macOS systems, complex condition logic with AND/OR operators, and support for various condition types including hostname, IP address, subnet, osquery, process, file, and directory.
+### Baselines
+
+Manage system baseline acquisition and comparison operations:
+
+- **Acquire Baseline** - Initiate baseline acquisition for endpoints with comprehensive filtering options including group, IP, isolation status, and platform-specific criteria
+- **Compare Baseline** - Compare current task results against established baselines for change detection
+- **Get Comparison Report** - Retrieve detailed baseline comparison reports for analysis
+
+### Cases
+
+Comprehensive case management for digital investigations:
+
+- **Archive Case** - Archive completed cases to maintain organized case history
+- **Change Owner** - Transfer case ownership between users for workload management
+- **Check Name** - Verify case name availability before creation to prevent duplicates
+- **Close Case** - Mark cases as completed and finalize investigation status
+- **Create** - Create new investigation cases with detailed metadata and organization assignment
+- **Get** - Retrieve comprehensive details of specific cases including all associated data
+- **Get Activities** - Access complete case activity logs and audit trails
+- **Get Endpoints** - List all endpoints associated with a case for scope management
+- **Get Many** - Browse multiple cases with advanced filtering, pagination, and search capabilities
+- **Get Tasks** - View all tasks assigned to a case for progress tracking
+- **Get Users** - List users assigned to a case for collaboration management
+- **Import Task Assignments** - Bulk import task assignments from external sources
+- **Open Case** - Reactivate archived or closed cases for continued investigation
+- **Remove Endpoints** - Remove specific endpoints from case scope
+- **Remove Task Assignment** - Unassign specific tasks from cases
+- **Update** - Modify case details, metadata, and configuration settings
 
 ### Organizations
 
-Manage organizations within your AIR instance:
+Manage organizational structure and user assignments:
 
-- **Get** - Retrieve details of a specific organization by ID or name
-- **Get Many Organizations** - Retrieve multiple organizations with filtering and pagination
-- **Create Organization** - Create new organizations with contact information and settings
-- **Get Users** - Retrieve users assigned to a specific organization
-- **Add Tags** - Add metadata tags to organizations for better categorization
-- **Remove Tags** - Remove existing tags from organizations
+- **Add Tags** - Apply metadata tags to organizations for categorization and filtering
+- **Assign Users** - Add users to organizations with appropriate access permissions
+- **Check Name Exists** - Verify organization name availability to prevent conflicts
+- **Create** - Create new organizations with contact information and deployment settings
+- **Delete** - Remove organizations and associated configurations
+- **Get** - Retrieve detailed organization information including settings and metadata
+- **Get Many** - Browse multiple organizations with comprehensive filtering options
+- **Get Shareable Deployment Info** - Access deployment package information for agent distribution
+- **Get Users** - List all users assigned to an organization with role information
+- **Remove Tags** - Remove existing metadata tags from organizations
+- **Remove User** - Unassign users from organizations while preserving user accounts
+- **Update** - Modify organization details, settings, and configuration
+- **Update Deployment Token** - Regenerate deployment tokens for enhanced security
+- **Update Shareable Deployment** - Configure shareable deployment settings and access permissions
 
-### Users
+### Repositories
 
-Manage user accounts and permissions:
+Manage evidence storage and repository configurations:
 
-- **Get User** - Retrieve details of a specific user by ID, username, or email
-- **Get Many Users** - Retrieve multiple users with advanced filtering options
+- **Get** - Retrieve details of specific evidence repositories by ID or name
+- **Get Many** - Browse multiple repositories with filtering by type, organization, host, path, and search capabilities
 
-Features include filtering by organization membership, role-based filtering, search by username or email, and sorting capabilities.
+### Tasks
 
-### Evidence Repositories
+Manage task execution and monitoring operations:
 
-Manage evidence storage and repositories:
-
-- **Get Repository** - Retrieve details of a specific evidence repository by ID or name
-- **Get Many Repositories** - Retrieve multiple repositories with comprehensive filtering
-
-Features include organization-scoped repository access, filtering by host, path, or name, and support for different repository types.
+- **Cancel Task** - Stop running tasks to free up system resources
+- **Cancel Task Assignment** - Cancel specific task assignments while preserving the base task
+- **Delete Task** - Permanently remove tasks and associated data from the system
+- **Delete Task Assignment** - Remove specific task assignments from cases or endpoints
+- **Get** - Retrieve comprehensive details of specific tasks including status and results
+- **Get Many** - Browse multiple tasks with filtering by organization, execution type, name, and status
+- **Get Task Assignments** - List all assignments for a specific task across different cases
 
 ### Triage Rules
 
-Manage detection and analysis rules for threat hunting:
+Manage detection and analysis rules for threat hunting and automated analysis:
 
-- **Get Triage Rule** - Retrieve details of a specific triage rule by ID or name
-- **Get Many Triage Rules** - Retrieve multiple triage rules with comprehensive filtering
-- **Create Triage Rule** - Create new triage rules for detection and analysis
-- **Update Triage Rule** - Modify existing triage rules by ID or name
-- **Delete Triage Rule** - Remove triage rules by ID or name
-- **Validate Triage Rule** - Validate rule syntax and content for YARA, Sigma, and osquery engines
-- **Assign Triage Task** - Assign triage tasks to cases with endpoint filtering
-- **Get Rule Tags** - Retrieve rule tags with organization filtering
-- **Create Rule Tag** - Create new rule tags with organization selection
+- **Assign Triage Task** - Create and assign triage tasks to cases with endpoint filtering and scheduling options
+- **Create Triage Rule** - Build new detection rules using YARA, Sigma, or osquery engines
+- **Create Triage Rule Tag** - Create organizational tags for rule categorization and management
+- **Delete Triage Rule** - Remove triage rules and associated configurations from the system
+- **Get** - Retrieve detailed information about specific triage rules including content and metadata
+- **Get Many** - Browse multiple triage rules with filtering by organization, engine type, tags, and search capabilities
+- **Get Triage Rule Tags** - List available rule tags for organization and filtering purposes
+- **Update Triage Rule** - Modify existing triage rules including content, settings, and organizational assignments
+- **Validate Triage Rule** - Verify rule syntax and content for YARA, Sigma, and osquery engines before deployment
 
-Features include support for multiple detection engines (YARA, Sigma, and osquery), flexible search locations, and comprehensive CRUD operations.
+### Users
+
+Manage user accounts and access permissions:
+
+- **Get** - Retrieve detailed information about specific users by ID, username, or email
+- **Get Many** - Browse multiple users with filtering by organization, roles, and comprehensive search capabilities
 
 ## Authentication
 
@@ -91,10 +134,10 @@ The node uses API token-based authentication:
 - **AIR Instance URL** - The base URL of your Binalyze AIR instance (e.g., `https://air-demo.binalyze.com`)
 - **AIR API Token** - A valid API token generated from your AIR instance's Integrations > API Tokens section
 
-All resources support flexible identification methods:
+Most resources support n8n Resource Locator pattern for a better UX:
 - **From List** - Select from a searchable dropdown of available items
 - **By ID** - Direct identification using numeric or GUID identifiers
-- **By Name/Username** - Human-readable identification using names or usernames
+- **By Name** - Human-readable identification using names
 
 ## Prerequisites
 
