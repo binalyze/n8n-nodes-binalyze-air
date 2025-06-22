@@ -368,7 +368,7 @@ export const CasesOperations: INodeProperties[] = [
 		displayName: 'Visibility',
 		name: 'visibility',
 		type: 'options',
-		default: 'private',
+		default: 'public-to-organization',
 		displayOptions: {
 			show: {
 				resource: ['cases'],
@@ -377,16 +377,31 @@ export const CasesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Private',
-				value: 'private',
+				name: 'Public to Organization',
+				value: 'public-to-organization',
 			},
 			{
-				name: 'Public',
-				value: 'public',
+				name: 'Private to Users',
+				value: 'private-to-users',
 			},
 		],
 		required: true,
 		description: 'The visibility of the case',
+	},
+	{
+		displayName: 'Assigned User IDs',
+		name: 'assignedUserIds',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter comma-separated user IDs (optional)',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['create'],
+				visibility: ['private-to-users'],
+			},
+		},
+		description: 'Comma-separated list of user IDs to assign to the case (required for private cases)',
 	},
 	{
 		displayName: 'Update Fields',
@@ -481,15 +496,15 @@ export const CasesOperations: INodeProperties[] = [
 				displayName: 'Visibility',
 				name: 'visibility',
 				type: 'options',
-				default: 'private',
+				default: 'public-to-organization',
 				options: [
 					{
-						name: 'Private',
-						value: 'private',
+						name: 'Public to Organization',
+						value: 'public-to-organization',
 					},
 					{
-						name: 'Public',
-						value: 'public',
+						name: 'Private to Users',
+						value: 'private-to-users',
 					},
 				],
 				description: 'The visibility of the case',
@@ -1069,6 +1084,7 @@ async function executeCreateCase(
 	const organizationResource = this.getNodeParameter('organizationId', itemIndex) as any;
 	const ownerUserResource = this.getNodeParameter('ownerUserId', itemIndex) as any;
 	const visibility = this.getNodeParameter('visibility', itemIndex) as string;
+	const assignedUserIdsParam = this.getNodeParameter('assignedUserIds', itemIndex, '') as string;
 	let organizationId: number;
 
 	if (organizationResource.mode === 'id') {
@@ -1085,11 +1101,23 @@ async function executeCreateCase(
 	// Resolve owner user ID using Resource Locator
 	const ownerUserId = await resolveUserResourceLocator(this, credentials, ownerUserResource, itemIndex, organizationId.toString());
 
+	// Process assigned user IDs
+	let assignedUserIds: string[] = [];
+	if (assignedUserIdsParam.trim()) {
+		assignedUserIds = assignedUserIdsParam.split(',').map(id => id.trim()).filter(id => id);
+	}
+
+	// Validate that assignedUserIds is provided for private-to-users visibility
+	if (visibility === 'private-to-users' && assignedUserIds.length === 0) {
+		throw new Error('Assigned User IDs are required when visibility is set to "private-to-users"');
+	}
+
 	const caseData = {
 		organizationId,
 		name: caseName,
 		ownerUserId,
-		visibility
+		visibility,
+		assignedUserIds
 	};
 
 	const response = await casesApi.createCase(this, credentials, caseData);

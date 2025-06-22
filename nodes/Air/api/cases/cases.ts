@@ -28,6 +28,7 @@ export interface Case {
   source: string;
   totalDays: number;
   totalEndpoints: number;
+  assignedUserIds: string[];
   closedOn?: string;
 }
 
@@ -296,6 +297,7 @@ export const api = {
       name: string;
       ownerUserId: string;
       visibility: string;
+      assignedUserIds: string[];
     }
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
@@ -324,6 +326,7 @@ export const api = {
       visibility: string;
       status: 'open' | 'closed' | 'archived';
       notes: any[];
+      assignedUserIds: string[];
     }>
   ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
     try {
