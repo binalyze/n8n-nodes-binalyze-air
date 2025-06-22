@@ -46,7 +46,7 @@ export const UsersOperations: INodeProperties[] = [
 				action: 'Get many users',
 			},
 			{
-				name: 'Get User',
+				name: 'Get',
 				value: 'get',
 				description: 'Retrieve a specific user',
 				action: 'Get a user',
@@ -180,7 +180,7 @@ export const UsersOperations: INodeProperties[] = [
 				},
 			},
 			{
-				displayName: 'Roles Filter',
+				displayName: 'Filter By Roles',
 				name: 'roles',
 				type: 'string',
 				default: '',

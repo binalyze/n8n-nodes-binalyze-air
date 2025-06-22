@@ -130,11 +130,25 @@ export const RepositoriesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Host Filter',
+				displayName: 'Filter By Host',
 				name: 'host',
 				type: 'string',
 				default: '',
 				description: 'Filter repositories by host',
+			},
+			{
+				displayName: 'Filter By Path',
+				name: 'path',
+				type: 'string',
+				default: '',
+				description: 'Filter repositories by path',
+			},
+			{
+				displayName: 'Filter By Username',
+				name: 'username',
+				type: 'string',
+				default: '',
+				description: 'Filter repositories by username',
 			},
 			{
 				displayName: 'Page Number',
@@ -155,13 +169,6 @@ export const RepositoriesOperations: INodeProperties[] = [
 				typeOptions: {
 					minValue: 1,
 				},
-			},
-			{
-				displayName: 'Path Filter',
-				name: 'path',
-				type: 'string',
-				default: '',
-				description: 'Filter repositories by path',
 			},
 			{
 				displayName: 'Search Term',
@@ -198,13 +205,6 @@ export const RepositoriesOperations: INodeProperties[] = [
 						value: 'smb',
 					},
 				],
-			},
-			{
-				displayName: 'Username Filter',
-				name: 'username',
-				type: 'string',
-				default: '',
-				description: 'Filter repositories by username',
 			},
 		],
 	},

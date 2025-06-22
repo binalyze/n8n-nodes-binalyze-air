@@ -63,16 +63,16 @@ export const TasksOperations: INodeProperties[] = [
 				action: 'Delete a task assignment',
 			},
 			{
+				name: 'Get',
+				value: 'get',
+				description: 'Retrieve a specific task',
+				action: 'Get a task',
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
 				description: 'Retrieve many tasks',
 				action: 'Get many tasks',
-			},
-			{
-				name: 'Get Task',
-				value: 'get',
-				description: 'Retrieve a specific task',
-				action: 'Get a task',
 			},
 			{
 				name: 'Get Task Assignments',
@@ -175,7 +175,7 @@ export const TasksOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Execution Type Filter',
+				displayName: 'Filter By Execution Type',
 				name: 'executionType',
 				type: 'multiOptions',
 				default: [],
@@ -192,34 +192,14 @@ export const TasksOperations: INodeProperties[] = [
 				],
 			},
 			{
-				displayName: 'Name Filter',
+				displayName: 'Filter By Name',
 				name: 'name',
 				type: 'string',
 				default: '',
 				description: 'Filter tasks by name (supports partial matches)',
 			},
 			{
-				displayName: 'Page Number',
-				name: 'pageNumber',
-				type: 'number',
-				default: 1,
-				description: 'Which page of results to return',
-				typeOptions: {
-					minValue: 1,
-				},
-			},
-			{
-				displayName: 'Page Size',
-				name: 'pageSize',
-				type: 'number',
-				default: 100,
-				description: 'How many results to return per page',
-				typeOptions: {
-					minValue: 1,
-				},
-			},
-			{
-				displayName: 'Source Filter',
+				displayName: 'Filter By Source',
 				name: 'source',
 				type: 'multiOptions',
 				default: [],
@@ -248,7 +228,7 @@ export const TasksOperations: INodeProperties[] = [
 				],
 			},
 			{
-				displayName: 'Status Filter',
+				displayName: 'Filter By Status',
 				name: 'status',
 				type: 'multiOptions',
 				default: [],
@@ -281,7 +261,7 @@ export const TasksOperations: INodeProperties[] = [
 				],
 			},
 			{
-				displayName: 'Type Filter',
+				displayName: 'Filter By Type',
 				name: 'type',
 				type: 'multiOptions',
 				default: [],
@@ -372,6 +352,26 @@ export const TasksOperations: INodeProperties[] = [
 						value: 'version-update',
 					},
 				],
+			},
+			{
+				displayName: 'Page Number',
+				name: 'pageNumber',
+				type: 'number',
+				default: 1,
+				description: 'Which page of results to return',
+				typeOptions: {
+					minValue: 1,
+				},
+			},
+			{
+				displayName: 'Page Size',
+				name: 'pageSize',
+				type: 'number',
+				default: 100,
+				description: 'How many results to return per page',
+				typeOptions: {
+					minValue: 1,
+				},
 			},
 		],
 	},

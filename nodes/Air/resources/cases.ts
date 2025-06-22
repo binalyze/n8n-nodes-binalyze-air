@@ -546,7 +546,7 @@ export const CasesOperations: INodeProperties[] = [
 				description: 'Search term to filter cases',
 			},
 			{
-				displayName: 'Status Filter',
+				displayName: 'Filter By Status',
 				name: 'status',
 				type: 'options',
 				default: '',
@@ -573,11 +573,74 @@ export const CasesOperations: INodeProperties[] = [
 		],
 	},
 	{
-		displayName: 'Endpoint Filter Options',
-		name: 'endpointFilter',
-		type: 'collection',
-		placeholder: 'Add Filter',
-		default: {},
+		displayName: 'Excluded Endpoint IDs',
+		name: 'excludedEndpointIds',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter endpoint IDs (comma-separated)',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		description: 'Endpoint IDs to exclude',
+	},
+	{
+		displayName: 'Filter By Group Full Path',
+		name: 'groupFullPath',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+	},
+	{
+		displayName: 'Filter By Group ID',
+		name: 'groupId',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+	},
+	{
+		displayName: 'Included Endpoint IDs',
+		name: 'includedEndpointIds',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter endpoint IDs (comma-separated)',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		description: 'Endpoint IDs to include',
+	},
+	{
+		displayName: 'Filter By IP Address',
+		name: 'ipAddress',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+	},
+	{
+		displayName: 'Filter By Isolation Status',
+		name: 'isolationStatus',
+		type: 'multiOptions',
+		default: [],
 		displayOptions: {
 			show: {
 				resource: ['cases'],
@@ -586,166 +649,173 @@ export const CasesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Excluded Endpoint IDs',
-				name: 'excludedEndpointIds',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter endpoint IDs (comma-separated)',
-				description: 'Endpoint IDs to exclude',
+				name: 'Isolated',
+				value: 'isolated',
 			},
 			{
-				displayName: 'Group Full Path',
-				name: 'groupFullPath',
-				type: 'string',
-				default: '',
-				description: 'Filter by group full path',
-			},
-			{
-				displayName: 'Group ID',
-				name: 'groupId',
-				type: 'string',
-				default: '',
-				description: 'Filter by group ID',
-			},
-			{
-				displayName: 'Included Endpoint IDs',
-				name: 'includedEndpointIds',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter endpoint IDs (comma-separated)',
-				description: 'Endpoint IDs to include',
-			},
-			{
-				displayName: 'IP Address',
-				name: 'ipAddress',
-				type: 'string',
-				default: '',
-				description: 'Filter by IP address',
-			},
-			{
-				displayName: 'Isolation Status',
-				name: 'isolationStatus',
-				type: 'multiOptions',
-				default: [],
-				options: [
-					{
-						name: 'Isolated',
-						value: 'isolated',
-					},
-					{
-						name: 'Not Isolated',
-						value: 'not_isolated',
-					},
-				],
-				description: 'Filter by isolation status',
-			},
-			{
-				displayName: 'Issue',
-				name: 'issue',
-				type: 'string',
-				default: '',
-				description: 'Filter by issue',
-			},
-			{
-				displayName: 'Managed Status',
-				name: 'managedStatus',
-				type: 'multiOptions',
-				default: [],
-				options: [
-					{
-						name: 'Managed',
-						value: 'managed',
-					},
-					{
-						name: 'Unmanaged',
-						value: 'unmanaged',
-					},
-				],
-				description: 'Filter by managed status',
-			},
-			{
-				displayName: 'Name',
-				name: 'name',
-				type: 'string',
-				default: '',
-				description: 'Filter by endpoint name',
-			},
-			{
-				displayName: 'Online Status',
-				name: 'onlineStatus',
-				type: 'multiOptions',
-				default: [],
-				options: [
-					{
-						name: 'Online',
-						value: 'online',
-					},
-					{
-						name: 'Offline',
-						value: 'offline',
-					},
-				],
-				description: 'Filter by online status',
-			},
-			{
-				displayName: 'Organization IDs',
-				name: 'organizationIds',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter organization IDs (comma-separated)',
-				description: 'Organization IDs to filter by',
-			},
-			{
-				displayName: 'Platform',
-				name: 'platform',
-				type: 'multiOptions',
-				default: [],
-				options: [
-					{
-						name: 'Windows',
-						value: 'windows',
-					},
-					{
-						name: 'Linux',
-						value: 'linux',
-					},
-					{
-						name: 'macOS',
-						value: 'macos',
-					},
-				],
-				description: 'Filter by platform',
-			},
-			{
-				displayName: 'Policy',
-				name: 'policy',
-				type: 'string',
-				default: '',
-				description: 'Filter by policy',
-			},
-			{
-				displayName: 'Search Term',
-				name: 'searchTerm',
-				type: 'string',
-				default: '',
-				description: 'Search term for endpoints',
-			},
-			{
-				displayName: 'Tags',
-				name: 'tags',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter tags (comma-separated)',
-				description: 'Filter by tags',
-			},
-			{
-				displayName: 'Version',
-				name: 'version',
-				type: 'string',
-				default: '',
-				description: 'Filter by version',
+				name: 'Not Isolated',
+				value: 'not_isolated',
 			},
 		],
+	},
+	{
+		displayName: 'Filter By Issue',
+		name: 'issue',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+	},
+	{
+		displayName: 'Filter By Managed Status',
+		name: 'managedStatus',
+		type: 'multiOptions',
+		default: [],
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		options: [
+			{
+				name: 'Managed',
+				value: 'managed',
+			},
+			{
+				name: 'Unmanaged',
+				value: 'unmanaged',
+			},
+		],
+	},
+	{
+		displayName: 'Filter By Name',
+		name: 'name',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		description: 'Filter by endpoint name',
+	},
+	{
+		displayName: 'Filter By Online Status',
+		name: 'onlineStatus',
+		type: 'multiOptions',
+		default: [],
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		options: [
+			{
+				name: 'Online',
+				value: 'online',
+			},
+			{
+				name: 'Offline',
+				value: 'offline',
+			},
+		],
+	},
+	{
+		displayName: 'Filter By Organization IDs',
+		name: 'organizationIds',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter organization IDs (comma-separated)',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		description: 'Organization IDs to filter by',
+	},
+	{
+		displayName: 'Filter By Platform',
+		name: 'platform',
+		type: 'multiOptions',
+		default: [],
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		options: [
+			{
+				name: 'Windows',
+				value: 'windows',
+			},
+			{
+				name: 'Linux',
+				value: 'linux',
+			},
+			{
+				name: 'macOS',
+				value: 'macos',
+			},
+		],
+	},
+	{
+		displayName: 'Filter By Policy',
+		name: 'policy',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+	},
+	{
+		displayName: 'Search Term',
+		name: 'searchTerm',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+		description: 'Search term for endpoints',
+	},
+	{
+		displayName: 'Filter By Tags',
+		name: 'tags',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter tags (comma-separated)',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
+	},
+	{
+		displayName: 'Filter By Version',
+		name: 'version',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: ['removeEndpoints'],
+			},
+		},
 	},
 ];
 
@@ -1320,42 +1390,58 @@ async function executeRemoveEndpoints(
 	itemIndex: number
 ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
 	const caseId = requireValidId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
-	const endpointFilter = this.getNodeParameter('endpointFilter', itemIndex, {}) as any;
 
-	// Build filter object
+	// Build filter object from individual parameters
 	const filter: any = {};
 
-	if (endpointFilter.searchTerm) filter.searchTerm = endpointFilter.searchTerm;
-	if (endpointFilter.name) filter.name = endpointFilter.name;
-	if (endpointFilter.ipAddress) filter.ipAddress = endpointFilter.ipAddress;
-	if (endpointFilter.groupId) filter.groupId = endpointFilter.groupId;
-	if (endpointFilter.groupFullPath) filter.groupFullPath = endpointFilter.groupFullPath;
-	if (endpointFilter.managedStatus && endpointFilter.managedStatus.length > 0) {
-		filter.managedStatus = endpointFilter.managedStatus;
+	const searchTerm = this.getNodeParameter('searchTerm', itemIndex, '') as string;
+	const name = this.getNodeParameter('name', itemIndex, '') as string;
+	const ipAddress = this.getNodeParameter('ipAddress', itemIndex, '') as string;
+	const groupId = this.getNodeParameter('groupId', itemIndex, '') as string;
+	const groupFullPath = this.getNodeParameter('groupFullPath', itemIndex, '') as string;
+	const managedStatus = this.getNodeParameter('managedStatus', itemIndex, []) as string[];
+	const isolationStatus = this.getNodeParameter('isolationStatus', itemIndex, []) as string[];
+	const platform = this.getNodeParameter('platform', itemIndex, []) as string[];
+	const issue = this.getNodeParameter('issue', itemIndex, '') as string;
+	const onlineStatus = this.getNodeParameter('onlineStatus', itemIndex, []) as string[];
+	const tags = this.getNodeParameter('tags', itemIndex, '') as string;
+	const version = this.getNodeParameter('version', itemIndex, '') as string;
+	const policy = this.getNodeParameter('policy', itemIndex, '') as string;
+	const includedEndpointIds = this.getNodeParameter('includedEndpointIds', itemIndex, '') as string;
+	const excludedEndpointIds = this.getNodeParameter('excludedEndpointIds', itemIndex, '') as string;
+	const organizationIds = this.getNodeParameter('organizationIds', itemIndex, '') as string;
+
+	if (searchTerm) filter.searchTerm = searchTerm;
+	if (name) filter.name = name;
+	if (ipAddress) filter.ipAddress = ipAddress;
+	if (groupId) filter.groupId = groupId;
+	if (groupFullPath) filter.groupFullPath = groupFullPath;
+	if (managedStatus && managedStatus.length > 0) {
+		filter.managedStatus = managedStatus;
 	}
-	if (endpointFilter.isolationStatus && endpointFilter.isolationStatus.length > 0) {
-		filter.isolationStatus = endpointFilter.isolationStatus;
+	if (isolationStatus && isolationStatus.length > 0) {
+		filter.isolationStatus = isolationStatus;
 	}
-	if (endpointFilter.platform && endpointFilter.platform.length > 0) {
-		filter.platform = endpointFilter.platform;
+	if (platform && platform.length > 0) {
+		filter.platform = platform;
 	}
-	if (endpointFilter.issue) filter.issue = endpointFilter.issue;
-	if (endpointFilter.onlineStatus && endpointFilter.onlineStatus.length > 0) {
-		filter.onlineStatus = endpointFilter.onlineStatus;
+	if (issue) filter.issue = issue;
+	if (onlineStatus && onlineStatus.length > 0) {
+		filter.onlineStatus = onlineStatus;
 	}
-	if (endpointFilter.tags) {
-		filter.tags = endpointFilter.tags.split(',').map((tag: string) => tag.trim());
+	if (tags) {
+		filter.tags = tags.split(',').map((tag: string) => tag.trim());
 	}
-	if (endpointFilter.version) filter.version = endpointFilter.version;
-	if (endpointFilter.policy) filter.policy = endpointFilter.policy;
-	if (endpointFilter.includedEndpointIds) {
-		filter.includedEndpointIds = endpointFilter.includedEndpointIds.split(',').map((id: string) => id.trim());
+	if (version) filter.version = version;
+	if (policy) filter.policy = policy;
+	if (includedEndpointIds) {
+		filter.includedEndpointIds = includedEndpointIds.split(',').map((id: string) => id.trim());
 	}
-	if (endpointFilter.excludedEndpointIds) {
-		filter.excludedEndpointIds = endpointFilter.excludedEndpointIds.split(',').map((id: string) => id.trim());
+	if (excludedEndpointIds) {
+		filter.excludedEndpointIds = excludedEndpointIds.split(',').map((id: string) => id.trim());
 	}
-	if (endpointFilter.organizationIds) {
-		filter.organizationIds = endpointFilter.organizationIds.split(',').map((id: string) => parseInt(id.trim()));
+	if (organizationIds) {
+		filter.organizationIds = organizationIds.split(',').map((id: string) => parseInt(id.trim()));
 	}
 
 	const response = await casesApi.removeEndpointsFromCase(this, credentials, caseId, filter);

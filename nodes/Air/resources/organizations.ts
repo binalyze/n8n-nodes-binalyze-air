@@ -509,8 +509,8 @@ export const OrganizationsOperations: INodeProperties[] = [
 				},
 			},
 			{
-				displayName: 'Name Filter',
-				name: 'nameFilter',
+				displayName: 'Filter By Name',
+				name: 'name',
 				type: 'string',
 				default: '',
 				description: 'Filter organizations by exact name match',
@@ -760,8 +760,8 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 						options.searchTerm = additionalFields.searchTerm;
 					}
 
-					if (additionalFields.nameFilter) {
-						options.nameFilter = additionalFields.nameFilter;
+					if (additionalFields.name) {
+						options.nameFilter = additionalFields.name;
 					}
 
 					const response = await organizationsApi.getOrganizations(this, credentials, Object.keys(options).length > 0 ? options : undefined);

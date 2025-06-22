@@ -5,8 +5,9 @@ Script to download n8n workflow from local instance
 
 import os
 import json
-import requests
-import yaml
+# requirements.txt will install the below modules
+import requests # type: ignore
+import yaml # type: ignore
 from pathlib import Path
 
 
@@ -95,7 +96,7 @@ def save_workflow_json(workflow_data, output_path):
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(workflow_data, f, indent=2, ensure_ascii=False)
 
-    print(f"Workflow saved to: {output_path}")
+    print(f"✅ Workflow saved to: {output_path}")
 
 
 def main():
@@ -119,7 +120,7 @@ def main():
         print(f"Saving workflow to '{output_path}'...")
         save_workflow_json(workflow_data, output_path)
 
-        print("Workflow downloaded successfully!")
+        print("✅ Test Suite Workflow downloaded successfully!")
 
     except Exception as e:
         print(f"Error: {e}")
