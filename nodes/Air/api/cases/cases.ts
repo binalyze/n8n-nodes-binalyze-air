@@ -453,7 +453,7 @@ export const api = {
       const requestOptions = buildRequestOptions(
         credentials,
         'GET',
-        '/api/public/cases/check-name',
+        '/api/public/cases/check',
         { name }
       );
 
