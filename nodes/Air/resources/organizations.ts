@@ -68,16 +68,16 @@ export const OrganizationsOperations: INodeProperties[] = [
 				action: 'Delete an organization',
 			},
 			{
+				name: 'Get',
+				value: 'get',
+				description: 'Retrieve a specific organization',
+				action: 'Get an organization',
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
 				description: 'Retrieve many organizations',
 				action: 'Get many organizations',
-			},
-			{
-				name: 'Get Organization',
-				value: 'get',
-				description: 'Retrieve a specific organization',
-				action: 'Get an organization',
 			},
 			{
 				name: 'Get Shareable Deployment Info',

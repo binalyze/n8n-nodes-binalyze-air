@@ -43,7 +43,7 @@ Features include platform-specific conditions for Linux, Windows, and macOS syst
 
 Manage organizations within your AIR instance:
 
-- **Get Organization** - Retrieve details of a specific organization by ID or name
+- **Get** - Retrieve details of a specific organization by ID or name
 - **Get Many Organizations** - Retrieve multiple organizations with filtering and pagination
 - **Create Organization** - Create new organizations with contact information and settings
 - **Get Users** - Retrieve users assigned to a specific organization

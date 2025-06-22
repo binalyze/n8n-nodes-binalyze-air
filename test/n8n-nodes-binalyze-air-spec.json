@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-06-22T09:28:38.297Z",
-  "updatedAt": "2025-06-22T10:24:20.000Z",
+  "updatedAt": "2025-06-22T12:39:16.000Z",
   "id": "8cLdwBFE3AC1wv2E",
   "name": "n8n-nodes-binalyze-air-spec",
   "active": false,
@@ -12,10 +12,10 @@
       "typeVersion": 1,
       "position": [
         0,
-        0
+        60
       ],
       "id": "00d96ab3-fde4-433c-8848-7d2fc7b36f18",
-      "name": "When clicking 'Execute workflow'"
+      "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {
@@ -31,7 +31,7 @@
       "typeVersion": 1,
       "position": [
         220,
-        0
+        660
       ],
       "id": "7c7d3171-26d7-40f7-b0a4-842902388f9e",
       "name": "Asset Tags / Get Many",
@@ -55,8 +55,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        460,
-        -120
+        440,
+        560
       ],
       "id": "563ecc67-49c4-4700-9c43-5168f8dc6d76",
       "name": "Asset Tags / Get By ID",
@@ -81,8 +81,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        460,
-        100
+        440,
+        760
       ],
       "id": "5b706d18-fa7b-499f-9155-90a88cf52c86",
       "name": "Asset Tags / Get By Name",
@@ -93,12 +93,360 @@
           "name": "Binalyze AIR Credentials account"
         }
       }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "organizationId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "0"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        440,
+        360
+      ],
+      "id": "19c72c67-25c9-4177-a9e0-1c934a44777c",
+      "name": "Case / Get Many",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "get",
+        "caseId": "={{ $json._id }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        660,
+        260
+      ],
+      "id": "49230ecf-a6a0-43e8-a9c4-b50404ac5e3b",
+      "name": "Case / Get By ID",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "checkName",
+        "caseName": "={{ $json.name }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        660,
+        460
+      ],
+      "id": "5d5c4d96-6a64-4caf-a51e-e97fd399da50",
+      "name": "Case / Check Name",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "create",
+        "caseName": "n8n Test Case",
+        "organizationId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "0"
+        },
+        "ownerUserId": {
+          "__rl": true,
+          "value": "78cf7ecd-2273-4001-9e20-7e281dd66403",
+          "mode": "list",
+          "cachedResultName": "admin@binalyze.com"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        220,
+        360
+      ],
+      "id": "3b5766d4-e8c2-4ef7-be7d-31d40d2383f4",
+      "name": "Case Create",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.name }}",
+          "mode": "name"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -340
+      ],
+      "id": "0327c121-cdc2-4c7e-bf9a-ef6daf9dac3c",
+      "name": "Organization / Delete",
+      "alwaysOutputData": false,
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "checkNameExists",
+        "nameToCheck": "=n8n Test"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -340
+      ],
+      "id": "9cfe25bb-d37a-4b59-8c3c-c0637b141bdf",
+      "name": "Orgnization / Check Name",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "406ca7c2-7970-49f8-b5e2-5b7a0b9595a0",
+              "leftValue": "={{ $json.exists }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        -340
+      ],
+      "id": "69f56cdb-90a9-438a-ab06-86483aae65d6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "name": "n8n Test",
+        "shareableDeploymentEnabled": true,
+        "contactName": "n8n.test@binalyze.com",
+        "contactEmail": "n8n.test@binalyze.com",
+        "additionalFields": {
+          "contactMobile": "+123456789",
+          "contactPhone": "+123456789",
+          "contactTitle": "Automata",
+          "note": "Created by n8n workflow"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -140
+      ],
+      "id": "9d46e3e7-90b0-4f72-8bc7-dabe4f2d31f4",
+      "name": "Organization / Create",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addTags",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "tags": "org-tag-1, org-tag-2, org-tag-3"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -140
+      ],
+      "id": "11632fd7-a7ed-49b4-aacf-002ff7945e9d",
+      "name": "Organization / Add Tags",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeTags",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "tags": "org-tag-2, org-tag-3"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -140
+      ],
+      "id": "1ae74646-68d5-471b-9495-be7ac0071fb4",
+      "name": "Organization / Remove Tags",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        220,
+        60
+      ],
+      "id": "ec314adb-4ecd-4dc7-8bd7-758b67a8c29d",
+      "name": "Organization / Get Many",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.name }}",
+          "mode": "name"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        440,
+        60
+      ],
+      "id": "e219229e-8f9d-4394-9557-bc312a271499",
+      "name": "Organization / Get By Name",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getUsers",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.name }}",
+          "mode": "name"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        660,
+        60
+      ],
+      "id": "eb9c0238-0c26-4272-9440-e4cf96f00f85",
+      "name": "Organization / Get Users",
+      "credentials": {
+        "airApi": {
+          "id": "HRFJVg9kKyaIJx0w",
+          "name": "Binalyze AIR Credentials account"
+        }
+      }
     }
   ],
   "connections": {
-    "When clicking 'Execute workflow'": {
+    "When clicking ‘Execute workflow’": {
       "main": [
         [
+          {
+            "node": "Case Create",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Orgnization / Check Name",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Organization / Create",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Organization / Get Many",
+            "type": "main",
+            "index": 0
+          },
           {
             "node": "Asset Tags / Get Many",
             "type": "main",
@@ -122,6 +470,110 @@
           }
         ]
       ]
+    },
+    "Case / Get Many": {
+      "main": [
+        [
+          {
+            "node": "Case / Get By ID",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Case / Check Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Asset Tags / Get By ID": {
+      "main": [
+        []
+      ]
+    },
+    "Case Create": {
+      "main": [
+        [
+          {
+            "node": "Case / Get Many",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organization / Delete": {
+      "main": [
+        []
+      ]
+    },
+    "Orgnization / Check Name": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Organization / Delete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Organization / Create": {
+      "main": [
+        [
+          {
+            "node": "Organization / Add Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organization / Add Tags": {
+      "main": [
+        [
+          {
+            "node": "Organization / Remove Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organization / Get Many": {
+      "main": [
+        [
+          {
+            "node": "Organization / Get By Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organization / Get By Name": {
+      "main": [
+        [
+          {
+            "node": "Organization / Get Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -132,7 +584,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "d76b8d52-28b7-48ad-8314-9969d25038a1",
+  "versionId": "5a7e3486-38f5-47ba-9b0f-71a7c4dbe6f5",
   "triggerCount": 0,
   "shared": [
     {
@@ -145,7 +597,7 @@
         "createdAt": "2025-05-28T13:26:44.924Z",
         "updatedAt": "2025-05-28T13:27:17.681Z",
         "id": "ruqBk4A4CrNidITj",
-        "name": "Test User <test@example.com>",
+        "name": "Emre TINAZTEPE <emre@binalyze.com>",
         "type": "personal",
         "icon": null,
         "projectRelations": [
@@ -159,9 +611,9 @@
               "createdAt": "2025-05-28T13:26:44.706Z",
               "updatedAt": "2025-06-10T08:21:04.472Z",
               "id": "39c4a85b-f852-44a1-8e02-2deeaa8d667a",
-              "email": "test@example.com",
-              "firstName": "Test",
-              "lastName": "User",
+              "email": "emre@binalyze.com",
+              "firstName": "Emre",
+              "lastName": "TINAZTEPE",
               "personalizationAnswers": {
                 "version": "v4",
                 "personalization_survey_submitted_at": "2025-05-28T13:27:26.919Z",
