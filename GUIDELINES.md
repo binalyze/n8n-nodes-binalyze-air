@@ -30,6 +30,7 @@ For each resource implementation:
    - Follow existing documentation format
    - Do not add "Recent Updates" section
    - Update Table of Contents
+	 - Mark the completed tasks in TODO.md as `completed`
 
 5. **Key Requirements:**
    - Use `_id` as Entity Identifier property name
@@ -38,4 +39,4 @@ For each resource implementation:
    - Check for similar implementations to avoid duplication
    - Keep code simple and clean
    - Follow existing patterns and conventions
-	 - After completing the implemnentation, add the resource to `Air.node.ts` options so that it becomes visible as a resource alongside other resources such as 'Acquisition', 'Asset', and etc
+	 - After completing the implementation, add the resource to `Air.node.ts` options so that it becomes visible as a resource alongside other resources such as 'Acquisition', 'Asset', and etc

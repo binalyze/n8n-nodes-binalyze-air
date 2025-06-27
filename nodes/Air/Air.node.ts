@@ -109,6 +109,12 @@ import {
 	SettingsOperations,
 	executeSettings
 } from './resources/settings';
+import {
+	ApiTokensOperations,
+	getApiTokens,
+	getApiTokensOptions,
+	executeApiTokens
+} from './resources/apitokens';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
@@ -144,6 +150,11 @@ export class Air implements INodeType {
 						name: 'Acquisition',
 						value: 'acquisitions',
 						description: 'Manage acquisition profiles and remote acquisitions',
+					},
+					{
+						name: 'API Token',
+						value: 'apitokens',
+						description: 'Manage API tokens',
 					},
 					{
 						name: 'Asset',
@@ -229,6 +240,7 @@ export class Air implements INodeType {
 			},
 
 			...AcquisitionsOperations,
+			...ApiTokensOperations,
 			...AssetsOperations,
 			...AuthOperations,
 			...AutoAssetTagsOperations,
@@ -252,6 +264,10 @@ export class Air implements INodeType {
 			// Import load options methods from Acquisitions
 			async getAcquisitionProfiles(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getAcquisitionProfilesOptions.call(this);
+			},
+			// Import load options methods from API Tokens
+			async getApiTokens(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				return getApiTokensOptions.call(this);
 			},
 			// Import load options methods from Assets
 			async getAssets(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -318,6 +334,10 @@ export class Air implements INodeType {
 			// Import list search methods from Acquisitions for resource locators
 			async getAcquisitionProfiles(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAcquisitionProfiles.call(this, filter);
+			},
+			// Import list search methods from API Tokens for resource locators
+			async getApiTokens(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getApiTokens.call(this, filter);
 			},
 			// Import list search methods from Assets for resource locators
 			async getAssets(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
@@ -391,6 +411,8 @@ export class Air implements INodeType {
 		switch (resource) {
 			case 'acquisitions':
 				return executeAcquisitions.call(this);
+			case 'apitokens':
+				return executeApiTokens.call(this);
 			case 'assets':
 				return executeAssets.call(this);
 			case 'auth':
