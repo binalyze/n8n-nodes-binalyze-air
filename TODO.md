@@ -143,64 +143,52 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [x] Update API Token by ID
   - [x] Delete API Token by ID
 
-### 2. Audit Logs
-- **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/auditlogs/`
-- **Resource**: ❌ **MISSING** - Create `auditlogs.ts`
+### 2. Audit Logs ✅ **COMPLETED**
+- **API Folder**: ✅ **IMPLEMENTED** - `/nodes/Air/api/auditlogs/`
+- **Resource**: ✅ **IMPLEMENTED** - `auditlogs.ts`
 - **Required Operations**:
-  - [ ] Export Audit Logs
-  - [ ] Get Audit Logs
+  - [x] Export Audit Logs
+  - [x] Get Audit Logs
 
-### 3. Auto Asset Tags
-- **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/autoassettags/`
-- **Resource**: ✅ Exists `autoassettags.ts` (but missing API implementation)
+### 3. Auto Asset Tags ✅ **COMPLETED**
+- **API Folder**: ✅ **IMPLEMENTED** - `/nodes/Air/api/autoassettags/`
+- **Resource**: ✅ **IMPLEMENTED** - `autoassettags.ts` (updated with API implementation)
 - **Required Operations**:
-  - [ ] Create Auto Asset Tag
-  - [ ] Update Auto Asset Tag
-  - [ ] Get Auto Asset Tags
-  - [ ] Get Auto Asset Tag by ID
-  - [ ] Delete Auto Asset Tag by ID
-  - [ ] Start Tagging
+  - [x] Create Auto Asset Tag
+  - [x] Update Auto Asset Tag
+  - [x] Get Auto Asset Tags
+  - [x] Get Auto Asset Tag by ID
+  - [x] Delete Auto Asset Tag by ID
+  - [x] Start Tagging
 
-### 4. Backup
-- **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/backup/`
-- **Resource**: ❌ **MISSING** - Create `backup.ts`
+### 5. Cloud Forensics ✅ **COMPLETED**
+- **API Folder**: ✅ **IMPLEMENTED** - `/nodes/Air/api/cloudforensics/`
+- **Resource**: ✅ **IMPLEMENTED** - `cloudforensics.ts`
 - **Required Operations**:
-  - [ ] Implement backup operations (details from postman collection)
+  - [x] Cloud Accounts CRUD operations
+  - [x] Cloud Account sync operations
+  - [x] Event Subscription management
 
-### 5. Cloud Forensics
-- **API Folder**: `/nodes/Air/api/cloudforensics/` ❌ **EMPTY**
-- **Resource**: ❌ **MISSING** - Create `cloudforensics.ts`
-- **Required Sub-modules**:
-  - [ ] Create `/nodes/Air/api/cloudforensics/accounts/`
-  - [ ] Create `/nodes/Air/api/cloudforensics/eventsubscription/`
+### 6. InterACT ✅ **COMPLETED**
+- **API Folder**: ✅ **IMPLEMENTED** - `/nodes/Air/api/interact/`
+- **Resource**: ✅ **IMPLEMENTED** - `interact.ts`
 - **Required Operations**:
-  - [ ] Cloud Accounts CRUD operations
-  - [ ] Cloud Account sync operations
-  - [ ] Event Subscription management
-
-### 6. InterACT
-- **API Folder**: `/nodes/Air/api/interact/` ❌ **EMPTY**
-- **Resource**: ❌ **MISSING** - Create `interact.ts`
-- **Required Sub-modules**:
-  - [ ] Create `/nodes/Air/api/interact/library/`
-  - [ ] Create `/nodes/Air/api/interact/shell/`
-- **Required Operations**:
-  - [ ] Execute interACT commands (sync/async)
-  - [ ] Interrupt interACT commands
-  - [ ] Session management
-  - [ ] Command message retrieval
-  - [ ] Assign InterACT Shell Tasks
+  - [x] Execute interACT commands (sync/async)
+  - [x] Interrupt interACT commands
+  - [x] Session management
+  - [x] Command message retrieval
+  - [x] Assign InterACT Shell Tasks
 
 ### 7. Investigation Hub
-- **API Folder**: `/nodes/Air/api/investigationhub/` ❌ **EMPTY**
-- **Resource**: ❌ **MISSING** - Create `investigationhub.ts`
+- **API Folder**: `/nodes/Air/api/investigation-hub/` ❌ **EMPTY**
+- **Resource**: ❌ **MISSING** - Create `investigation-hub.ts`
 - **Required Sub-modules**:
-  - [ ] Create `/nodes/Air/api/investigationhub/investigations/`
-  - [ ] Create `/nodes/Air/api/investigationhub/evidence/`
-  - [ ] Create `/nodes/Air/api/investigationhub/findings/`
-  - [ ] Create `/nodes/Air/api/investigationhub/comments/`
-  - [ ] Create `/nodes/Air/api/investigationhub/activities/`
-  - [ ] Create `/nodes/Air/api/investigationhub/advancedfilters/`
+  - [ ] Create `/nodes/Air/api/investigation-hub/investigations/`
+  - [ ] Create `/nodes/Air/api/investigation-hub/evidence/`
+  - [ ] Create `/nodes/Air/api/investigation-hub/findings/`
+  - [ ] Create `/nodes/Air/api/investigation-hub/comments/`
+  - [ ] Create `/nodes/Air/api/investigation-hub/activities/`
+  - [ ] Create `/nodes/Air/api/investigation-hub/advanced-filters/`
 - **Required Operations**:
   - [ ] Investigation management
   - [ ] Evidence structure and data retrieval
@@ -286,10 +274,10 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
 
 ### 2. Create Missing Resources
 - [x] Create `apitokens.ts` resource
-- [ ] Create `auditlogs.ts` resource  
+- [x] Create `auditlogs.ts` resource  
 - [ ] Create `backup.ts` resource
-- [ ] Create `cloudforensics.ts` resource
-- [ ] Create `interact.ts` resource
+- [x] Create `cloudforensics.ts` resource
+- [x] Create `interact.ts` resource
 - [ ] Create `investigationhub.ts` resource
 - [ ] Create `license.ts` resource
 - [ ] Create `logger.ts` resource
@@ -341,12 +329,3 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
 - [ ] Create shared utility functions for common operations
 - [ ] Implement consistent response formatting
 - [ ] Add helper functions for complex parameter building
-
----
-
-**Priority Levels:**
-- 🔥 **High**: Core functionality endpoints (Auth, Cases, Assets, Organizations, Users)
-- 📊 **Medium**: Investigative and management features (Investigation Hub, Cloud Forensics, Webhooks)
-- 🔧 **Low**: Administrative and utility features (Logger, Recent Activities, License)
-
-**Estimated Implementation Time:** 4-6 weeks for complete coverage 

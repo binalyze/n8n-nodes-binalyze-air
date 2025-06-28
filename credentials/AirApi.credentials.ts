@@ -60,8 +60,7 @@ export class AirApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: '={{$credentials?.instanceUrl}}',
-			// TODO: Add a test endpoint that only checks if the API Token is valid. Acquisition Profiles is an overkill.
-			url: '/api/public/acquisitions/profiles?filter[organizationIds]=0',
+			url: '/api/public/auth/check',
 		},
 	};
 }

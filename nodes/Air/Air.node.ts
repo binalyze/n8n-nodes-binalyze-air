@@ -115,6 +115,20 @@ import {
 	getApiTokensOptions,
 	executeApiTokens
 } from './resources/apitokens';
+import {
+	CloudForensicsOperations,
+	getCloudAccounts,
+	executeCloudForensics
+} from './resources/cloudforensics';
+
+import {
+	InterACTOperations,
+	executeInterACT
+} from './resources/interact';
+import {
+	AuditLogsOperations,
+	executeAuditLogs
+} from './resources/auditlogs';
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
@@ -161,13 +175,16 @@ export class Air implements INodeType {
 						value: 'assets',
 						description: 'Manage endpoint assets and their operations',
 					},
-					/* TODO(emre): Add back in when the API is merged to SaaS environment
+					{
+						name: 'Audit Log',
+						value: 'auditlogs',
+						description: 'Manage and export audit logs',
+					},
 					{
 						name: 'Auth',
 						value: 'auth',
 						description: 'Authentication and session management',
 					},
-					*/
 					{
 						name: 'Auto Asset Tag',
 						value: 'autoassettags',
@@ -184,17 +201,25 @@ export class Air implements INodeType {
 						description: 'Manage cases and case operations',
 					},
 					{
+						name: 'Cloud Forensic',
+						value: 'cloudforensics',
+						description: 'Manage cloud accounts and event subscriptions for forensic analysis',
+					},
+					{
 						name: 'Evidence',
 						value: 'evidence',
 						description: 'Evidence file management and downloads',
 					},
-					/* TODO(emre): Add back in when the API is merged to SaaS environment
+					{
+						name: 'InterACT',
+						value: 'interact',
+						description: 'Interactive shell sessions and command execution on endpoints',
+					},
 					{
 						name: 'Notification',
 						value: 'notifications',
 						description: 'Manage user notifications',
 					},
-					*/
 					{
 						name: 'Organization',
 						value: 'organizations',
@@ -242,11 +267,14 @@ export class Air implements INodeType {
 			...AcquisitionsOperations,
 			...ApiTokensOperations,
 			...AssetsOperations,
+			...AuditLogsOperations,
 			...AuthOperations,
 			...AutoAssetTagsOperations,
 			...BaselinesOperations,
 			...CasesOperations,
+			...CloudForensicsOperations,
 			...EvidenceOperations,
+			...InterACTOperations,
 			...NotificationsOperations,
 			...OrganizationsOperations,
 			...ParamsOperations,
@@ -351,6 +379,10 @@ export class Air implements INodeType {
 			async getCases(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getCases.call(this, filter);
 			},
+			// Import list search methods from Cloud Forensics for resource locators
+			async getCloudAccounts(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getCloudAccounts.call(this, filter);
+			},
 			// Import list search methods from Notifications for resource locators
 			async getNotifications(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getNotifications.call(this, filter);
@@ -415,6 +447,8 @@ export class Air implements INodeType {
 				return executeApiTokens.call(this);
 			case 'assets':
 				return executeAssets.call(this);
+			case 'auditlogs':
+				return executeAuditLogs.call(this);
 			case 'auth':
 				return executeAuth.call(this);
 			case 'autoassettags':
@@ -423,8 +457,12 @@ export class Air implements INodeType {
 				return executeBaselines.call(this);
 			case 'cases':
 				return executeCases.call(this);
+			case 'cloudforensics':
+				return executeCloudForensics.call(this);
 			case 'evidence':
 				return executeEvidence.call(this);
+			case 'interact':
+				return executeInterACT.call(this);
 			case 'notifications':
 				return executeNotifications.call(this);
 			case 'organizations':

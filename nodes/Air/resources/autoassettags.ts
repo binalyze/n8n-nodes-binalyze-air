@@ -22,6 +22,7 @@ import {
 } from '../utils/helpers';
 
 import { AirCredentials } from '../../../credentials/AirApi.credentials';
+import { api as autoAssetTagsApi } from '../api/autoassettags/autoassettags';
 import { findOrganizationByName } from './organizations';
 
 export const AutoAssetTagsOperations: INodeProperties[] = [
@@ -37,6 +38,18 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Create Auto Asset Tag',
+				value: 'create',
+				description: 'Create a new auto asset tag',
+				action: 'Create an auto asset tag',
+			},
+			{
+				name: 'Delete Auto Asset Tag',
+				value: 'delete',
+				description: 'Delete an auto asset tag',
+				action: 'Delete an auto asset tag',
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				description: 'Retrieve a specific auto asset tag',
@@ -47,6 +60,18 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 				value: 'getAll',
 				description: 'Retrieve many auto asset tags',
 				action: 'Get many auto asset tags',
+			},
+			{
+				name: 'Start Tagging',
+				value: 'startTagging',
+				description: 'Start the tagging process for an auto asset tag',
+				action: 'Start tagging',
+			},
+			{
+				name: 'Update Auto Asset Tag',
+				value: 'update',
+				description: 'Update an auto asset tag',
+				action: 'Update an auto asset tag',
 			},
 		],
 		default: 'getAll',
@@ -60,7 +85,7 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['autoassettags'],
-				operation: ['get'],
+				operation: ['get', 'update', 'delete'],
 			},
 		},
 		modes: [
@@ -98,6 +123,137 @@ export const AutoAssetTagsOperations: INodeProperties[] = [
 		],
 		required: true,
 		description: 'The auto asset tag to work with',
+	},
+	{
+		displayName: 'Tag Name',
+		name: 'tagName',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter tag name',
+		displayOptions: {
+			show: {
+				resource: ['autoassettags'],
+				operation: ['create', 'update'],
+			},
+		},
+		required: true,
+		description: 'Name of the auto asset tag',
+	},
+	{
+		displayName: 'Query',
+		name: 'query',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter the query for the auto asset tag',
+		displayOptions: {
+			show: {
+				resource: ['autoassettags'],
+				operation: ['create', 'update'],
+			},
+		},
+		typeOptions: {
+			rows: 3,
+		},
+		required: true,
+		description: 'The query that defines the auto asset tag criteria',
+	},
+	{
+		displayName: 'Auto Asset Tag for Tagging',
+		name: 'startTaggingId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an auto asset tag...',
+		displayOptions: {
+			show: {
+				resource: ['autoassettags'],
+				operation: ['startTagging'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an auto asset tag...',
+				typeOptions: {
+					searchListMethod: 'getAutoAssetTags',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid auto asset tag ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter auto asset tag ID',
+			},
+		],
+		required: true,
+		description: 'The auto asset tag to start tagging process for',
+	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['autoassettags'],
+				operation: ['create', 'update'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Organization',
+				name: 'organizationId',
+				type: 'resourceLocator',
+				default: { mode: 'id', value: '0' },
+				placeholder: 'Select an organization...',
+				description: 'Organization for this auto asset tag. Default value 0 applies to ALL organizations.',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an organization...',
+						typeOptions: {
+							searchListMethod: 'getOrganizations',
+							searchable: true,
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[0-9]+$',
+									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for all organizations)',
+								},
+							},
+						],
+						placeholder: 'Enter Organization ID (0 for all organizations)',
+					},
+					{
+						displayName: 'By Name',
+						name: 'name',
+						type: 'string',
+						placeholder: 'Enter organization name',
+					},
+				],
+			},
+		],
 	},
 	{
 		displayName: 'Additional Fields',
@@ -358,6 +514,229 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 		for (let i = 0; i < items.length; i++) {
 			try {
 				switch (operation) {
+					case 'create':
+						const tagName = this.getNodeParameter('tagName', i) as string;
+						const query = this.getNodeParameter('query', i) as string;
+						const createFields = this.getNodeParameter('additionalFields', i) as any;
+
+						// Handle organization resource locator
+						let createOrgId: number = 0; // Default to all organizations
+						if (createFields.organizationId) {
+							const organizationResource = createFields.organizationId;
+							let orgIdString: string;
+
+							if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+								orgIdString = organizationResource.value;
+							} else if (organizationResource.mode === 'name') {
+								try {
+									orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
+								} catch (error) {
+									throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+								}
+							} else {
+								throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+									itemIndex: i,
+								});
+							}
+
+							// Validate and convert organization ID
+							try {
+								orgIdString = normalizeAndValidateId(orgIdString, 'Organization ID');
+								createOrgId = parseInt(orgIdString);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, {
+									itemIndex: i,
+								});
+							}
+						}
+
+						const createRequest = {
+							tag: tagName,
+							query: query,
+							organizationIds: [createOrgId]
+						};
+
+						const createResponse = await autoAssetTagsApi.createAutoAssetTag(this, credentials, createRequest);
+
+						returnData.push({
+							json: createResponse.result as any,
+							pairedItem: { item: i },
+						});
+						break;
+
+					case 'update':
+						const updateTagResource = this.getNodeParameter('autoAssetTagId', i) as any;
+						let updateTagId: string;
+
+						if (updateTagResource.mode === 'list' || updateTagResource.mode === 'id') {
+							const tagId = updateTagResource.value;
+							try {
+								updateTagId = normalizeAndValidateId(tagId, 'Auto Asset Tag ID');
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, {
+									itemIndex: i,
+								});
+							}
+						} else if (updateTagResource.mode === 'name') {
+							const tagName = updateTagResource.value;
+							if (!tagName || typeof tagName !== 'string' || tagName.trim() === '') {
+								throw new NodeOperationError(this.getNode(), 'Auto asset tag name is required and must be a non-empty string', {
+									itemIndex: i,
+								});
+							}
+							try {
+								const foundTag = await findAutoAssetTagByName(this, credentials, 0, tagName.trim());
+								if (!foundTag) {
+									throw new NodeOperationError(this.getNode(), `No auto asset tag found with name: ${tagName}`, {
+										itemIndex: i,
+									});
+								}
+								updateTagId = extractAutoAssetTagId(foundTag);
+							} catch (error) {
+								if (error instanceof NodeOperationError) {
+									throw error;
+								}
+								throw new NodeOperationError(this.getNode(), `Failed to find auto asset tag by name: ${tagName}`, {
+									itemIndex: i,
+								});
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid auto asset tag selection mode for update', {
+								itemIndex: i,
+							});
+						}
+
+						const updateTagName = this.getNodeParameter('tagName', i) as string;
+						const updateQuery = this.getNodeParameter('query', i) as string;
+						const updateFields = this.getNodeParameter('additionalFields', i) as any;
+
+						// Handle organization resource locator for update
+						let updateOrgId: number = 0;
+						if (updateFields.organizationId) {
+							const organizationResource = updateFields.organizationId;
+							let orgIdString: string;
+
+							if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+								orgIdString = organizationResource.value;
+							} else if (organizationResource.mode === 'name') {
+								try {
+									orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
+								} catch (error) {
+									throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+								}
+							} else {
+								throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+									itemIndex: i,
+								});
+							}
+
+							// Validate and convert organization ID
+							try {
+								orgIdString = normalizeAndValidateId(orgIdString, 'Organization ID');
+								updateOrgId = parseInt(orgIdString);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, {
+									itemIndex: i,
+								});
+							}
+						}
+
+						const updateRequest = {
+							tag: updateTagName,
+							query: updateQuery,
+							organizationIds: [updateOrgId]
+						};
+
+						const updateResponse = await autoAssetTagsApi.updateAutoAssetTag(this, credentials, updateTagId, updateRequest);
+
+						returnData.push({
+							json: updateResponse.result as any,
+							pairedItem: { item: i },
+						});
+						break;
+
+					case 'delete':
+						const deleteTagResource = this.getNodeParameter('autoAssetTagId', i) as any;
+						let deleteTagId: string;
+
+						if (deleteTagResource.mode === 'list' || deleteTagResource.mode === 'id') {
+							const tagId = deleteTagResource.value;
+							try {
+								deleteTagId = normalizeAndValidateId(tagId, 'Auto Asset Tag ID');
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, {
+									itemIndex: i,
+								});
+							}
+						} else if (deleteTagResource.mode === 'name') {
+							const tagName = deleteTagResource.value;
+							if (!tagName || typeof tagName !== 'string' || tagName.trim() === '') {
+								throw new NodeOperationError(this.getNode(), 'Auto asset tag name is required and must be a non-empty string', {
+									itemIndex: i,
+								});
+							}
+							try {
+								const foundTag = await findAutoAssetTagByName(this, credentials, 0, tagName.trim());
+								if (!foundTag) {
+									throw new NodeOperationError(this.getNode(), `No auto asset tag found with name: ${tagName}`, {
+										itemIndex: i,
+									});
+								}
+								deleteTagId = extractAutoAssetTagId(foundTag);
+							} catch (error) {
+								if (error instanceof NodeOperationError) {
+									throw error;
+								}
+								throw new NodeOperationError(this.getNode(), `Failed to find auto asset tag by name: ${tagName}`, {
+									itemIndex: i,
+								});
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid auto asset tag selection mode for delete', {
+								itemIndex: i,
+							});
+						}
+
+						await autoAssetTagsApi.deleteAutoAssetTag(this, credentials, deleteTagId);
+
+						returnData.push({
+							json: { success: true, deletedId: deleteTagId },
+							pairedItem: { item: i },
+						});
+						break;
+
+					case 'startTagging':
+						const startTaggingResource = this.getNodeParameter('startTaggingId', i) as any;
+						let startTaggingId: string;
+
+						if (startTaggingResource.mode === 'list' || startTaggingResource.mode === 'id') {
+							const tagId = startTaggingResource.value;
+							try {
+								startTaggingId = normalizeAndValidateId(tagId, 'Auto Asset Tag ID');
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), error.message, {
+									itemIndex: i,
+								});
+							}
+						} else {
+							throw new NodeOperationError(this.getNode(), 'Invalid auto asset tag selection mode for start tagging', {
+								itemIndex: i,
+							});
+						}
+
+						const startTaggingRequest = {
+							autoAssetTagId: startTaggingId,
+							filter: {} // Empty filter to tag all matching assets
+						};
+
+						const startTaggingResponse = await autoAssetTagsApi.startTagging(this, credentials, startTaggingRequest);
+
+						returnData.push({
+							json: startTaggingResponse.result as any,
+							pairedItem: { item: i },
+						});
+						break;
+
 					case 'getAll':
 						const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
@@ -394,9 +773,7 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 
 						const queryParams = buildAutoAssetTagQueryParams(additionalFields, organizationId);
 
-						const getAllOptions = buildRequestOptions(credentials, 'GET', '/api/public/auto-asset-tag', queryParams);
-						const getAllResponse = await this.helpers.httpRequest(getAllOptions);
-						validateApiResponse(getAllResponse, 'Failed to get auto asset tags');
+						const getAllResponse = await autoAssetTagsApi.getAutoAssetTags(this, credentials, organizationId.toString(), queryParams);
 
 						const entities = getAllResponse.result?.entities || [];
 						const paginationInfo = extractPaginationInfo(getAllResponse.result);
@@ -453,12 +830,10 @@ export async function executeAutoAssetTags(this: IExecuteFunctions): Promise<INo
 							});
 						}
 
-						const getOptions = buildRequestOptions(credentials, 'GET', `/api/public/auto-asset-tag/${autoAssetTagId}`);
-						const getResponse = await this.helpers.httpRequest(getOptions);
-						validateApiResponse(getResponse, 'Failed to get auto asset tag');
+						const getResponse = await autoAssetTagsApi.getAutoAssetTagById(this, credentials, autoAssetTagId);
 
 						returnData.push({
-							json: getResponse.result,
+							json: getResponse.result as any,
 							pairedItem: { item: i },
 						});
 						break;

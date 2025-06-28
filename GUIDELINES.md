@@ -15,12 +15,12 @@ For each resource implementation:
    - Define n8n node operations and properties
    - Implement execute functions
    - Follow existing pattern from `triagerules.ts`
-	 - Alphabetize all `Aditional Fields` properties by `displayName` to be conformant with the linter
+	 - Alphabetize all `Additional Fields` properties by `displayName` to be conformant with the linter
 
 3. **Update Main Node File:**
    - Add import statements to `Air.node.ts`
    - Add resource option to the main properties array
-	 - Start all filter parameters inside 'Additional Fields' with 'Filter By'. See `triagerules.ts` resource implemetation for examples
+	 - Start all filter parameters inside 'Additional Fields' with 'Filter By'. See `triagerules.ts` resource implementation for examples
    - Add operations to the properties spread
    - Add load options and list search methods
    - Add case to the execute switch statement
