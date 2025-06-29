@@ -1,6 +1,6 @@
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../../utils/helpers';
 
 export interface UserProfile {
   name: string;
@@ -65,38 +65,33 @@ export const api = {
       sortType?: string;
     }
   ): Promise<OrganizationUsersResponse> {
-    try {
-      const queryParams: Record<string, string | number> = {};
+    const queryParams: Record<string, string | number> = {};
 
-      if (options?.pageNumber) {
-        queryParams.pageNumber = options.pageNumber;
-      }
-
-      if (options?.pageSize) {
-        queryParams.pageSize = options.pageSize;
-      }
-
-      if (options?.sortBy) {
-        queryParams.sortBy = options.sortBy;
-      }
-
-      if (options?.sortType) {
-        queryParams.sortType = options.sortType;
-      }
-
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/organizations/${organizationId}/users`,
-        Object.keys(queryParams).length > 0 ? queryParams : undefined
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch users for organization ${organizationId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch users for organization ${organizationId}: ${error instanceof Error ? error.message : String(error)}`);
+    if (options?.pageNumber) {
+      queryParams.pageNumber = options.pageNumber;
     }
+
+    if (options?.pageSize) {
+      queryParams.pageSize = options.pageSize;
+    }
+
+    if (options?.sortBy) {
+      queryParams.sortBy = options.sortBy;
+    }
+
+    if (options?.sortType) {
+      queryParams.sortType = options.sortType;
+    }
+
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/organizations/${organizationId}/users`,
+      Object.keys(queryParams).length > 0 ? queryParams : undefined
+    );
+
+    const response = await makeApiRequestWithErrorHandling<OrganizationUsersResponse>(context, requestOptions, `fetch users for organization ${organizationId}`);
+    return response;
   },
 
   async assignUsersToOrganization(
@@ -110,20 +105,15 @@ export const api = {
     statusCode: number;
     errors: string[];
   }> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/organizations/${organizationId}/assign-users`
-      );
-      requestOptions.body = { userIds };
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/organizations/${organizationId}/assign-users`
+    );
+    requestOptions.body = { userIds };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `assign users to organization ${organizationId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to assign users to organization ${organizationId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<{ success: boolean; result: null; statusCode: number; errors: string[]; }>(context, requestOptions, `assign users to organization ${organizationId}`);
+    return response;
   },
 
   async removeUserFromOrganization(
@@ -137,18 +127,13 @@ export const api = {
     statusCode: number;
     errors: string[];
   }> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/organizations/${organizationId}/remove-user/${userId}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/organizations/${organizationId}/remove-user/${userId}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `remove user ${userId} from organization ${organizationId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to remove user ${userId} from organization ${organizationId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<{ success: boolean; result: null; statusCode: number; errors: string[]; }>(context, requestOptions, `remove user ${userId} from organization ${organizationId}`);
+    return response;
   }
 };

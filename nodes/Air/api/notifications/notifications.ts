@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== NOTIFICATION INTERFACES =====
 
@@ -81,69 +81,51 @@ export const api = {
     credentials: AirCredentials,
     queryParams?: Record<string, string | number>
   ): Promise<NotificationsResponse> {
-    try {
-      // Build the query string parameters
-      const qs: Record<string, string | number> = {};
+    // Build the query string parameters
+    const qs: Record<string, string | number> = {};
 
-      // Add additional query parameters if provided
-      if (queryParams) {
-        Object.assign(qs, queryParams);
-      }
-
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/notifications',
-        qs
-      );
-
-      const responseData = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(responseData, 'Get notifications');
-
-      return responseData as NotificationsResponse;
-    } catch (error) {
-      throw new Error(`Failed to get notifications: ${error instanceof Error ? error.message : String(error)}`);
+    // Add additional query parameters if provided
+    if (queryParams) {
+      Object.assign(qs, queryParams);
     }
+
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/notifications',
+      qs
+    );
+
+    const responseData = await makeApiRequestWithErrorHandling<NotificationsResponse>(context, requestOptions, 'Get notifications');
+    return responseData;
   },
 
   async deleteAllNotifications(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<DeleteAllNotificationsResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        '/api/public/notifications'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      '/api/public/notifications'
+    );
 
-      const responseData = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(responseData, 'Delete all notifications');
-
-      return responseData as DeleteAllNotificationsResponse;
-    } catch (error) {
-      throw new Error(`Failed to delete all notifications: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const responseData = await makeApiRequestWithErrorHandling<DeleteAllNotificationsResponse>(context, requestOptions, 'Delete all notifications');
+    return responseData;
   },
 
   async markAllAsRead(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<MarkAllAsReadResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        '/api/public/notifications/read'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      '/api/public/notifications/read'
+    );
 
-      const responseData = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(responseData, 'Mark all notifications as read');
-
-      return responseData as MarkAllAsReadResponse;
-    } catch (error) {
-      throw new Error(`Failed to mark all notifications as read: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const responseData = await makeApiRequestWithErrorHandling<MarkAllAsReadResponse>(context, requestOptions, 'Mark all notifications as read');
+    return responseData;
   },
 
   async markAsReadById(
@@ -151,19 +133,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<MarkAsReadResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PATCH',
-        `/api/public/notifications/${id}/read`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PATCH',
+      `/api/public/notifications/${id}/read`
+    );
 
-      const responseData = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(responseData, 'Mark notification as read');
-
-      return responseData as MarkAsReadResponse;
-    } catch (error) {
-      throw new Error(`Failed to mark notification as read: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const responseData = await makeApiRequestWithErrorHandling<MarkAsReadResponse>(context, requestOptions, 'Mark notification as read');
+    return responseData;
   },
 };

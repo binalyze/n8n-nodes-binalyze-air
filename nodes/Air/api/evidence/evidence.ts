@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== EVIDENCE INTERFACES =====
 
@@ -135,12 +135,11 @@ export const api = {
     credentials: AirCredentials,
     data: DownloadPpcFileRequest
   ): Promise<DownloadPpcFileResponse> {
-    try {
-      const options = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/evidence/download/ppc'
-      );
+    const options = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/evidence/download/ppc'
+    );
 
       // Add query parameters
       const qs: Record<string, string | number> = {
@@ -174,13 +173,8 @@ export const api = {
 
       options.qs = qs;
 
-      const responseData = await context.helpers.httpRequest(options);
-      validateApiResponse(responseData, 'Download PPC file');
-
-      return responseData as DownloadPpcFileResponse;
-    } catch (error) {
-      throw new Error(`Failed to download PPC file: ${error.message}`);
-    }
+      const responseData = await makeApiRequestWithErrorHandling<DownloadPpcFileResponse>(context, options, 'Download PPC file');
+      return responseData;
   },
 
   async downloadTaskReport(
@@ -188,12 +182,11 @@ export const api = {
     credentials: AirCredentials,
     data: DownloadTaskReportRequest
   ): Promise<DownloadTaskReportResponse> {
-    try {
-      const options = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/evidence/download/report'
-      );
+    const options = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/evidence/download/report'
+    );
 
       // Add query parameters
       const qs: Record<string, string | number> = {
@@ -231,13 +224,8 @@ export const api = {
 
       options.qs = qs;
 
-      const responseData = await context.helpers.httpRequest(options);
-      validateApiResponse(responseData, 'Download task report');
-
-      return responseData as DownloadTaskReportResponse;
-    } catch (error) {
-      throw new Error(`Failed to download task report: ${error.message}`);
-    }
+      const responseData = await makeApiRequestWithErrorHandling<DownloadTaskReportResponse>(context, options, 'Download task report');
+      return responseData;
   },
 
   async getPpcFileInfo(
@@ -245,12 +233,11 @@ export const api = {
     credentials: AirCredentials,
     data: GetPpcFileInfoRequest
   ): Promise<GetPpcFileInfoResponse> {
-    try {
-      const options = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/evidence/ppc/info'
-      );
+    const options = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/evidence/ppc/info'
+    );
 
       // Add query parameters
       const qs: Record<string, string | number> = {
@@ -284,12 +271,7 @@ export const api = {
 
       options.qs = qs;
 
-      const responseData = await context.helpers.httpRequest(options);
-      validateApiResponse(responseData, 'Get PPC file info');
-
-      return responseData as GetPpcFileInfoResponse;
-    } catch (error) {
-      throw new Error(`Failed to get PPC file info: ${error.message}`);
-    }
+      const responseData = await makeApiRequestWithErrorHandling<GetPpcFileInfoResponse>(context, options, 'Get PPC file info');
+      return responseData;
   },
 };

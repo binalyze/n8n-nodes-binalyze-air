@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== AUTO ASSET TAG INTERFACES =====
 
@@ -137,32 +137,30 @@ export const api = {
     organizationIds: string | string[] = '0',
     queryParams?: Record<string, string | number>
   ): Promise<AutoAssetTagsResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      // Build the query string parameters
-      const qs: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds
-      };
+    // Build the query string parameters
+    const qs: Record<string, string | number> = {
+      'filter[organizationIds]': orgIds
+    };
 
-      // Add additional query parameters if provided
-      if (queryParams) {
-        Object.assign(qs, queryParams);
-      }
-
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/auto-asset-tag',
-        qs
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch auto asset tags');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch auto asset tags: ${error instanceof Error ? error.message : String(error)}`);
+    // Add additional query parameters if provided
+    if (queryParams) {
+      Object.assign(qs, queryParams);
     }
+
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/auto-asset-tag',
+      qs
+    );
+
+    return await makeApiRequestWithErrorHandling<AutoAssetTagsResponse>(
+      context,
+      requestOptions,
+      'fetch auto asset tags'
+    );
   },
 
   /**
@@ -173,20 +171,18 @@ export const api = {
     credentials: AirCredentials,
     data: CreateAutoAssetTagRequest
   ): Promise<CreateAutoAssetTagResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/auto-asset-tag'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/auto-asset-tag'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'create auto asset tag');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to create auto asset tag: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<CreateAutoAssetTagResponse>(
+      context,
+      requestOptions,
+      'create auto asset tag'
+    );
   },
 
   /**
@@ -198,20 +194,18 @@ export const api = {
     id: string,
     data: UpdateAutoAssetTagRequest
   ): Promise<UpdateAutoAssetTagResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        `/api/public/auto-asset-tag/${id}`
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      `/api/public/auto-asset-tag/${id}`
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update auto asset tag with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update auto asset tag: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<UpdateAutoAssetTagResponse>(
+      context,
+      requestOptions,
+      `update auto asset tag with ID ${id}`
+    );
   },
 
   /**
@@ -222,19 +216,17 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<DeleteAutoAssetTagResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/auto-asset-tag/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/auto-asset-tag/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete auto asset tag with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete auto asset tag: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<DeleteAutoAssetTagResponse>(
+      context,
+      requestOptions,
+      `delete auto asset tag with ID ${id}`
+    );
   },
 
   /**
@@ -245,19 +237,17 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<GetAutoAssetTagResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/auto-asset-tag/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/auto-asset-tag/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch auto asset tag with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch auto asset tag with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<GetAutoAssetTagResponse>(
+      context,
+      requestOptions,
+      `fetch auto asset tag with ID ${id}`
+    );
   },
 
   /**
@@ -268,19 +258,17 @@ export const api = {
     credentials: AirCredentials,
     data: StartTaggingRequest
   ): Promise<StartTaggingResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/auto-asset-tag/start-tagging'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/auto-asset-tag/start-tagging'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'start tagging process');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to start tagging process: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<StartTaggingResponse>(
+      context,
+      requestOptions,
+      'start tagging process'
+    );
   }
 };

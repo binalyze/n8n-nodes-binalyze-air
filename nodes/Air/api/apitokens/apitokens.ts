@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== API TOKEN INTERFACES =====
 
@@ -105,32 +105,24 @@ export const api = {
     organizationIds: string | string[] = '0',
     queryParams?: Record<string, string | number>
   ): Promise<ApiTokensResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      // Build the query string parameters
-      const qs: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds
-      };
+    const qs: Record<string, string | number> = {
+      'filter[organizationIds]': orgIds
+    };
 
-      // Add additional query parameters if provided
-      if (queryParams) {
-        Object.assign(qs, queryParams);
-      }
-
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/api-tokens',
-        qs
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch API tokens');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch API tokens: ${error instanceof Error ? error.message : String(error)}`);
+    if (queryParams) {
+      Object.assign(qs, queryParams);
     }
+
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/apitokens',
+      qs
+    );
+
+    return makeApiRequestWithErrorHandling<ApiTokensResponse>(context, requestOptions, 'fetch API tokens');
   },
 
   async createApiToken(
@@ -138,20 +130,14 @@ export const api = {
     credentials: AirCredentials,
     data: CreateApiTokenRequest
   ): Promise<CreateApiTokenResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/api-tokens'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/apitokens'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'create API token');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to create API token: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<CreateApiTokenResponse>(context, requestOptions, 'create API token');
   },
 
   async updateApiToken(
@@ -160,20 +146,14 @@ export const api = {
     id: string,
     data: UpdateApiTokenRequest
   ): Promise<UpdateApiTokenResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        `/api/public/api-tokens/${id}`
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      `/api/public/apitokens/${id}`
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update API token with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update API token: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<UpdateApiTokenResponse>(context, requestOptions, `update API token with ID ${id}`);
   },
 
   async deleteApiToken(
@@ -181,19 +161,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<DeleteApiTokenResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/api-tokens/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/apitokens/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete API token with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete API token: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<DeleteApiTokenResponse>(context, requestOptions, `delete API token with ID ${id}`);
   },
 
   async getApiTokenById(
@@ -201,18 +175,12 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<GetApiTokenResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/api-tokens/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/apitokens/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch API token with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch API token with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<GetApiTokenResponse>(context, requestOptions, `fetch API token with ID ${id}`);
   }
 };

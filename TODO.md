@@ -144,8 +144,7 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [x] Delete API Token by ID
 
 ### 2. Audit Logs ✅ **COMPLETED**
-- **API Folder**: ✅ **IMPLEMENTED** - `/nodes/Air/api/auditlogs/`
-- **Resource**: ✅ **IMPLEMENTED** - `auditlogs.ts`
+
 - **Required Operations**:
   - [x] Export Audit Logs
   - [x] Get Audit Logs
@@ -161,15 +160,7 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [x] Delete Auto Asset Tag by ID
   - [x] Start Tagging
 
-### 5. Cloud Forensics ✅ **COMPLETED**
-- **API Folder**: ✅ **IMPLEMENTED** - `/nodes/Air/api/cloudforensics/`
-- **Resource**: ✅ **IMPLEMENTED** - `cloudforensics.ts`
-- **Required Operations**:
-  - [x] Cloud Accounts CRUD operations
-  - [x] Cloud Account sync operations
-  - [x] Event Subscription management
-
-### 6. InterACT ✅ **COMPLETED**
+### 5. InterACT ✅ **COMPLETED**
 - **API Folder**: ✅ **IMPLEMENTED** - `/nodes/Air/api/interact/`
 - **Resource**: ✅ **IMPLEMENTED** - `interact.ts`
 - **Required Operations**:
@@ -179,7 +170,7 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [x] Command message retrieval
   - [x] Assign InterACT Shell Tasks
 
-### 7. Investigation Hub
+### 6. Investigation Hub
 - **API Folder**: `/nodes/Air/api/investigation-hub/` ❌ **EMPTY**
 - **Resource**: ❌ **MISSING** - Create `investigation-hub.ts`
 - **Required Sub-modules**:
@@ -197,25 +188,25 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [ ] Activities management
   - [ ] Advanced filters CRUD
 
-### 8. License
+### 7. License
 - **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/license/`
 - **Resource**: ❌ **MISSING** - Create `license.ts`
 - **Required Operations**:
   - [ ] License management operations
 
-### 9. Logger
+### 8. Logger
 - **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/logger/`
 - **Resource**: ❌ **MISSING** - Create `logger.ts`
 - **Required Operations**:
   - [ ] Logger operations
 
-### 10. Multipart Upload
+### 9. Multipart Upload
 - **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/multipartupload/`
 - **Resource**: ❌ **MISSING** - Create `multipartupload.ts`
 - **Required Operations**:
   - [ ] Multipart upload management
 
-### 11. Preset Filters
+### 10. Preset Filters
 - **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/presetfilters/`
 - **Resource**: ❌ **MISSING** - Create `presetfilters.ts`
 - **Required Operations**:
@@ -224,20 +215,20 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [ ] Update Preset Filter by ID
   - [ ] Delete Preset Filter by ID
 
-### 12. Recent Activities
+### 11. Recent Activities
 - **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/recentactivities/`
 - **Resource**: ❌ **MISSING** - Create `recentactivities.ts`
 - **Required Operations**:
   - [ ] Get Recent Activities
   - [ ] Create Recent Activity
 
-### 13. Relay Server
+### 12. Relay Server
 - **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/relayserver/`
 - **Resource**: ❌ **MISSING** - Create `relayserver.ts`
 - **Required Operations**:
   - [ ] Relay server task management
 
-### 14. Triage Rules
+### 13. Triage Rules
 - **API Folder**: `/nodes/Air/api/triagerules/`
 - **Resource**: ✅ Exists `triagerules.ts`
 - **Tasks**:
@@ -245,7 +236,7 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [ ] Ensure triage rule tags management is included
   - [ ] Verify triage task assignment operations
 
-### 15. User Management
+### 14. User Management
 - **API Folder**: `/nodes/Air/api/usermanagement/` ❌ **EMPTY**
 - **Resource**: ❌ **MISSING** - Create `usermanagement.ts`
 - **Required Sub-modules**:
@@ -256,7 +247,7 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
   - [ ] User group management (CRUD)
   - [ ] API user creation
 
-### 16. Webhooks
+### 15. Webhooks
 - **API Folder**: ❌ **MISSING** - Create `/nodes/Air/api/webhooks/`
 - **Resource**: ❌ **MISSING** - Create `webhooks.ts`
 - **Required Operations**:
@@ -274,9 +265,9 @@ This document lists all tasks needed to ensure complete API endpoint coverage ba
 
 ### 2. Create Missing Resources
 - [x] Create `apitokens.ts` resource
-- [x] Create `auditlogs.ts` resource  
+  
 - [ ] Create `backup.ts` resource
-- [x] Create `cloudforensics.ts` resource
+
 - [x] Create `interact.ts` resource
 - [ ] Create `investigationhub.ts` resource
 - [ ] Create `license.ts` resource

@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 export interface Organization {
   _id: number;
@@ -105,16 +105,14 @@ export const api = {
         queryParams.sortType = options.sortType;
       }
 
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'GET',
         '/api/public/organizations',
         Object.keys(queryParams).length > 0 ? queryParams : undefined
       );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch organizations');
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, 'fetch organizations');
     } catch (error) {
       throw new Error(`Failed to fetch organizations: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -145,15 +143,18 @@ export const api = {
           queryParams['filter[name]'] = nameFilter;
         }
 
-        const requestOptions = buildRequestOptions(
+        const requestOptions = buildRequestOptionsWithErrorHandling(
           credentials,
           'GET',
           '/api/public/organizations',
           queryParams
         );
 
-        const responseData = await context.helpers.httpRequest(requestOptions);
-        validateApiResponse(responseData, `fetch organizations page ${currentPage}`);
+        const responseData = await makeApiRequestWithErrorHandling<OrganizationsResponse>(
+          context,
+          requestOptions,
+          `fetch organizations page ${currentPage}`
+        );
 
         const result = responseData.result;
         const organizations = result?.entities || [];
@@ -205,16 +206,14 @@ export const api = {
     data: CreateOrganizationRequest
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'POST',
         '/api/public/organizations'
       );
       requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'create organization');
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, 'create organization');
     } catch (error) {
       throw new Error(`Failed to create organization: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -227,16 +226,14 @@ export const api = {
     data: Partial<CreateOrganizationRequest>
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'PATCH',
         `/api/public/organizations/${id}`
       );
       requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update organization ${id}`);
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `update organization ${id}`);
     } catch (error) {
       throw new Error(`Failed to update organization: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -248,15 +245,13 @@ export const api = {
     id: number
   ): Promise<{ success: boolean; result: Organization & { note?: string; contact?: OrganizationContact; statistics?: { endpoint: { total: number; managed: number }; case: { total: number; open: number; closed: number; archived: number } } }; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'GET',
         `/api/public/organizations/${id}`
       );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch organization with ID ${id}`);
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `fetch organization with ID ${id}`);
     } catch (error) {
       throw new Error(`Failed to fetch organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -268,16 +263,14 @@ export const api = {
     name: string
   ): Promise<{ success: boolean; result: boolean; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'GET',
         '/api/public/organizations/check',
         { name }
       );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'check organization name');
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, 'check organization name');
     } catch (error) {
       throw new Error(`Failed to check organization name: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -298,15 +291,13 @@ export const api = {
     errors: string[]
   }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'GET',
         `/api/public/organizations/shareable-deployment-info/${deploymentToken}`
       );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch shareable deployment info');
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, 'fetch shareable deployment info');
     } catch (error) {
       throw new Error(`Failed to fetch shareable deployment info: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -319,16 +310,14 @@ export const api = {
     status: boolean
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'POST',
         `/api/public/organizations/${id}/shareable-deployment`
       );
       requestOptions.body = { status };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update organization ${id} shareable deployment`);
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `update organization ${id} shareable deployment`);
     } catch (error) {
       throw new Error(`Failed to update organization ${id} shareable deployment: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -341,16 +330,14 @@ export const api = {
     deploymentToken: string
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'POST',
         `/api/public/organizations/${id}/deployment-token`
       );
       requestOptions.body = { deploymentToken };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update organization ${id} deployment token`);
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `update organization ${id} deployment token`);
     } catch (error) {
       throw new Error(`Failed to update organization ${id} deployment token: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -362,15 +349,13 @@ export const api = {
     id: number
   ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'DELETE',
         `/api/public/organizations/${id}`
       );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete organization with ID ${id}`);
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `delete organization with ID ${id}`);
     } catch (error) {
       throw new Error(`Failed to delete organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -383,16 +368,14 @@ export const api = {
     tags: string[]
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'PATCH',
         `/api/public/organizations/${id}/tags`
       );
       requestOptions.body = { tags };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `add tags to organization with ID ${id}`);
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `add tags to organization with ID ${id}`);
     } catch (error) {
       throw new Error(`Failed to add tags to organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -405,16 +388,14 @@ export const api = {
     tags: string[]
   ): Promise<{ success: boolean; result: Organization; statusCode: number; errors: string[] }> {
     try {
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'DELETE',
         `/api/public/organizations/${id}/tags`
       );
       requestOptions.body = { tags };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete tags from organization with ID ${id}`);
-      return response;
+      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `delete tags from organization with ID ${id}`);
     } catch (error) {
       throw new Error(`Failed to delete tags from organization with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
     }

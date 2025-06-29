@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 export interface User {
   _id: string;
@@ -74,8 +74,7 @@ export const api = {
       searchTerm?: string;
     }
   ): Promise<UsersResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
       const queryParams: Record<string, any> = {
         'filter[organizationIds]': orgIds
@@ -106,19 +105,15 @@ export const api = {
         }
       }
 
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'GET',
         '/api/public/user-management/users',
         queryParams
       );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch users');
+      const response = await makeApiRequestWithErrorHandling<UsersResponse>(context, requestOptions, 'fetch users');
       return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch users: ${error instanceof Error ? error.message : String(error)}`);
-    }
   },
 
   async getUserById(
@@ -126,18 +121,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<UserResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/user-management/users/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/user-management/users/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch user with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch user with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<UserResponse>(context, requestOptions, `fetch user with ID ${id}`);
+    return response;
   }
 };

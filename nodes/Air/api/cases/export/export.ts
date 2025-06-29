@@ -11,7 +11,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../../utils/helpers';
 
 export interface ExportCasesResponse {
   success: boolean;
@@ -43,22 +43,20 @@ export const api = {
     credentials: AirCredentials,
     organizationIds: string | string[] = '0'
   ): Promise<ExportCasesResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/cases/export',
-        { 'filter[organizationIds]': orgIds }
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/cases/export',
+      { 'filter[organizationIds]': orgIds }
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'export cases');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to export cases: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<ExportCasesResponse>(
+      context,
+      requestOptions,
+      'export cases'
+    );
   },
 
   async exportCaseNotes(
@@ -66,19 +64,17 @@ export const api = {
     credentials: AirCredentials,
     caseId: string
   ): Promise<ExportCaseNotesResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/cases/${caseId}/notes/export`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/cases/${caseId}/notes/export`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `export case notes for case ${caseId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to export case notes for case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<ExportCaseNotesResponse>(
+      context,
+      requestOptions,
+      `export case notes for case ${caseId}`
+    );
   },
 
   async exportCaseEndpoints(
@@ -87,22 +83,20 @@ export const api = {
     caseId: string,
     organizationIds: string | string[] = '0'
   ): Promise<ExportCaseEndpointsResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/cases/${caseId}/endpoints/export`,
-        { 'filter[organizationIds]': orgIds }
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/cases/${caseId}/endpoints/export`,
+      { 'filter[organizationIds]': orgIds }
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `export case endpoints for case ${caseId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to export case endpoints for case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<ExportCaseEndpointsResponse>(
+      context,
+      requestOptions,
+      `export case endpoints for case ${caseId}`
+    );
   },
 
   async exportCaseActivities(
@@ -110,18 +104,16 @@ export const api = {
     credentials: AirCredentials,
     caseId: string
   ): Promise<ExportCaseActivitiesResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/cases/${caseId}/activities/export`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/cases/${caseId}/activities/export`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `export case activities for case ${caseId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to export case activities for case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<ExportCaseActivitiesResponse>(
+      context,
+      requestOptions,
+      `export case activities for case ${caseId}`
+    );
   }
 };

@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../../utils/helpers';
 
 export interface Note {
   _id: string;
@@ -49,20 +49,15 @@ export const api = {
     caseId: string,
     noteValue: string
   ): Promise<AddNoteResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/cases/${caseId}/notes`
-      );
-      requestOptions.body = { value: noteValue };
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/cases/${caseId}/notes`
+    );
+    requestOptions.body = { value: noteValue };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `add note to case ${caseId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to add note to case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<AddNoteResponse>(context, requestOptions, `add note to case ${caseId}`);
+    return response;
   },
 
   async updateNote(
@@ -72,20 +67,15 @@ export const api = {
     noteId: string,
     noteValue: string
   ): Promise<UpdateNoteResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PATCH',
-        `/api/public/cases/${caseId}/notes/${noteId}`
-      );
-      requestOptions.body = { value: noteValue };
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PATCH',
+      `/api/public/cases/${caseId}/notes/${noteId}`
+    );
+    requestOptions.body = { value: noteValue };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update note ${noteId} in case ${caseId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update note ${noteId} in case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<UpdateNoteResponse>(context, requestOptions, `update note ${noteId} in case ${caseId}`);
+    return response;
   },
 
   async deleteNote(
@@ -94,18 +84,13 @@ export const api = {
     caseId: string,
     noteId: string
   ): Promise<DeleteNoteResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/cases/${caseId}/notes/${noteId}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/cases/${caseId}/notes/${noteId}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete note ${noteId} from case ${caseId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete note ${noteId} from case ${caseId}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<DeleteNoteResponse>(context, requestOptions, `delete note ${noteId} from case ${caseId}`);
+    return response;
   }
 };

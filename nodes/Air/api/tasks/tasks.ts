@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 export interface Task {
   _id: string;
@@ -158,12 +158,11 @@ export const api = {
       scheduledOnly?: boolean;
     }
   ): Promise<TasksResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      const queryParams: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds
-      };
+    const queryParams: Record<string, string | number> = {
+      'filter[organizationIds]': orgIds
+    };
 
       // Add pagination parameters
       if (options?.pageNumber) {
@@ -224,19 +223,15 @@ export const api = {
         queryParams.sortType = options.sortType;
       }
 
-      const requestOptions = buildRequestOptions(
+      const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
         'GET',
         '/api/public/tasks',
         queryParams
       );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch tasks');
+      const response = await makeApiRequestWithErrorHandling<TasksResponse>(context, requestOptions, 'fetch tasks');
       return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch tasks: ${error instanceof Error ? error.message : String(error)}`);
-    }
   },
 
   async getTaskById(
@@ -244,19 +239,14 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<TaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/tasks/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/tasks/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch task with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<TaskResponse>(context, requestOptions, `fetch task with ID ${id}`);
+    return response;
   },
 
   async cancelTaskById(
@@ -264,22 +254,17 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<CancelTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/tasks/${id}/cancel`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/tasks/${id}/cancel`
+    );
 
-      // Add empty body for POST request
-      requestOptions.body = {};
+    // Add empty body for POST request
+    requestOptions.body = {};
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `cancel task with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to cancel task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<CancelTaskResponse>(context, requestOptions, `cancel task with ID ${id}`);
+    return response;
   },
 
   async deleteTaskById(
@@ -287,18 +272,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<DeleteTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/tasks/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/tasks/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete task with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete task with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<DeleteTaskResponse>(context, requestOptions, `delete task with ID ${id}`);
+    return response;
   },
 };

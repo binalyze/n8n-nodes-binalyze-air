@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../../utils/helpers';
 
 export interface TaskAssignment {
   _id: string;
@@ -79,19 +79,14 @@ export const api = {
     credentials: AirCredentials,
     taskId: string
   ): Promise<TaskAssignmentsResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/tasks/${taskId}/assignments`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/tasks/${taskId}/assignments`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch task assignments for task ${taskId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch task assignments: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<TaskAssignmentsResponse>(context, requestOptions, `fetch task assignments for task ${taskId}`);
+    return response;
   },
 
   async cancelTaskAssignment(
@@ -99,20 +94,15 @@ export const api = {
     credentials: AirCredentials,
     assignmentId: string
   ): Promise<CancelTaskAssignmentResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/tasks/assignments/${assignmentId}/cancel`
-      );
-      requestOptions.body = {};
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/tasks/assignments/${assignmentId}/cancel`
+    );
+    requestOptions.body = {};
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `cancel task assignment ${assignmentId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to cancel task assignment: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<CancelTaskAssignmentResponse>(context, requestOptions, `cancel task assignment ${assignmentId}`);
+    return response;
   },
 
   async deleteTaskAssignment(
@@ -120,18 +110,13 @@ export const api = {
     credentials: AirCredentials,
     assignmentId: string
   ): Promise<DeleteTaskAssignmentResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/tasks/assignments/${assignmentId}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/tasks/assignments/${assignmentId}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete task assignment ${assignmentId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete task assignment: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<DeleteTaskAssignmentResponse>(context, requestOptions, `delete task assignment ${assignmentId}`);
+    return response;
   },
 };

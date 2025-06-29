@@ -14,7 +14,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== INTERACT SESSION INTERFACES =====
 
@@ -175,20 +175,15 @@ export const api = {
     sessionId: string,
     data: ExecuteCommandRequest
   ): Promise<ExecuteCommandResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/interact/shell/sessions/${sessionId}/execute-command`
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/interact/shell/sessions/${sessionId}/execute-command`
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `execute command in session ${sessionId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to execute command: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<ExecuteCommandResponse>(context, requestOptions, `execute command in session ${sessionId}`);
+    return response;
   },
 
   async executeAsyncCommand(
@@ -197,20 +192,15 @@ export const api = {
     sessionId: string,
     data: ExecuteAsyncCommandRequest
   ): Promise<ExecuteAsyncCommandResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/interact/shell/sessions/${sessionId}/execute-async-command`
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/interact/shell/sessions/${sessionId}/execute-async-command`
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `execute async command in session ${sessionId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to execute async command: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<ExecuteAsyncCommandResponse>(context, requestOptions, `execute async command in session ${sessionId}`);
+    return response;
   },
 
   async interruptCommand(
@@ -219,19 +209,14 @@ export const api = {
     sessionId: string,
     messageId: string
   ): Promise<InterruptCommandResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/interact/shell/sessions/${sessionId}/messages/${messageId}/interrupt-command`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/interact/shell/sessions/${sessionId}/messages/${messageId}/interrupt-command`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `interrupt command ${messageId} in session ${sessionId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to interrupt command: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<InterruptCommandResponse>(context, requestOptions, `interrupt command ${messageId} in session ${sessionId}`);
+    return response;
   },
 
   async closeSession(
@@ -239,19 +224,14 @@ export const api = {
     credentials: AirCredentials,
     sessionId: string
   ): Promise<CloseSessionResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        `/api/public/interact/shell/sessions/${sessionId}/close`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      `/api/public/interact/shell/sessions/${sessionId}/close`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `close session ${sessionId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to close session: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<CloseSessionResponse>(context, requestOptions, `close session ${sessionId}`);
+    return response;
   },
 
   async getCommandMessage(
@@ -260,19 +240,14 @@ export const api = {
     sessionId: string,
     messageId: string
   ): Promise<GetCommandMessageResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/interact/shell/sessions/${sessionId}/messages/${messageId}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/interact/shell/sessions/${sessionId}/messages/${messageId}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `get command message ${messageId} from session ${sessionId}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to get command message: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<GetCommandMessageResponse>(context, requestOptions, `get command message ${messageId} from session ${sessionId}`);
+    return response;
   },
 
   // ===== TASK ASSIGNMENT METHODS =====
@@ -282,19 +257,14 @@ export const api = {
     credentials: AirCredentials,
     data: AssignInterACTTaskRequest
   ): Promise<AssignInterACTTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/interact/shell/assign-task'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/interact/shell/assign-task'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'assign InterACT shell task');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to assign InterACT task: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<AssignInterACTTaskResponse>(context, requestOptions, 'assign InterACT shell task');
+    return response;
   }
 };

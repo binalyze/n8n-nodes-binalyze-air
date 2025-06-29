@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== ASSET INTERFACES =====
 
@@ -233,27 +233,18 @@ export const api = {
     organizationIds: string | string[] = '0',
     queryParams?: Record<string, string | number>
   ): Promise<AssetsResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      // Build the query string parameters
-      const qs: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds
-      };
+    const qs: Record<string, string | number> = {
+      'filter[organizationIds]': orgIds
+    };
 
-      // Add additional query parameters if provided
-      if (queryParams) {
-        Object.assign(qs, queryParams);
-      }
-
-      const options = buildRequestOptions(credentials, 'GET', '/api/public/assets', qs);
-      const responseData = await context.helpers.httpRequest!(options) as AssetsResponse;
-
-      validateApiResponse(responseData, 'Getting assets');
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to get assets: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (queryParams) {
+      Object.assign(qs, queryParams);
     }
+
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'GET', '/api/public/assets', qs);
+    return makeApiRequestWithErrorHandling<AssetsResponse>(context, options, 'fetch assets');
   },
 
   async getAssetById(
@@ -261,52 +252,27 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<GetAssetResponse> {
-    try {
-      const options = buildRequestOptions(credentials, 'GET', `/api/public/assets/${id}`);
-      const responseData = await context.helpers.httpRequest!(options) as GetAssetResponse;
-
-      if (!responseData.success) {
-        const errorMessage = responseData.errors?.join(', ') || 'API request failed';
-        throw new Error(`Getting asset by ID: ${errorMessage}`);
-      }
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to get asset by ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'GET', `/api/public/assets/${id}`);
+    return makeApiRequestWithErrorHandling<GetAssetResponse>(context, options, `fetch asset with ID ${id}`);
   },
 
-  async getAssetTasksById(
+  async getAssetTasks(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
     id: string
   ): Promise<AssetTasksResponse> {
-    try {
-      const options = buildRequestOptions(credentials, 'GET', `/api/public/assets/${id}/tasks`);
-      const responseData = await context.helpers.httpRequest!(options) as AssetTasksResponse;
-
-      validateApiResponse(responseData, 'Getting asset tasks by ID');
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to get asset tasks by ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'GET', `/api/public/assets/${id}/tasks`);
+    return makeApiRequestWithErrorHandling<AssetTasksResponse>(context, options, `fetch tasks for asset ${id}`);
   },
 
-  async assignTask(
+  async assignAssetTasks(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
     data: AssignTaskRequest
   ): Promise<AssignTaskResponse> {
-    try {
-      const options = buildRequestOptions(credentials, 'POST', '/api/public/assets/assign');
-      options.body = data;
-
-      const responseData = await context.helpers.httpRequest!(options) as AssignTaskResponse;
-
-      validateApiResponse(responseData, 'Assigning task to assets');
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to assign task to assets: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'POST', '/api/public/assets/assign');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<AssignTaskResponse>(context, options, 'assign asset tasks');
   },
 
   async addTagsToAssets(
@@ -314,20 +280,9 @@ export const api = {
     credentials: AirCredentials,
     data: AddTagsRequest
   ): Promise<TagsOperationResponse> {
-    try {
-      const options = buildRequestOptions(credentials, 'POST', '/api/public/assets/tags');
-      options.body = data;
-
-      const responseData = await context.helpers.httpRequest!(options) as TagsOperationResponse;
-
-      if (!responseData.success) {
-        const errorMessage = responseData.errors?.join(', ') || 'API request failed';
-        throw new Error(`Adding tags to assets: ${errorMessage}`);
-      }
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to add tags to assets: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'POST', '/api/public/assets/tags');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<TagsOperationResponse>(context, options, 'add tags to assets');
   },
 
   async removeTagsFromAssets(
@@ -335,20 +290,9 @@ export const api = {
     credentials: AirCredentials,
     data: RemoveTagsRequest
   ): Promise<TagsOperationResponse> {
-    try {
-      const options = buildRequestOptions(credentials, 'DELETE', '/api/public/assets/tags');
-      options.body = data;
-
-      const responseData = await context.helpers.httpRequest!(options) as TagsOperationResponse;
-
-      if (!responseData.success) {
-        const errorMessage = responseData.errors?.join(', ') || 'API request failed';
-        throw new Error(`Removing tags from assets: ${errorMessage}`);
-      }
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to remove tags from assets: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'DELETE', '/api/public/assets/tags');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<TagsOperationResponse>(context, options, 'remove tags from assets');
   },
 
   async uninstallAssets(
@@ -356,20 +300,9 @@ export const api = {
     credentials: AirCredentials,
     data: UninstallAssetsRequest
   ): Promise<UninstallAssetsResponse> {
-    try {
-      const options = buildRequestOptions(credentials, 'DELETE', '/api/public/assets/uninstall');
-      options.body = data;
-
-      const responseData = await context.helpers.httpRequest!(options) as UninstallAssetsResponse;
-
-      if (!responseData.success) {
-        const errorMessage = responseData.errors?.join(', ') || 'API request failed';
-        throw new Error(`Uninstalling assets: ${errorMessage}`);
-      }
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to uninstall assets: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'DELETE', '/api/public/assets/uninstall');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<UninstallAssetsResponse>(context, options, 'uninstall assets');
   },
 
   async purgeAndUninstallAssets(
@@ -377,19 +310,8 @@ export const api = {
     credentials: AirCredentials,
     data: PurgeAssetsRequest
   ): Promise<UninstallAssetsResponse> {
-    try {
-      const options = buildRequestOptions(credentials, 'DELETE', '/api/public/assets/purge');
-      options.body = data;
-
-      const responseData = await context.helpers.httpRequest!(options) as UninstallAssetsResponse;
-
-      if (!responseData.success) {
-        const errorMessage = responseData.errors?.join(', ') || 'API request failed';
-        throw new Error(`Purging and uninstalling assets: ${errorMessage}`);
-      }
-      return responseData;
-    } catch (error) {
-      throw new Error(`Failed to purge and uninstall assets: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'DELETE', '/api/public/assets/purge');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<UninstallAssetsResponse>(context, options, 'purge and uninstall assets');
   }
 };

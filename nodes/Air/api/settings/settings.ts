@@ -13,7 +13,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== SETTINGS INTERFACES =====
 
@@ -41,19 +41,14 @@ export const api = {
     credentials: AirCredentials,
     data: UpdateBannerRequest
   ): Promise<UpdateBannerResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        '/api/public/settings/banner'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      '/api/public/settings/banner'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'update banner message');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update banner message: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<UpdateBannerResponse>(context, requestOptions, 'update banner message');
+    return response;
   },
 };

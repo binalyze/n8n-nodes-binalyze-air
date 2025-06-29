@@ -108,6 +108,215 @@ export function validateApiResponse(responseData: ApiResponse, context?: string)
 }
 
 /**
+ * Internal function to handle HTTP error responses and convert them to proper n8n errors
+ * Supports both standard HTTP error responses and AIR API error responses
+ */
+function handleApiError(
+	context: IExecuteFunctions | ILoadOptionsFunctions,
+	error: any,
+	operation: string,
+	itemIndex?: number
+): never {
+	let errorMessage = 'Unknown error occurred';
+	let statusCode = 500;
+	let errors: string[] = [];
+	let httpDetails: string[] = [];
+
+	// Handle HTTP response errors
+	if (error.response?.data) {
+		const responseData = error.response.data;
+		statusCode = error.response.status || statusCode;
+
+		// Add HTTP details for better debugging
+		httpDetails.push(`HTTP Status: ${statusCode}`);
+		if (error.response.statusText) {
+			httpDetails.push(`Status Text: ${error.response.statusText}`);
+		}
+
+		// Handle standard HTTP error format (like the user's example)
+		if (responseData.message) {
+			if (Array.isArray(responseData.message)) {
+				errors = responseData.message;
+				errorMessage = errors.join(', ');
+			} else {
+				errorMessage = responseData.message;
+				errors = [errorMessage];
+			}
+		}
+		// Handle AIR API error format
+		else if (responseData.errors && Array.isArray(responseData.errors)) {
+			errors = responseData.errors;
+			errorMessage = errors.join(', ');
+		}
+		// Handle other error formats
+		else if (responseData.error) {
+			errorMessage = responseData.error;
+			errors = [errorMessage];
+
+			// Add the error field to httpDetails if it's different from message
+			if (responseData.error !== errorMessage) {
+				httpDetails.push(`Error Type: ${responseData.error}`);
+			}
+		}
+		// Fallback for unknown response format
+		else {
+			errorMessage = `API request failed with status ${statusCode}`;
+			errors = [errorMessage];
+		}
+
+		// Add raw response data for debugging if it contains useful info
+		if (responseData.statusCode) {
+			httpDetails.push(`API Status Code: ${responseData.statusCode}`);
+		}
+
+		// Include the actual HTTP response details in error description
+		httpDetails.push(`Response Body: ${JSON.stringify(responseData, null, 2)}`);
+	}
+	// Handle network errors or other non-HTTP errors
+	else if (error.message) {
+		errorMessage = error.message;
+		errors = [errorMessage];
+		httpDetails.push(`Network/Connection Error: ${error.message}`);
+	}
+
+	// Create a descriptive error message with context
+	const fullMessage = `Failed to ${operation}: ${errorMessage}`;
+
+	// Combine error details with HTTP details for description
+	const allDetails = [...errors];
+	if (httpDetails.length > 0) {
+		allDetails.push('', 'HTTP Response Details:', ...httpDetails);
+	}
+
+	// Create appropriate n8n error based on context
+	if (context && 'getNode' in context && itemIndex !== undefined) {
+		// This is an execution context with an item index
+		throw new NodeOperationError(context.getNode(), fullMessage, {
+			itemIndex,
+			description: allDetails.join('\n'),
+		});
+	} else if (context && 'getNode' in context) {
+		// This is an execution context without item index
+		throw new NodeOperationError(context.getNode(), fullMessage, {
+			description: allDetails.join('\n'),
+		});
+	} else {
+		// This is likely a load options context, use regular Error
+		const detailedError = new Error(fullMessage);
+		// Add the details as a property for debugging
+		(detailedError as any).details = allDetails.join('\n');
+		throw detailedError;
+	}
+}
+
+/**
+ * Simplified API request function that handles all error scenarios internally
+ * This is the main function to use for all API calls - handles both HTTP errors and API response errors
+ */
+export async function makeApiRequestWithErrorHandling<T>(
+	context: IExecuteFunctions | ILoadOptionsFunctions,
+	requestOptions: IHttpRequestOptions,
+	operation: string,
+	itemIndex?: number
+): Promise<T> {
+	try {
+		const response = await context.helpers.httpRequest(requestOptions);
+
+		// Check for HTTP error status codes first (when ignoreHttpStatusErrors is true)
+		if (response && typeof response === 'object' && response.statusCode && response.statusCode >= 400) {
+			// Create a mock error object to pass to handleApiError for consistent handling
+			const httpError = {
+				response: {
+					status: response.statusCode,
+					statusText: response.error || 'HTTP Error',
+					data: response
+				}
+			};
+			handleApiError(context, httpError, operation, itemIndex);
+		}
+
+		// Handle standard AIR API response format
+		if (response && typeof response === 'object' && 'success' in response) {
+			if (!response.success) {
+				const errors = response.errors || ['API request failed'];
+				const errorMessage = errors.join(', ');
+				const fullMessage = `Failed to ${operation}: ${errorMessage}`;
+
+				// Include response details for debugging
+				const responseDetails = [
+					'',
+					'API Response Details:',
+					`Success: ${response.success}`,
+					`Response Body: ${JSON.stringify(response, null, 2)}`
+				];
+
+				if (context && 'getNode' in context && itemIndex !== undefined) {
+					throw new NodeOperationError(context.getNode(), fullMessage, {
+						itemIndex,
+						description: [...errors, ...responseDetails].join('\n'),
+					});
+				} else if (context && 'getNode' in context) {
+					throw new NodeOperationError(context.getNode(), fullMessage, {
+						description: [...errors, ...responseDetails].join('\n'),
+					});
+				} else {
+					throw new Error(fullMessage);
+				}
+			}
+		}
+		// Handle unexpected response format
+		else if (!response) {
+			const errorMessage = `Failed to ${operation}: No response data received`;
+			if (context && 'getNode' in context && itemIndex !== undefined) {
+				throw new NodeOperationError(context.getNode(), errorMessage, { itemIndex });
+			} else if (context && 'getNode' in context) {
+				throw new NodeOperationError(context.getNode(), errorMessage);
+			} else {
+				throw new Error(errorMessage);
+			}
+		}
+
+		return response;
+	} catch (error) {
+		// Only handle if it's not already a NodeOperationError (from above)
+		if (error instanceof NodeOperationError) {
+			throw error;
+		}
+		handleApiError(context, error, operation, itemIndex);
+	}
+}
+
+/**
+ * Enhanced buildRequestOptions with improved error handling
+ */
+export function buildRequestOptionsWithErrorHandling(
+	credentials: AirCredentials,
+	method: IHttpRequestMethods,
+	endpoint: string,
+	queryParams?: Record<string, string | number>
+): IHttpRequestOptions {
+	const options: IHttpRequestOptions = {
+		method,
+		url: `${credentials.instanceUrl}${endpoint}`,
+		headers: {
+			'Authorization': `Bearer ${credentials.token}`,
+			'Accept': 'application/json',
+			'Content-Type': 'application/json',
+		},
+		json: true,
+		// Allow handling of HTTP error status codes manually
+		ignoreHttpStatusErrors: true,
+	};
+
+	// Use n8n's built-in query parameter handling
+	if (queryParams && Object.keys(queryParams).length > 0) {
+		options.qs = queryParams;
+	}
+
+	return options;
+}
+
+/**
  * Generic function to extract entity ID from entity object using _id field only
  */
 export function extractEntityId(entity: any, entityType: string = 'entity'): string {

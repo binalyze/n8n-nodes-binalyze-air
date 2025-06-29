@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== ANALYZER INTERFACES =====
 
@@ -111,94 +111,64 @@ export const api = {
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<DroneAnalyzersResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/params/drone/analyzers'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/params/drone/analyzers'
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-			validateApiResponse(response, 'fetch drone analyzers');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch drone analyzers: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<DroneAnalyzersResponse>(context, requestOptions, 'fetch drone analyzers');
   },
 
   async getAcquisitionArtifacts(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<AcquisitionArtifactsResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/params/acquisition/artifacts'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/params/acquisition/artifacts'
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch acquisition artifacts');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch acquisition artifacts: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<AcquisitionArtifactsResponse>(context, requestOptions, 'fetch acquisition artifacts');
   },
 
   async getAcquisitionEvidence(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<AcquisitionEvidenceResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/params/acquisition/evidences'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/params/acquisition/evidences'
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch acquisition evidence');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch acquisition evidence: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<AcquisitionEvidenceResponse>(context, requestOptions, 'fetch acquisition evidence');
   },
 
   async getEDiscoveryPatterns(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<EDiscoveryPatternsResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/params/acquisition/e-discovery-patterns'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/params/acquisition/e-discovery-patterns'
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch e-discovery patterns');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch e-discovery patterns: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<EDiscoveryPatternsResponse>(context, requestOptions, 'fetch e-discovery patterns');
   },
 
   async getMitreAttackTechniques(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<MitreAttackResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/params/mitre-attack/tactics'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/params/mitre-attack/tactics'
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch MITRE ATT&CK techniques');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch MITRE ATT&CK techniques: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<MitreAttackResponse>(context, requestOptions, 'fetch MITRE ATT&CK techniques');
   }
 };

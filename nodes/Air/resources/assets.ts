@@ -865,11 +865,11 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					}
 
 					// Use the API method
-					const responseData = await assetsApi.getAssetTasksById(this, credentials, assetId);
+					const responseData = await assetsApi.getAssetTasks(this, credentials, assetId);
 
 					// Return tasks as array of individual items
 					if (responseData.result && Array.isArray(responseData.result)) {
-						responseData.result.forEach((task, index) => {
+						responseData.result.forEach((task: any, index: number) => {
 							returnData.push({
 								json: task as any,
 								pairedItem: i,
@@ -932,7 +932,7 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					};
 
 					// Use the API method
-					const responseData = await assetsApi.assignTask(this, credentials, requestData);
+					const responseData = await assetsApi.assignAssetTasks(this, credentials, requestData);
 
 					returnData.push({
 						json: responseData.result as any,

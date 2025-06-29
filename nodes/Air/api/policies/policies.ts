@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== POLICY INTERFACES =====
 
@@ -155,32 +155,24 @@ export const api = {
     organizationIds: string | string[] = '0',
     queryParams?: Record<string, string | number>
   ): Promise<PoliciesResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      // Build the query string parameters
-      const qs: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds
-      };
+    const qs: Record<string, string | number> = {
+      'filter[organizationIds]': orgIds
+    };
 
-      // Add additional query parameters if provided
-      if (queryParams) {
-        Object.assign(qs, queryParams);
-      }
-
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/policies',
-        qs
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch policies');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch policies: ${error instanceof Error ? error.message : String(error)}`);
+    if (queryParams) {
+      Object.assign(qs, queryParams);
     }
+
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/policies',
+      qs
+    );
+
+    return makeApiRequestWithErrorHandling<PoliciesResponse>(context, requestOptions, 'fetch policies');
   },
 
   async createPolicy(
@@ -188,20 +180,14 @@ export const api = {
     credentials: AirCredentials,
     data: CreatePolicyRequest
   ): Promise<CreatePolicyResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/policies'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/policies'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'create policy');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to create policy: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<CreatePolicyResponse>(context, requestOptions, 'create policy');
   },
 
   async updatePolicy(
@@ -210,20 +196,14 @@ export const api = {
     id: string,
     data: UpdatePolicyRequest
   ): Promise<UpdatePolicyResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        `/api/public/policies/${id}`
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      `/api/public/policies/${id}`
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update policy with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update policy: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<UpdatePolicyResponse>(context, requestOptions, `update policy with ID ${id}`);
   },
 
   async deletePolicy(
@@ -231,19 +211,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<DeletePolicyResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/policies/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/policies/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete policy with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete policy: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<DeletePolicyResponse>(context, requestOptions, `delete policy with ID ${id}`);
   },
 
   async getPolicyById(
@@ -251,19 +225,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<GetPolicyResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/policies/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/policies/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch policy with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch policy with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<GetPolicyResponse>(context, requestOptions, `fetch policy with ID ${id}`);
   },
 
   async updatePoliciesPriorities(
@@ -271,20 +239,14 @@ export const api = {
     credentials: AirCredentials,
     data: UpdatePoliciesPrioritiesRequest
   ): Promise<UpdatePoliciesPrioritiesResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        '/api/public/policies/priorities'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      '/api/public/policies/priorities'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'update policies priorities');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update policies priorities: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<UpdatePoliciesPrioritiesResponse>(context, requestOptions, 'update policies priorities');
   },
 
   async getPolicyMatchStats(
@@ -292,19 +254,13 @@ export const api = {
     credentials: AirCredentials,
     data: GetPolicyMatchStatsRequest
   ): Promise<GetPolicyMatchStatsResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/policies/stats'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/policies/stats'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'get policy match stats');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to get policy match stats: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return makeApiRequestWithErrorHandling<GetPolicyMatchStatsResponse>(context, requestOptions, 'get policy match stats');
   }
 };

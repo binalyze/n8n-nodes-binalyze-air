@@ -11,7 +11,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== AUTH INTERFACES =====
 
@@ -49,18 +49,13 @@ export const api = {
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials
   ): Promise<AuthCheckResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/auth/check'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/auth/check'
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'check authentication');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to check authentication: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<AuthCheckResponse>(context, requestOptions, 'check authentication');
+    return response;
   }
 };

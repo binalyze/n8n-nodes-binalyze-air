@@ -15,7 +15,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 export interface BaselineFilter {
   searchTerm?: string;
@@ -65,20 +65,15 @@ export const api = {
     credentials: AirCredentials,
     request: BaselineAcquisitionRequest
   ): Promise<BaselineResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/baseline/acquire'
-      );
-      requestOptions.body = request;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/baseline/acquire'
+    );
+    requestOptions.body = request;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'acquire baseline');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to acquire baseline: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<BaselineResponse>(context, requestOptions, 'acquire baseline');
+    return response;
   },
 
   async compareBaseline(
@@ -86,20 +81,15 @@ export const api = {
     credentials: AirCredentials,
     request: BaselineComparisonRequest
   ): Promise<BaselineResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/baseline/compare'
-      );
-      requestOptions.body = request;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/baseline/compare'
+    );
+    requestOptions.body = request;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'compare baseline');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to compare baseline: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<BaselineResponse>(context, requestOptions, 'compare baseline');
+    return response;
   },
 
   async getComparisonReport(
@@ -108,21 +98,17 @@ export const api = {
     endpointId: string,
     taskId: string
   ): Promise<void> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/baseline/comparison/report/${endpointId}/${taskId}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/baseline/comparison/report/${endpointId}/${taskId}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
+    const response = await makeApiRequestWithErrorHandling(context, requestOptions, 'get comparison report');
 
-      // The endpoint doesn't return a response body, but we can check the status
-      if (!response || typeof response !== 'object') {
-        return;
-      }
-    } catch (error) {
-      throw new Error(`Failed to get comparison report: ${error instanceof Error ? error.message : String(error)}`);
+    // The endpoint doesn't return a response body, but we can check the status
+    if (!response || typeof response !== 'object') {
+      return;
     }
   }
 };

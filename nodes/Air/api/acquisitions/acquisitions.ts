@@ -12,7 +12,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== ACQUISITION PROFILE INTERFACES =====
 
@@ -193,33 +193,27 @@ export const api = {
     organizationIds: string | string[] = '0',
     queryParams?: Record<string, string | number>
   ): Promise<AcquisitionProfilesResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      // Build the query string parameters
-      const qs: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds
-      };
+    // Build the query string parameters
+    const qs: Record<string, string | number> = {
+      'filter[organizationIds]': orgIds
+    };
 
-      // Add additional query parameters if provided
-      if (queryParams) {
-        Object.assign(qs, queryParams);
-      }
-
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/acquisitions/profiles',
-        qs
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Get Acquisition Profiles');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to get acquisition profiles: ${error.message}`);
+    // Add additional query parameters if provided
+    if (queryParams) {
+      Object.assign(qs, queryParams);
     }
+
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/acquisitions/profiles',
+      qs
+    );
+
+    const response = await makeApiRequestWithErrorHandling<AcquisitionProfilesResponse>(context, requestOptions, 'Get Acquisition Profiles');
+    return response;
   },
 
   async createAcquisitionProfile(
@@ -227,22 +221,16 @@ export const api = {
     credentials: AirCredentials,
     data: CreateAcquisitionProfileRequest
   ): Promise<CreateAcquisitionProfileResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/acquisitions/profiles'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/acquisitions/profiles'
+    );
 
-      requestOptions.body = data;
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Create Acquisition Profile');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to create acquisition profile: ${error.message}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<CreateAcquisitionProfileResponse>(context, requestOptions, 'Create Acquisition Profile');
+    return response;
   },
 
   async updateAcquisitionProfile(
@@ -251,22 +239,16 @@ export const api = {
     id: string,
     data: UpdateAcquisitionProfileRequest
   ): Promise<UpdateAcquisitionProfileResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        `/api/public/acquisitions/profiles/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      `/api/public/acquisitions/profiles/${id}`
+    );
 
-      requestOptions.body = data;
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Update Acquisition Profile');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update acquisition profile: ${error.message}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<UpdateAcquisitionProfileResponse>(context, requestOptions, 'Update Acquisition Profile');
+    return response;
   },
 
   async deleteAcquisitionProfile(
@@ -274,20 +256,14 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<DeleteAcquisitionProfileResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/acquisitions/profiles/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/acquisitions/profiles/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Delete Acquisition Profile');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete acquisition profile: ${error.message}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<DeleteAcquisitionProfileResponse>(context, requestOptions, 'Delete Acquisition Profile');
+    return response;
   },
 
   async getAcquisitionProfileById(
@@ -295,20 +271,14 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<GetAcquisitionProfileResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/acquisitions/profiles/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/acquisitions/profiles/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Get Acquisition Profile');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to get acquisition profile: ${error.message}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<GetAcquisitionProfileResponse>(context, requestOptions, 'Get Acquisition Profile');
+    return response;
   },
 
   async assignEvidenceAcquisitionTask(
@@ -316,22 +286,16 @@ export const api = {
     credentials: AirCredentials,
     data: AssignEvidenceAcquisitionTaskRequest
   ): Promise<AssignAcquisitionTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/acquisitions/acquire'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/acquisitions/acquire'
+    );
 
-      requestOptions.body = data;
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Assign Evidence Acquisition Task');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to assign evidence acquisition task: ${error.message}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<AssignAcquisitionTaskResponse>(context, requestOptions, 'Assign Evidence Acquisition Task');
+    return response;
   },
 
   async assignImageAcquisitionTask(
@@ -339,22 +303,16 @@ export const api = {
     credentials: AirCredentials,
     data: AssignImageAcquisitionTaskRequest
   ): Promise<AssignAcquisitionTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/acquisitions/acquire/image'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/acquisitions/acquire/image'
+    );
 
-      requestOptions.body = data;
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Assign Image Acquisition Task');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to assign image acquisition task: ${error.message}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<AssignAcquisitionTaskResponse>(context, requestOptions, 'Assign Image Acquisition Task');
+    return response;
   },
 
   async createOffNetworkAcquisitionTask(
@@ -362,21 +320,15 @@ export const api = {
     credentials: AirCredentials,
     data: CreateOffNetworkAcquisitionTaskRequest
   ): Promise<CreateOffNetworkTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/acquisitions/acquire/off-network'
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/acquisitions/acquire/off-network'
+    );
 
-      requestOptions.body = data;
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'Create Off-Network Acquisition Task');
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to create off-network acquisition task: ${error.message}`);
-    }
+    const response = await makeApiRequestWithErrorHandling<CreateOffNetworkTaskResponse>(context, requestOptions, 'Create Off-Network Acquisition Task');
+    return response;
   },
 };

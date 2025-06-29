@@ -13,7 +13,7 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptions, validateApiResponse } from '../../utils/helpers';
+import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
 
 // ===== TRIAGE RULE INTERFACES =====
 
@@ -188,32 +188,26 @@ export const api = {
     organizationIds: string | string[] = '0',
     queryParams?: Record<string, string | number>
   ): Promise<TriageRulesResponse> {
-    try {
-      const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
+    const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-      // Build the query string parameters
-      const qs: Record<string, string | number> = {
-        'filter[organizationIds]': orgIds
-      };
+    // Build the query string parameters
+    const qs: Record<string, string | number> = {
+      'filter[organizationIds]': orgIds
+    };
 
-      // Add additional query parameters if provided
-      if (queryParams) {
-        Object.assign(qs, queryParams);
-      }
-
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/triages/rules',
-        qs
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch triage rules');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch triage rules: ${error instanceof Error ? error.message : String(error)}`);
+    // Add additional query parameters if provided
+    if (queryParams) {
+      Object.assign(qs, queryParams);
     }
+
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/triages/rules',
+      qs
+    );
+
+    return await makeApiRequestWithErrorHandling<TriageRulesResponse>(context, requestOptions, 'fetch triage rules');
   },
 
   async createTriageRule(
@@ -221,24 +215,18 @@ export const api = {
     credentials: AirCredentials,
     data: CreateTriageRuleRequest
   ): Promise<CreateTriageRuleResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/triages/rules'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/triages/rules'
+    );
+    requestOptions.body = data;
 
-			// Add custom status code handling for validation endpoint
-      // Status code 660 is a custom code used by the API for validation failures
-      requestOptions.ignoreHttpStatusErrors = true;
+    // Add custom status code handling for validation endpoint
+    // Status code 660 is a custom code used by the API for validation failures
+    requestOptions.ignoreHttpStatusErrors = true;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'create triage rule');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to create triage rule: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<CreateTriageRuleResponse>(context, requestOptions, 'create triage rule');
   },
 
   async updateTriageRule(
@@ -247,24 +235,18 @@ export const api = {
     id: string,
     data: UpdateTriageRuleRequest
   ): Promise<UpdateTriageRuleResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'PUT',
-        `/api/public/triages/rules/${id}`
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'PUT',
+      `/api/public/triages/rules/${id}`
+    );
+    requestOptions.body = data;
 
-			// Add custom status code handling for validation endpoint
-      // Status code 660 is a custom code used by the API for validation failures
-      requestOptions.ignoreHttpStatusErrors = true;
+    // Add custom status code handling for validation endpoint
+    // Status code 660 is a custom code used by the API for validation failures
+    requestOptions.ignoreHttpStatusErrors = true;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `update triage rule with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to update triage rule: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<UpdateTriageRuleResponse>(context, requestOptions, `update triage rule with ID ${id}`);
   },
 
   async deleteTriageRule(
@@ -272,19 +254,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<DeleteTriageRuleResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'DELETE',
-        `/api/public/triages/rules/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'DELETE',
+      `/api/public/triages/rules/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `delete triage rule with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to delete triage rule: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<DeleteTriageRuleResponse>(context, requestOptions, `delete triage rule with ID ${id}`);
   },
 
   async getTriageRuleById(
@@ -292,19 +268,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<GetTriageRuleResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        `/api/public/triages/rules/${id}`
-      );
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      `/api/public/triages/rules/${id}`
+    );
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, `fetch triage rule with ID ${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch triage rule with ID ${id}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<GetTriageRuleResponse>(context, requestOptions, `fetch triage rule with ID ${id}`);
   },
 
   async validateTriageRule(
@@ -312,24 +282,18 @@ export const api = {
     credentials: AirCredentials,
     data: ValidateTriageRuleRequest
   ): Promise<ValidateTriageRuleResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/triages/rules/validate'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/triages/rules/validate'
+    );
+    requestOptions.body = data;
 
-      // Add custom status code handling for validation endpoint
-      // Status code 660 is a custom code used by the API for validation failures
-      requestOptions.ignoreHttpStatusErrors = true;
+    // Add custom status code handling for validation endpoint
+    // Status code 660 is a custom code used by the API for validation failures
+    requestOptions.ignoreHttpStatusErrors = true;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to validate triage rule: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<ValidateTriageRuleResponse>(context, requestOptions, 'validate triage rule');
   },
 
   async assignTriageTask(
@@ -337,20 +301,14 @@ export const api = {
     credentials: AirCredentials,
     data: AssignTriageTaskRequest
   ): Promise<AssignTriageTaskResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/triages/triage'
-      );
-      requestOptions.body = data;
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/triages/triage'
+    );
+    requestOptions.body = data;
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'assign triage task');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to assign triage task: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<AssignTriageTaskResponse>(context, requestOptions, 'assign triage task');
   },
 
   // ===== TRIAGE TAG METHODS =====
@@ -361,23 +319,17 @@ export const api = {
     name: string,
     organizationId: string | number = 0
   ): Promise<CreateTriageTagResponse> {
-    try {
-      const requestOptions = buildRequestOptions(
-        credentials,
-        'POST',
-        '/api/public/triages/tags'
-      );
-      requestOptions.body = {
-        name,
-        organizationId
-      };
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/triages/tags'
+    );
+    requestOptions.body = {
+      name,
+      organizationId
+    };
 
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'create triage tag');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to create triage tag: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    return await makeApiRequestWithErrorHandling<CreateTriageTagResponse>(context, requestOptions, 'create triage tag');
   },
 
   async getTriageTags(
@@ -386,28 +338,22 @@ export const api = {
     organizationId: string = '0',
     searchTerm?: string
   ): Promise<TriageTagsResponse> {
-    try {
-      let queryParams: any = {
-        'filter[organizationId]': organizationId,
-        'filter[withCount]': true
-      };
+    let queryParams: any = {
+      'filter[organizationId]': organizationId,
+      'filter[withCount]': true
+    };
 
-      if (searchTerm) {
-        queryParams['filter[searchTerm]'] = searchTerm;
-      }
-
-      let requestOptions = buildRequestOptions(
-        credentials,
-        'GET',
-        '/api/public/triages/tags',
-        queryParams
-      );
-
-      const response = await context.helpers.httpRequest(requestOptions);
-      validateApiResponse(response, 'fetch triage tags');
-      return response;
-    } catch (error) {
-      throw new Error(`Failed to fetch triage tags: ${error instanceof Error ? error.message : String(error)}`);
+    if (searchTerm) {
+      queryParams['filter[searchTerm]'] = searchTerm;
     }
+
+    let requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'GET',
+      '/api/public/triages/tags',
+      queryParams
+    );
+
+    return await makeApiRequestWithErrorHandling<TriageTagsResponse>(context, requestOptions, 'fetch triage tags');
   }
 };
