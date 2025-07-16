@@ -14,13 +14,9 @@ import { AirCredentials } from '../../../credentials/AirApi.credentials';
 
 export interface PaginationInfo {
 	totalEntityCount: number;
-	currentPage: number;
 	pageSize: number;
-	previousPage: number;
+	currentPage: number;
 	totalPageCount: number;
-	nextPage: number;
-	sortables?: string[];
-	filters?: any[];
 }
 
 export interface ApiResponse {
@@ -572,13 +568,9 @@ export function extractPaginationInfo(source: ApiResponse | any): PaginationInfo
 	if (result.totalEntityCount !== undefined) {
 		return {
 			totalEntityCount: result.totalEntityCount,
-			currentPage: result.currentPage,
 			pageSize: result.pageSize,
-			previousPage: result.previousPage,
+			currentPage: result.currentPage,
 			totalPageCount: result.totalPageCount,
-			nextPage: result.nextPage,
-			sortables: result.sortables,
-			filters: result.filters,
 		};
 	}
 

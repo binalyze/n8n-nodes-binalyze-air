@@ -12,9 +12,34 @@
 
 import { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import { AirCredentials } from '../../../../credentials/AirApi.credentials';
-import { buildRequestOptionsWithErrorHandling, makeApiRequestWithErrorHandling } from '../../utils/helpers';
+import { BaseApiResponse, PaginatedApiResponse, EmptyApiResponse, executeHttpRequest } from '../api';
 
-// ===== ACQUISITION PROFILE INTERFACES =====
+// ===== ACQUISITION INTERFACES =====
+
+export interface AcquisitionSettings {
+  artifacts?: string[];
+  evidence?: string[];
+  customSettings?: Record<string, string | number | boolean>;
+}
+
+export interface AcquisitionFilter {
+  searchTerm?: string;
+  name?: string;
+  ipAddress?: string;
+  groupId?: string;
+  groupFullPath?: string;
+  managedStatus?: string[];
+  isolationStatus?: string[];
+  platform?: string[];
+  issue?: string;
+  onlineStatus?: string[];
+  tags?: string[];
+  version?: string;
+  policy?: string;
+  includedEndpointIds?: string[];
+  excludedEndpointIds?: string[];
+  organizationIds?: (string | number)[];
+}
 
 export interface AcquisitionProfile {
   _id: string;
@@ -26,131 +51,31 @@ export interface AcquisitionProfile {
   updatedAt?: string;
   updatedBy?: string;
   isDefault?: boolean;
-  settings?: {
-    artifacts?: string[];
-    evidence?: string[];
-    [key: string]: any;
-  };
+  settings?: AcquisitionSettings;
 }
 
-export interface AcquisitionProfilesResponse {
-  success: boolean;
-  result: {
-    entities: AcquisitionProfile[];
-    filters: Array<{
-      name: string;
-      type: string;
-      options: string[];
-      filterUrl: string | null;
-    }>;
-    sortables: string[];
-    totalEntityCount: number;
-    currentPage: number;
-    pageSize: number;
-    previousPage: number;
-    totalPageCount: number;
-    nextPage: number;
-  };
-  statusCode: number;
-  errors: string[];
-}
+// ===== REQUEST INTERFACES =====
 
 export interface CreateAcquisitionProfileRequest {
   name: string;
   description?: string;
   organizationId: number;
-  settings?: {
-    artifacts?: string[];
-    evidence?: string[];
-    [key: string]: any;
-  };
-}
-
-export interface CreateAcquisitionProfileResponse {
-  success: boolean;
-  result: AcquisitionProfile;
-  statusCode: number;
-  errors: string[];
+  settings?: AcquisitionSettings;
 }
 
 export interface UpdateAcquisitionProfileRequest {
   name: string;
   description?: string;
-  settings?: {
-    artifacts?: string[];
-    evidence?: string[];
-    [key: string]: any;
-  };
+  settings?: AcquisitionSettings;
 }
 
-export interface UpdateAcquisitionProfileResponse {
-  success: boolean;
-  result: AcquisitionProfile;
-  statusCode: number;
-  errors: string[];
-}
-
-export interface DeleteAcquisitionProfileResponse {
-  success: boolean;
-  result: null;
-  statusCode: number;
-  errors: string[];
-}
-
-export interface GetAcquisitionProfileResponse {
-  success: boolean;
-  result: AcquisitionProfile;
-  statusCode: number;
-  errors: string[];
-}
-
-export interface AssignEvidenceAcquisitionTaskRequest {
+export interface AssignTaskRequest {
   caseId: string;
   acquisitionProfileId: string;
-  filter: {
-    searchTerm?: string;
-    name?: string;
-    ipAddress?: string;
-    groupId?: string;
-    groupFullPath?: string;
-    managedStatus?: string[];
-    isolationStatus?: string[];
-    platform?: string[];
-    issue?: string;
-    onlineStatus?: string[];
-    tags?: string[];
-    version?: string;
-    policy?: string;
-    includedEndpointIds?: string[];
-    excludedEndpointIds?: string[];
-    organizationIds?: (string | number)[];
-  };
+  filter: AcquisitionFilter;
 }
 
-export interface AssignImageAcquisitionTaskRequest {
-  caseId: string;
-  acquisitionProfileId: string;
-  filter: {
-    searchTerm?: string;
-    name?: string;
-    ipAddress?: string;
-    groupId?: string;
-    groupFullPath?: string;
-    managedStatus?: string[];
-    isolationStatus?: string[];
-    platform?: string[];
-    issue?: string;
-    onlineStatus?: string[];
-    tags?: string[];
-    version?: string;
-    policy?: string;
-    includedEndpointIds?: string[];
-    excludedEndpointIds?: string[];
-    organizationIds?: (string | number)[];
-  };
-}
-
-export interface CreateOffNetworkAcquisitionTaskRequest {
+export interface CreateOffNetworkTaskRequest {
   caseId: string;
   acquisitionProfileId: string;
   organizationId: number;
@@ -158,29 +83,29 @@ export interface CreateOffNetworkAcquisitionTaskRequest {
   description?: string;
 }
 
-export interface AssignAcquisitionTaskResponse {
-  success: boolean;
-  result: Array<{
-    _id: string;
-    name: string;
-    organizationId: number;
-  }>;
-  statusCode: number;
-  errors: string[];
-}
+// ===== RESPONSE TYPE ALIASES =====
 
-export interface CreateOffNetworkTaskResponse {
-  success: boolean;
-  result: {
-    _id: string;
-    name: string;
-    organizationId: number;
-    caseId: string;
-    acquisitionProfileId: string;
-  };
-  statusCode: number;
-  errors: string[];
-}
+export type AcquisitionProfilesResponse = PaginatedApiResponse<AcquisitionProfile>;
+export type CreateAcquisitionProfileResponse = BaseApiResponse<AcquisitionProfile>;
+export type UpdateAcquisitionProfileResponse = BaseApiResponse<AcquisitionProfile>;
+export type GetAcquisitionProfileResponse = BaseApiResponse<AcquisitionProfile>;
+export type DeleteAcquisitionProfileResponse = EmptyApiResponse;
+
+export type AssignAcquisitionTaskResponse = BaseApiResponse<Array<{
+  _id: string;
+  name: string;
+  organizationId: number;
+}>>;
+
+export type CreateOffNetworkTaskResponse = BaseApiResponse<{
+  _id: string;
+  name: string;
+  organizationId: number;
+  caseId: string;
+  acquisitionProfileId: string;
+}>;
+
+
 
 // ===== API METHODS =====
 
@@ -195,25 +120,20 @@ export const api = {
   ): Promise<AcquisitionProfilesResponse> {
     const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
-    // Build the query string parameters
     const qs: Record<string, string | number> = {
-      'filter[organizationIds]': orgIds
+      'filter[organizationIds]': orgIds,
+      ...queryParams
     };
 
-    // Add additional query parameters if provided
-    if (queryParams) {
-      Object.assign(qs, queryParams);
-    }
-
-    const requestOptions = buildRequestOptionsWithErrorHandling(
+    return await executeHttpRequest<undefined, AcquisitionProfilesResponse>(
+      context,
       credentials,
       'GET',
       '/api/public/acquisitions/profiles',
+      'Get Acquisition Profiles',
+      undefined,
       qs
     );
-
-    const response = await makeApiRequestWithErrorHandling<AcquisitionProfilesResponse>(context, requestOptions, 'Get Acquisition Profiles');
-    return response;
   },
 
   async createAcquisitionProfile(
@@ -221,16 +141,14 @@ export const api = {
     credentials: AirCredentials,
     data: CreateAcquisitionProfileRequest
   ): Promise<CreateAcquisitionProfileResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
+    return await executeHttpRequest<CreateAcquisitionProfileRequest, CreateAcquisitionProfileResponse>(
+      context,
       credentials,
       'POST',
-      '/api/public/acquisitions/profiles'
+      '/api/public/acquisitions/profiles',
+      'Create Acquisition Profile',
+      data
     );
-
-    requestOptions.body = data;
-
-    const response = await makeApiRequestWithErrorHandling<CreateAcquisitionProfileResponse>(context, requestOptions, 'Create Acquisition Profile');
-    return response;
   },
 
   async updateAcquisitionProfile(
@@ -239,16 +157,14 @@ export const api = {
     id: string,
     data: UpdateAcquisitionProfileRequest
   ): Promise<UpdateAcquisitionProfileResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
+    return await executeHttpRequest<UpdateAcquisitionProfileRequest, UpdateAcquisitionProfileResponse>(
+      context,
       credentials,
       'PUT',
-      `/api/public/acquisitions/profiles/${id}`
+      `/api/public/acquisitions/profiles/${id}`,
+      'Update Acquisition Profile',
+      data
     );
-
-    requestOptions.body = data;
-
-    const response = await makeApiRequestWithErrorHandling<UpdateAcquisitionProfileResponse>(context, requestOptions, 'Update Acquisition Profile');
-    return response;
   },
 
   async deleteAcquisitionProfile(
@@ -256,14 +172,13 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<DeleteAcquisitionProfileResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
+    return await executeHttpRequest<undefined, DeleteAcquisitionProfileResponse>(
+      context,
       credentials,
       'DELETE',
-      `/api/public/acquisitions/profiles/${id}`
+      `/api/public/acquisitions/profiles/${id}`,
+      'Delete Acquisition Profile'
     );
-
-    const response = await makeApiRequestWithErrorHandling<DeleteAcquisitionProfileResponse>(context, requestOptions, 'Delete Acquisition Profile');
-    return response;
   },
 
   async getAcquisitionProfileById(
@@ -271,64 +186,70 @@ export const api = {
     credentials: AirCredentials,
     id: string
   ): Promise<GetAcquisitionProfileResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
+    return await executeHttpRequest<undefined, GetAcquisitionProfileResponse>(
+      context,
       credentials,
       'GET',
-      `/api/public/acquisitions/profiles/${id}`
+      `/api/public/acquisitions/profiles/${id}`,
+      'Get Acquisition Profile'
     );
-
-    const response = await makeApiRequestWithErrorHandling<GetAcquisitionProfileResponse>(context, requestOptions, 'Get Acquisition Profile');
-    return response;
   },
 
+  // ===== TASK ASSIGNMENT METHODS =====
+
+  async assignAcquisitionTask(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    taskType: 'evidence' | 'image',
+    data: AssignTaskRequest
+  ): Promise<AssignAcquisitionTaskResponse> {
+    const endpoint = taskType === 'image'
+      ? '/api/public/acquisitions/acquire/image'
+      : '/api/public/acquisitions/acquire';
+
+    const operationName = taskType === 'image'
+      ? 'Assign Image Acquisition Task'
+      : 'Assign Evidence Acquisition Task';
+
+    return await executeHttpRequest<AssignTaskRequest, AssignAcquisitionTaskResponse>(
+      context,
+      credentials,
+      'POST',
+      endpoint,
+      operationName,
+      data
+    );
+  },
+
+  // Legacy methods for backward compatibility
   async assignEvidenceAcquisitionTask(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    data: AssignEvidenceAcquisitionTaskRequest
+    data: AssignTaskRequest
   ): Promise<AssignAcquisitionTaskResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
-      credentials,
-      'POST',
-      '/api/public/acquisitions/acquire'
-    );
-
-    requestOptions.body = data;
-
-    const response = await makeApiRequestWithErrorHandling<AssignAcquisitionTaskResponse>(context, requestOptions, 'Assign Evidence Acquisition Task');
-    return response;
+    return this.assignAcquisitionTask(context, credentials, 'evidence', data);
   },
 
   async assignImageAcquisitionTask(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    data: AssignImageAcquisitionTaskRequest
+    data: AssignTaskRequest
   ): Promise<AssignAcquisitionTaskResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
-      credentials,
-      'POST',
-      '/api/public/acquisitions/acquire/image'
-    );
-
-    requestOptions.body = data;
-
-    const response = await makeApiRequestWithErrorHandling<AssignAcquisitionTaskResponse>(context, requestOptions, 'Assign Image Acquisition Task');
-    return response;
+    return this.assignAcquisitionTask(context, credentials, 'image', data);
   },
 
   async createOffNetworkAcquisitionTask(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    data: CreateOffNetworkAcquisitionTaskRequest
+    data: CreateOffNetworkTaskRequest
   ): Promise<CreateOffNetworkTaskResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
+    return await executeHttpRequest<CreateOffNetworkTaskRequest, CreateOffNetworkTaskResponse>(
+      context,
       credentials,
       'POST',
-      '/api/public/acquisitions/acquire/off-network'
+      '/api/public/acquisitions/acquire/off-network',
+      'Create Off-Network Acquisition Task',
+      data
     );
-
-    requestOptions.body = data;
-
-    const response = await makeApiRequestWithErrorHandling<CreateOffNetworkTaskResponse>(context, requestOptions, 'Create Off-Network Acquisition Task');
-    return response;
   },
 };

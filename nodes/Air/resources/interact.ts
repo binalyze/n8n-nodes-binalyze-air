@@ -30,7 +30,7 @@ export const InterACTOperations: INodeProperties[] = [
 				name: 'Assign InterACT Task',
 				value: 'assignTask',
 				description: 'Assign an InterACT shell task to endpoints',
-				action: 'Assign an InterACT task',
+				action: 'Assign an inter act task',
 			},
 			{
 				name: 'Close Session',
@@ -162,7 +162,7 @@ export const InterACTOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Timeout (seconds)',
+				displayName: 'Timeout (Seconds)',
 				name: 'timeout',
 				type: 'number',
 				default: 300,
@@ -411,7 +411,7 @@ export const InterACTOperations: INodeProperties[] = [
 				description: 'Commands to execute in the session (comma-separated)',
 			},
 			{
-				displayName: 'Timeout (seconds)',
+				displayName: 'Timeout (Seconds)',
 				name: 'timeout',
 				type: 'number',
 				default: 300,

@@ -92,20 +92,6 @@ import {
 	executePolicies
 } from './resources/policies';
 import {
-	ParamsOperations,
-	getDroneAnalyzers,
-	getDroneAnalyzersOptions,
-	getAcquisitionArtifacts,
-	getAcquisitionArtifactsOptions,
-	getAcquisitionEvidence,
-	getAcquisitionEvidenceOptions,
-	getEDiscoveryPatterns,
-	getEDiscoveryPatternsOptions,
-	getMitreAttackTechniques,
-	getMitreAttackTechniquesOptions,
-	executeParams
-} from './resources/params';
-import {
 	SettingsOperations,
 	executeSettings
 } from './resources/settings';
@@ -207,11 +193,6 @@ export class Air implements INodeType {
 						description: 'Manage organizations',
 					},
 					{
-						name: 'Param',
-						value: 'params',
-						description: 'Configuration parameters and system data',
-					},
-					{
 						name: 'Policy',
 						value: 'policies',
 						description: 'Manage security policies',
@@ -256,7 +237,6 @@ export class Air implements INodeType {
 			...InterACTOperations,
 			...NotificationsOperations,
 			...OrganizationsOperations,
-			...ParamsOperations,
 			...PoliciesOperations,
 			...RepositoriesOperations,
 			...SettingsOperations,
@@ -299,22 +279,6 @@ export class Air implements INodeType {
 			// Import load options methods from Policies
 			async getPolicies(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getPoliciesOptions.call(this);
-			},
-			// Import load options methods from Params
-			async getDroneAnalyzers(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getDroneAnalyzersOptions.call(this);
-			},
-			async getAcquisitionArtifacts(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getAcquisitionArtifactsOptions.call(this);
-			},
-			async getAcquisitionEvidence(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getAcquisitionEvidenceOptions.call(this);
-			},
-			async getEDiscoveryPatterns(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getEDiscoveryPatternsOptions.call(this);
-			},
-			async getMitreAttackTechniques(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getMitreAttackTechniquesOptions.call(this);
 			},
 			// Import load options methods from Repositories
 			async getRepositories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -370,22 +334,6 @@ export class Air implements INodeType {
 			async getPolicies(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getPolicies.call(this, filter);
 			},
-			// Import list search methods from Params for resource locators
-			async getDroneAnalyzers(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getDroneAnalyzers.call(this, filter);
-			},
-			async getAcquisitionArtifacts(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getAcquisitionArtifacts.call(this, filter);
-			},
-			async getAcquisitionEvidence(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getAcquisitionEvidence.call(this, filter);
-			},
-			async getEDiscoveryPatterns(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getEDiscoveryPatterns.call(this, filter);
-			},
-			async getMitreAttackTechniques(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getMitreAttackTechniques.call(this, filter);
-			},
 			// Import list search methods from Repositories for resource locators
 			async getRepositories(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getRepositories.call(this, filter);
@@ -438,8 +386,6 @@ export class Air implements INodeType {
 				return executeNotifications.call(this);
 			case 'organizations':
 				return executeOrganizations.call(this);
-			case 'params':
-				return executeParams.call(this);
 			case 'policies':
 				return executePolicies.call(this);
 			case 'repositories':

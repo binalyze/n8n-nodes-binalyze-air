@@ -4,9 +4,10 @@ node_modules
 tmp
 dist
 npm-debug.log*
-yarn.lock
 .vscode/launch.json
 .env*
 postman
 TODO_API.md
 CLAUDE.md
+GUIDELINES.md
+.claude
