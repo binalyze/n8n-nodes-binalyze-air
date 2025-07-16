@@ -434,12 +434,6 @@ export const PoliciesOperations: INodeProperties[] = [
 				default: '',
 			},
 			{
-				displayName: 'Filter By Issue',
-				name: 'issue',
-				type: 'string',
-				default: '',
-			},
-			{
 				displayName: 'Filter By Isolation Status',
 				name: 'isolationStatus',
 				type: 'multiOptions',
@@ -454,6 +448,12 @@ export const PoliciesOperations: INodeProperties[] = [
 						value: 'not-isolated',
 					},
 				],
+			},
+			{
+				displayName: 'Filter By Issue',
+				name: 'issue',
+				type: 'string',
+				default: '',
 			},
 			{
 				displayName: 'Filter By Managed Status',
