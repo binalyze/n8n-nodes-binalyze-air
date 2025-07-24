@@ -1,0 +1,270 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -448
+      ],
+      "id": "695ee3e7-0e93-48c9-9cac-76b01c967e10",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "users",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze",
+          "cachedResultUrl": "b28890fcb2744fad"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -256
+      ],
+      "id": "913e1290-5c48-4161-a881-ee2ba989211b",
+      "name": "Get many users",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "users",
+        "operation": "get",
+        "userId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -256
+      ],
+      "id": "ca859487-497f-4fa2-a528-d74a7392d8bb",
+      "name": "Get a user",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "acquisitions",
+        "operation": "assignEvidenceTask",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze",
+          "cachedResultUrl": "b28890fcb2744fad"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "C-2025-0002",
+          "mode": "list",
+          "cachedResultName": "n8n Test Case"
+        },
+        "acquisitionProfileIdForTask": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "taskName": "Assigned via n8n",
+        "saveToLocation": "repository",
+        "repositoryId": {
+          "__rl": true,
+          "value": "702f651c-b3e3-46c4-9061-33811a5a90be",
+          "mode": "list",
+          "cachedResultName": "Azure Blob (azure-storage)"
+        },
+        "endpointFilters": {
+          "assetName": "WORKSTATION"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -640
+      ],
+      "id": "324b085a-38e6-487a-9db9-5cac0ffe0cb3",
+      "name": "Assign an evidence acquisition task",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "repositories",
+        "operation": "getAll",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze",
+          "cachedResultUrl": "b28890fcb2744fad"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -448
+      ],
+      "id": "45330ff0-9d74-4adc-9a90-e362d470ed3b",
+      "name": "Get many repositories",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "repositories",
+        "repositoryId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -448
+      ],
+      "id": "3be24870-575b-47d9-ae26-b247627c076e",
+      "name": "Get a repository",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "acquisitions",
+        "acquisitionProfileId": {
+          "__rl": true,
+          "value": "baseline-acquisition-for-comparison",
+          "mode": "list",
+          "cachedResultName": "Baseline Acquisition for Comparison"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -640
+      ],
+      "id": "e517313c-ccf9-4406-8b1a-496f9ab90040",
+      "name": "Get an acquisition profile",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many users",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many repositories",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get an acquisition profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many users": {
+      "main": [
+        [
+          {
+            "node": "Get a user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many repositories": {
+      "main": [
+        [
+          {
+            "node": "Get a repository",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign an evidence acquisition task": {
+      "main": [
+        []
+      ]
+    },
+    "Get an acquisition profile": {
+      "main": [
+        [
+          {
+            "node": "Assign an evidence acquisition task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "71139a08-8cce-4110-ac6d-55fd48fb936f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e4c7e7dbc3cd9efdf716271e83c9ac7cf3b1cc0302137138c8002ec123910dc4"
+  },
+  "id": "WtQNbEyuytLHiNJw",
+  "tags": []
+}
