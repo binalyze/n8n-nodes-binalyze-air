@@ -924,7 +924,18 @@ export async function getCases(this: ILoadOptionsFunctions, filter?: string): Pr
 	const credentials = await getAirCredentials(this);
 
 	try {
-		const response = await casesApi.getCases(this, credentials, '0', {
+		// Try to get the currently selected organization ID
+		let organizationIds = '0'; // Default to all organizations
+		try {
+			const organizationId = this.getNodeParameter('organizationId') as any;
+			if (organizationId && organizationId.value) {
+				organizationIds = organizationId.value;
+			}
+		} catch (error) {
+			// If organizationId parameter doesn't exist or can't be accessed, use default
+		}
+
+		const response = await casesApi.getCases(this, credentials, organizationIds, {
 			pageSize: 100,
 			searchTerm: filter
 		});
@@ -956,7 +967,18 @@ export async function getCasesOptions(this: ILoadOptionsFunctions): Promise<INod
 	const credentials = await getAirCredentials(this);
 
 	try {
-		const response = await casesApi.getCases(this, credentials, '0', { pageSize: 100 });
+		// Try to get the currently selected organization ID
+		let organizationIds = '0'; // Default to all organizations
+		try {
+			const organizationId = this.getNodeParameter('organizationId') as any;
+			if (organizationId && organizationId.value) {
+				organizationIds = organizationId.value;
+			}
+		} catch (error) {
+			// If organizationId parameter doesn't exist or can't be accessed, use default
+		}
+
+		const response = await casesApi.getCases(this, credentials, organizationIds, { pageSize: 100 });
 
 		validateApiResponse(response, 'Failed to fetch cases');
 

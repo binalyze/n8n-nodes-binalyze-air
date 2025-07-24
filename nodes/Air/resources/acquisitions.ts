@@ -63,17 +63,17 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		default: 'get',
 	},
 
-	// Organization for off-network tasks
+	// Organization for evidence and off-network tasks
 	{
 		displayName: 'Organization',
-		name: 'organizationIdForTask',
+		name: 'organizationId',
 		type: 'resourceLocator',
 		default: { mode: 'list', value: '' },
 		placeholder: 'Select an organization...',
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['createOffNetworkTask'],
+				operation: ['assignEvidenceTask', 'createOffNetworkTask'],
 			},
 		},
 		modes: [
@@ -110,7 +110,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 			},
 		],
 		required: true,
-		description: 'The organization for the off-network acquisition task',
+		description: 'The organization for the acquisition task',
 	},
 
 	{
@@ -277,7 +277,136 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		description: 'Description of the off-network acquisition task',
 	},
 
-	// Additional Fields
+	// Task Name for evidence and image acquisition tasks
+	{
+		displayName: 'Task Name',
+		name: 'taskName',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter task name (optional)',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask', 'assignImageTask'],
+			},
+		},
+		description: 'Optional name for the acquisition task',
+	},
+
+	// Additional Fields -> Endpoint Filters (renamed and made required)
+	{
+		displayName: 'Endpoint Filters (Required)',
+		name: 'endpointFilters',
+		type: 'collection',
+		placeholder: 'Add Filter - At least one filter is required',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+			},
+		},
+		required: true,
+		description: 'At least one filter must be defined to target specific endpoints',
+		options: [
+			{
+				displayName: 'Filter By Asset Name',
+				name: 'assetName',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter asset name',
+				description: 'Filter assets by name',
+			},
+			{
+				displayName: 'Filter By IP Address',
+				name: 'ipAddress',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter IP address',
+				description: 'Filter assets by IP address',
+			},
+			{
+				displayName: 'Filter By Management Status',
+				name: 'managedStatus',
+				type: 'multiOptions',
+				default: [],
+				placeholder: 'Select management status',
+				options: [
+					{
+						name: 'Managed',
+						value: 'managed',
+					},
+					{
+						name: 'Unmanaged',
+						value: 'unmanaged',
+					},
+				],
+				description: 'Filter assets by management status',
+			},
+			{
+				displayName: 'Filter By Online Status',
+				name: 'onlineStatus',
+				type: 'multiOptions',
+				default: [],
+				placeholder: 'Select online status',
+				options: [
+					{
+						name: 'Online',
+						value: 'online',
+					},
+					{
+						name: 'Offline',
+						value: 'offline',
+					},
+				],
+				description: 'Filter assets by online status',
+			},
+			{
+				displayName: 'Filter By Platform',
+				name: 'platform',
+				type: 'multiOptions',
+				default: [],
+				placeholder: 'Select platforms',
+				options: [
+					{
+						name: 'Windows',
+						value: 'windows',
+					},
+					{
+						name: 'Linux',
+						value: 'linux',
+					},
+					{
+						name: 'macOS',
+						value: 'macos',
+					},
+					{
+						name: 'AIX',
+						value: 'aix',
+					},
+				],
+				description: 'Filter assets by platform',
+			},
+			{
+				displayName: 'Filter By Search Term',
+				name: 'searchTerm',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter search term',
+				description: 'Filter assets by search term',
+			},
+			{
+				displayName: 'Filter By Tags',
+				name: 'tags',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter comma-separated tags',
+				description: 'Filter assets by tags (comma-separated)',
+			},
+		],
+	},
+
+	// Keep Additional Fields for assignImageTask operation only
 	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
@@ -287,7 +416,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['assignEvidenceTask', 'assignImageTask'],
+				operation: ['assignImageTask'],
 			},
 		},
 		options: [
@@ -299,7 +428,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Enter asset name',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				description: 'Filter assets by name',
@@ -312,7 +441,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Enter IP address',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				description: 'Filter assets by IP address',
@@ -325,7 +454,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Select management status',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				options: [
@@ -348,7 +477,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Select online status',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				options: [
@@ -371,7 +500,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Select organizations to filter by',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				typeOptions: {
@@ -388,7 +517,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Select platforms',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				options: [
@@ -419,7 +548,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Enter search term',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				description: 'Filter assets by search term',
@@ -432,12 +561,321 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Enter comma-separated tags',
 				displayOptions: {
 					show: {
-						'/operation': ['assignEvidenceTask', 'assignImageTask'],
+						'/operation': ['assignImageTask'],
 					},
 				},
 				description: 'Filter assets by tags (comma-separated)',
 			},
+		],
+	},
 
+	// Task Configuration (keep for assignImageTask only)
+	{
+		displayName: 'Task Configuration',
+		name: 'taskConfig',
+		type: 'collection',
+		placeholder: 'Add Configuration',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignImageTask'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Bandwidth Limit (MB/s)',
+				name: 'bandwidthLimit',
+				type: 'number',
+				default: 0,
+				placeholder: '0 = unlimited',
+				typeOptions: {
+					minValue: 0,
+				},
+				displayOptions: {
+					show: {
+						choice: ['useCustomOptions'],
+					},
+				},
+				description: 'Maximum bandwidth usage in MB/s (0 for unlimited)',
+			},
+			{
+				displayName: 'Configuration Choice',
+				name: 'choice',
+				type: 'options',
+				default: 'useCustomOptions',
+				description: 'Whether to use custom options or default configuration',
+				options: [
+					{
+						name: 'Use Custom Options',
+						value: 'useCustomOptions',
+					},
+					{
+						name: 'Use Default Options',
+						value: 'useDefaultOptions',
+					},
+				],
+			},
+			{
+				displayName: 'CPU Usage Limit (%)',
+				name: 'cpuUsageLimit',
+				type: 'number',
+				default: 50,
+				placeholder: '50',
+				typeOptions: {
+					minValue: 1,
+					maxValue: 100,
+				},
+				displayOptions: {
+					show: {
+						choice: ['useCustomOptions'],
+					},
+				},
+				description: 'Maximum CPU usage percentage for the task',
+			},
+			{
+				displayName: 'Disk Space Limit (GB)',
+				name: 'diskSpaceLimit',
+				type: 'number',
+				default: 0,
+				placeholder: '0 = unlimited',
+				typeOptions: {
+					minValue: 0,
+				},
+				displayOptions: {
+					show: {
+						choice: ['useCustomOptions'],
+					},
+				},
+				description: 'Maximum disk space usage in GB (0 for unlimited)',
+			},
+			{
+				displayName: 'Enable Compression',
+				name: 'enableCompression',
+				type: 'boolean',
+				default: true,
+				displayOptions: {
+					show: {
+						choice: ['useCustomOptions'],
+					},
+				},
+				description: 'Whether to enable compression for evidence files',
+			},
+		],
+	},
+
+	// Drone Configuration (keep for assignImageTask only)
+	{
+		displayName: 'Drone Configuration',
+		name: 'droneConfig',
+		type: 'collection',
+		placeholder: 'Add Drone Settings',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignImageTask'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Auto Pilot',
+				name: 'autoPilot',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to enable automatic drone analysis',
+			},
+			{
+				displayName: 'Enable Drone',
+				name: 'enabled',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					hide: {
+						autoPilot: [true],
+					},
+				},
+				description: 'Whether to enable drone analysis with custom settings',
+			},
+			{
+				displayName: 'Enable MITRE ATT&CK',
+				name: 'mitreEnabled',
+				type: 'boolean',
+				default: true,
+				displayOptions: {
+					show: {
+						autoPilot: [false],
+					},
+				},
+				description: 'Whether to enable MITRE ATT&CK framework analysis',
+			},
+			{
+				displayName: 'Keywords',
+				name: 'keywords',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter comma-separated keywords',
+				displayOptions: {
+					show: {
+						autoPilot: [false],
+						enabled: [true],
+					},
+				},
+				description: 'Keywords for drone analysis (comma-separated)',
+			},
+			{
+				displayName: 'Minimum Score',
+				name: 'minScore',
+				type: 'number',
+				default: 50,
+				typeOptions: {
+					minValue: 0,
+					maxValue: 100,
+				},
+				displayOptions: {
+					show: {
+						autoPilot: [false],
+						enabled: [true],
+					},
+				},
+				description: 'Minimum score for drone findings',
+			},
+		],
+	},
+
+	// Event Log Records Configuration (keep for assignImageTask only)
+	{
+		displayName: 'Event Log Configuration',
+		name: 'eventLogConfig',
+		type: 'collection',
+		placeholder: 'Add Event Log Settings',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignImageTask'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Start Date',
+				name: 'startDate',
+				type: 'dateTime',
+				default: '',
+				description: 'Start date for event log collection (ISO8601 UTC format)',
+			},
+			{
+				displayName: 'End Date',
+				name: 'endDate',
+				type: 'dateTime',
+				default: '',
+				description: 'End date for event log collection (ISO8601 UTC format)',
+			},
+			{
+				displayName: 'Max Event Count',
+				name: 'maxEventCount',
+				type: 'number',
+				default: 4000,
+				placeholder: '4000',
+				typeOptions: {
+					minValue: -1,
+				},
+				description: 'Maximum number of events to collect per event type (-1 for unlimited)',
+			},
+		],
+	},
+
+	// Task Scheduler Configuration (keep for assignImageTask only)
+	{
+		displayName: 'Scheduler Configuration',
+		name: 'schedulerConfig',
+		type: 'collection',
+		placeholder: 'Add Scheduler Settings',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignImageTask'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Custom Timezone',
+				name: 'timezone',
+				type: 'string',
+				default: '',
+				placeholder: 'UTC',
+				displayOptions: {
+					show: {
+						when: ['scheduled'],
+						timezoneType: ['custom'],
+					},
+				},
+				description: 'Custom timezone identifier (e.g., UTC, America/New_York)',
+			},
+			{
+				displayName: 'Execution Type',
+				name: 'when',
+				type: 'options',
+				default: 'now',
+				description: 'When to execute the task',
+				options: [
+					{
+						name: 'Now',
+						value: 'now',
+					},
+					{
+						name: 'Scheduled',
+						value: 'scheduled',
+					},
+				],
+			},
+			{
+				displayName: 'Repeat Task',
+				name: 'isRepeat',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					show: {
+						when: ['scheduled'],
+					},
+				},
+				description: 'Whether to repeat the task',
+			},
+			{
+				displayName: 'Start Date',
+				name: 'startDate',
+				type: 'dateTime',
+				default: '',
+				displayOptions: {
+					show: {
+						when: ['scheduled'],
+					},
+				},
+				description: 'When to start the scheduled task',
+			},
+			{
+				displayName: 'Timezone Type',
+				name: 'timezoneType',
+				type: 'options',
+				default: 'asset',
+				displayOptions: {
+					show: {
+						when: ['scheduled'],
+					},
+				},
+				options: [
+					{
+						name: 'Asset Timezone',
+						value: 'asset',
+					},
+					{
+						name: 'Custom Timezone',
+						value: 'custom',
+					},
+				],
+				description: 'Timezone to use for scheduling',
+			},
 		],
 	},
 ];
@@ -552,25 +990,41 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 
 			} else if (operation === 'assignEvidenceTask') {
 				// Assign Evidence Acquisition Task
+				const organizationId = this.getNodeParameter('organizationId', i) as any;
 				const caseId = this.getNodeParameter('caseId', i) as any;
 				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileIdForTask', i) as any;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+				const taskName = this.getNodeParameter('taskName', i) as string;
+				const endpointFilters = this.getNodeParameter('endpointFilters', i) as any;
+
+				// Get organization ID
+				let orgId: number;
+				if (organizationId.mode === 'name') {
+					const orgIdString = await findOrganizationByName(this, credentials, organizationId.value);
+					orgId = parseInt(orgIdString, 10);
+				} else {
+					orgId = parseInt(organizationId.value || organizationId, 10);
+				}
 
 				const taskData: any = {
 					caseId: normalizeAndValidateId(caseId.value || caseId, 'Case ID'),
 					acquisitionProfileId: normalizeAndValidateId(acquisitionProfileId.value || acquisitionProfileId, 'Acquisition Profile ID'),
-					filter: {},
+					filter: {
+						organizationIds: [orgId], // Always include the selected organization
+					},
 				};
 
-				// Build filter from additional fields
-				if (additionalFields.searchTerm) taskData.filter.searchTerm = additionalFields.searchTerm;
-				if (additionalFields.assetName) taskData.filter.name = additionalFields.assetName;
-				if (additionalFields.ipAddress) taskData.filter.ipAddress = additionalFields.ipAddress;
-				if (additionalFields.platform) taskData.filter.platform = additionalFields.platform;
-				if (additionalFields.onlineStatus) taskData.filter.onlineStatus = additionalFields.onlineStatus;
-				if (additionalFields.managedStatus) taskData.filter.managedStatus = additionalFields.managedStatus;
-				if (additionalFields.tags) taskData.filter.tags = additionalFields.tags.split(',').map((tag: string) => tag.trim());
-				if (additionalFields.filterOrganizationIds) taskData.filter.organizationIds = additionalFields.filterOrganizationIds.map((id: string) => parseInt(id, 10));
+				if (taskName) {
+					taskData.taskName = taskName;
+				}
+
+				// Build filter from endpoint filters
+				if (endpointFilters.searchTerm) taskData.filter.searchTerm = endpointFilters.searchTerm;
+				if (endpointFilters.assetName) taskData.filter.name = endpointFilters.assetName;
+				if (endpointFilters.ipAddress) taskData.filter.ipAddress = endpointFilters.ipAddress;
+				if (endpointFilters.platform) taskData.filter.platform = endpointFilters.platform;
+				if (endpointFilters.onlineStatus) taskData.filter.onlineStatus = endpointFilters.onlineStatus;
+				if (endpointFilters.managedStatus) taskData.filter.managedStatus = endpointFilters.managedStatus;
+				if (endpointFilters.tags) taskData.filter.tags = endpointFilters.tags.split(',').map((tag: string) => tag.trim());
 
 				responseData = await acquisitionsApi.assignEvidenceAcquisitionTask(this, credentials, taskData);
 				responseData = responseData.result;
@@ -579,13 +1033,57 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 				// Assign Image Acquisition Task
 				const caseId = this.getNodeParameter('caseId', i) as any;
 				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileIdForTask', i) as any;
+				const taskName = this.getNodeParameter('taskName', i) as string;
 				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+				const taskConfig = this.getNodeParameter('taskConfig', i) as any;
+				const droneConfig = this.getNodeParameter('droneConfig', i) as any;
+				const eventLogConfig = this.getNodeParameter('eventLogConfig', i) as any;
+				const schedulerConfig = this.getNodeParameter('schedulerConfig', i) as any;
 
 				const taskData: any = {
 					caseId: normalizeAndValidateId(caseId.value || caseId, 'Case ID'),
 					acquisitionProfileId: normalizeAndValidateId(acquisitionProfileId.value || acquisitionProfileId, 'Acquisition Profile ID'),
 					filter: {},
+					taskConfig: {
+						choice: taskConfig.choice || 'useCustomOptions',
+						saveTo: {},
+						cpu: { usageLimit: taskConfig.cpuUsageLimit || 50 },
+						bandwidth: { limit: taskConfig.bandwidthLimit || 0 },
+						diskSpace: { limit: taskConfig.diskSpaceLimit || 0 },
+						compression: { enabled: taskConfig.enableCompression !== false },
+						sendTo: {},
+					},
+					droneConfig: {
+						autoPilot: droneConfig.autoPilot || false,
+						enabled: droneConfig.enabled || false,
+						mitreEnabled: droneConfig.mitreEnabled !== false,
+						analyzers: [],
+						keywords: droneConfig.keywords ? droneConfig.keywords.split(',').map((k: string) => k.trim()) : [],
+						minScore: droneConfig.minScore || 50,
+					},
+					eventLogRecordsConfig: {
+						startDate: eventLogConfig.startDate || null,
+						endDate: eventLogConfig.endDate || null,
+						maxEventCount: eventLogConfig.maxEventCount || 4000,
+					},
 				};
+
+				if (taskName) {
+					taskData.taskName = taskName;
+				}
+
+				// Add scheduler configuration if provided
+				if (schedulerConfig.when && schedulerConfig.when !== 'now') {
+					taskData.schedulerConfig = {
+						when: schedulerConfig.when,
+						timezoneType: schedulerConfig.timezoneType || 'asset',
+						timezone: schedulerConfig.timezone || undefined,
+						startDate: schedulerConfig.startDate ? new Date(schedulerConfig.startDate).getTime() : undefined,
+						isRepeat: schedulerConfig.isRepeat || false,
+					};
+				} else {
+					taskData.schedulerConfig = { when: 'now' };
+				}
 
 				// Build filter from additional fields
 				if (additionalFields.searchTerm) taskData.filter.searchTerm = additionalFields.searchTerm;
@@ -602,9 +1100,9 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 
 			} else if (operation === 'createOffNetworkTask') {
 				// Create Off-Network Acquisition Task
+				const organizationId = this.getNodeParameter('organizationId', i) as any;
 				const caseId = this.getNodeParameter('caseId', i) as any;
 				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileIdForTask', i) as any;
-				const organizationId = this.getNodeParameter('organizationIdForTask', i) as any;
 				const taskName = this.getNodeParameter('taskName', i) as string;
 				const taskDescription = this.getNodeParameter('taskDescription', i, '') as string;
 

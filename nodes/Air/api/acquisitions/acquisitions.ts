@@ -22,23 +22,77 @@ export interface AcquisitionSettings {
   customSettings?: Record<string, string | number | boolean>;
 }
 
-export interface AcquisitionFilter {
+export interface AcquisitionEndpointFilter {
   searchTerm?: string;
   name?: string;
   ipAddress?: string;
   groupId?: string;
   groupFullPath?: string;
+  label?: string;
+  lastSeenAfter?: string;
+  lastSeenBefore?: string;
   managedStatus?: string[];
   isolationStatus?: string[];
   platform?: string[];
-  issue?: string;
+  issue?: string[];
   onlineStatus?: string[];
   tags?: string[];
   version?: string;
   policy?: string;
   includedEndpointIds?: string[];
   excludedEndpointIds?: string[];
-  organizationIds?: (string | number)[];
+  organizationIds: number[];
+  connectionRouteId?: number;
+  caseId?: string;
+  awsRegions?: string[];
+  azureRegions?: string[];
+  agentInstalled?: boolean;
+  isServer?: boolean;
+  assetType?: string;
+  vendorIds?: string[];
+  vendorDeviceIds?: string[];
+}
+
+export interface TaskConfig {
+  choice: 'useCustomOptions' | 'useDefaultOptions';
+  saveTo?: Record<string, any>;
+  cpu?: { usageLimit: number };
+  bandwidth?: { limit: number };
+  diskSpace?: { limit: number };
+  compression?: { enabled: boolean };
+  sendTo?: Record<string, any>;
+  triageLocalDrivesOnly?: Record<string, any>;
+  locard?: Record<string, any>;
+}
+
+export interface DroneConfig {
+  autoPilot: boolean;
+  enabled: boolean;
+  mitreEnabled: boolean;
+  analyzers: string[];
+  keywords: string[];
+  minScore: number;
+}
+
+export interface EventLogRecordsConfig {
+  startDate: string | null;
+  endDate: string | null;
+  maxEventCount: number;
+}
+
+export interface TaskSchedulerConfig {
+  when: 'now' | 'scheduled';
+  timezoneType?: 'asset' | 'custom';
+  timezone?: string;
+  startDate?: number;
+  isRepeat?: boolean;
+  recurrence?: string;
+  repeatEvery?: number;
+  repeatOnWeek?: string[];
+  repeatOnMonth?: number;
+  endRepeatType?: string;
+  endDate?: number;
+  limit?: number;
 }
 
 export interface AcquisitionProfile {
@@ -69,10 +123,24 @@ export interface UpdateAcquisitionProfileRequest {
   settings?: AcquisitionSettings;
 }
 
-export interface AssignTaskRequest {
+export interface AssignEvidenceTaskRequest {
+  taskName?: string;
   caseId: string;
   acquisitionProfileId: string;
-  filter: AcquisitionFilter;
+  taskConfig: TaskConfig;
+  filter: AcquisitionEndpointFilter;
+  droneConfig: DroneConfig;
+  eventLogRecordsConfig: EventLogRecordsConfig;
+  schedulerConfig?: TaskSchedulerConfig;
+}
+
+export interface AssignImageTaskRequest {
+  taskName?: string;
+  caseId: string;
+  taskConfig: TaskConfig;
+  filter: AcquisitionEndpointFilter;
+  diskImageOptions: Record<string, any>;
+  schedulerConfig?: TaskSchedulerConfig;
 }
 
 export interface CreateOffNetworkTaskRequest {
@@ -168,45 +236,34 @@ export const api = {
 
   // ===== TASK ASSIGNMENT METHODS =====
 
-  async assignAcquisitionTask(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    taskType: 'evidence' | 'image',
-    data: AssignTaskRequest
-  ): Promise<AssignAcquisitionTaskResponse> {
-    const endpoint = taskType === 'image'
-      ? '/api/public/acquisitions/acquire/image'
-      : '/api/public/acquisitions/acquire';
-
-    const operationName = taskType === 'image'
-      ? 'Assign Image Acquisition Task'
-      : 'Assign Evidence Acquisition Task';
-
-    return await executeHttpRequest<AssignTaskRequest, AssignAcquisitionTaskResponse>(
-      context,
-      credentials,
-      'POST',
-      endpoint,
-      operationName,
-      data
-    );
-  },
-
-  // Legacy methods for backward compatibility
   async assignEvidenceAcquisitionTask(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    data: AssignTaskRequest
+    data: AssignEvidenceTaskRequest
   ): Promise<AssignAcquisitionTaskResponse> {
-    return this.assignAcquisitionTask(context, credentials, 'evidence', data);
+    return await executeHttpRequest<AssignEvidenceTaskRequest, AssignAcquisitionTaskResponse>(
+      context,
+      credentials,
+      'POST',
+      '/api/public/acquisitions/acquire',
+      'Assign Evidence Acquisition Task',
+      data
+    );
   },
 
   async assignImageAcquisitionTask(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    data: AssignTaskRequest
+    data: AssignImageTaskRequest
   ): Promise<AssignAcquisitionTaskResponse> {
-    return this.assignAcquisitionTask(context, credentials, 'image', data);
+    return await executeHttpRequest<AssignImageTaskRequest, AssignAcquisitionTaskResponse>(
+      context,
+      credentials,
+      'POST',
+      '/api/public/acquisitions/acquire/image',
+      'Assign Image Acquisition Task',
+      data
+    );
   },
 
   async createOffNetworkAcquisitionTask(

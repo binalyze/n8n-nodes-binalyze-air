@@ -3,7 +3,7 @@ description:
 globs:
 alwaysApply: true
 ---
+
 # General
 
-- Always check the code if a similar implementation exists somewhere else in order not duplicate the code.
-- Simplicity always wins. Keep the code simple, and clean.
+- The contents of the /platform folder is read-only, and should not be changed.

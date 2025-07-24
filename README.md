@@ -54,15 +54,22 @@ Before using this node, you need to configure your Binalyze AIR credentials:
 This node provides comprehensive coverage of Binalyze AIR's features listed below:
 
 ### Acquisitions
-Manage evidence acquisition profiles and tasks.
+Manage evidence acquisition profiles and tasks with comprehensive configuration options.
 
 **Operations:**
-- `assignEvidenceTask` - Assign an evidence acquisition task by filter
-- `assignImageTask` - Assign an image acquisition task by filter
+- `assignEvidenceTask` - Assign an evidence acquisition task by filter with advanced configuration
+  - **Enhanced Features:**
+    - Task naming and scheduling (immediate or scheduled execution)
+    - Task configuration (CPU limits, bandwidth limits, disk space limits, compression settings)
+    - Drone analysis configuration (auto-pilot mode, custom analyzers, MITRE ATT&CK framework)
+    - Event log collection settings (date ranges, event count limits)
+    - Advanced endpoint filtering (by platform, status, tags, organization, etc.)
+- `assignImageTask` - Assign an image acquisition task by filter with advanced configuration
+  - **Enhanced Features:**
+    - Same comprehensive configuration options as evidence tasks
+    - Disk imaging specific settings and parameters
 - `createOffNetworkTask` - Create an off-network acquisition task
-- `delete` - Delete an acquisition profile
 - `get` - Retrieve a specific acquisition profile
-- `update` - Update an acquisition profile
 
 ### Assets
 Manage endpoints and their associated tasks, tags, and status.
