@@ -30,7 +30,7 @@ export const InterACTOperations: INodeProperties[] = [
 				name: 'Assign InterACT Task',
 				value: 'assignTask',
 				description: 'Assign an InterACT shell task to endpoints',
-				action: 'Assign an inter act task',
+				action: 'Assign an interact task',
 			},
 			{
 				name: 'Close Session',

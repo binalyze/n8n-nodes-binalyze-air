@@ -62,12 +62,6 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				action: 'Create an off network acquisition task',
 			},
 			{
-				name: 'Delete',
-				value: 'delete',
-				description: 'Delete an acquisition profile',
-				action: 'Delete an acquisition profile',
-			},
-			{
 				name: 'Get',
 				value: 'get',
 				description: 'Retrieve a specific acquisition profile',
@@ -78,12 +72,6 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				value: 'getAll',
 				description: 'Retrieve many acquisition profiles',
 				action: 'Get many acquisition profiles',
-			},
-			{
-				name: 'Update',
-				value: 'update',
-				description: 'Update an acquisition profile',
-				action: 'Update an acquisition profile',
 			},
 		],
 		default: 'getAll',
@@ -97,7 +85,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['get', 'update', 'delete'],
+				operation: ['get'],
 			},
 		},
 		modes: [
@@ -141,7 +129,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['create', 'update'],
+				operation: ['create'],
 			},
 		},
 		required: true,
@@ -158,7 +146,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['create', 'update'],
+				operation: ['create'],
 			},
 		},
 		description: 'Description of the acquisition profile',
@@ -395,7 +383,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['getAll', 'create', 'update', 'assignEvidenceTask', 'assignImageTask'],
+				operation: ['getAll', 'create', 'assignEvidenceTask', 'assignImageTask'],
 			},
 		},
 		options: [
@@ -407,7 +395,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Select artifacts to collect',
 				displayOptions: {
 					show: {
-						'/operation': ['create', 'update'],
+						'/operation': ['create'],
 					},
 				},
 				options: [
@@ -450,7 +438,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				placeholder: 'Select evidence types to collect',
 				displayOptions: {
 					show: {
-						'/operation': ['create', 'update'],
+						'/operation': ['create'],
 					},
 				},
 				options: [
@@ -835,43 +823,6 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 
 				responseData = await acquisitionsApi.createAcquisitionProfile(this, credentials, profileData);
 				responseData = responseData.result;
-
-			} else if (operation === 'update') {
-				// Update Acquisition Profile
-				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileId', i) as any;
-				const profileId = normalizeAndValidateId(acquisitionProfileId.value || acquisitionProfileId, 'Acquisition Profile ID');
-				const name = this.getNodeParameter('name', i) as string;
-				const description = this.getNodeParameter('description', i, '') as string;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-
-				const updateData: any = {
-					name,
-				};
-
-				if (description) {
-					updateData.description = description;
-				}
-
-				if (additionalFields.artifacts || additionalFields.evidence) {
-					updateData.settings = {};
-					if (additionalFields.artifacts) {
-						updateData.settings.artifacts = additionalFields.artifacts;
-					}
-					if (additionalFields.evidence) {
-						updateData.settings.evidence = additionalFields.evidence;
-					}
-				}
-
-				responseData = await acquisitionsApi.updateAcquisitionProfile(this, credentials, profileId, updateData);
-				responseData = responseData.result;
-
-			} else if (operation === 'delete') {
-				// Delete Acquisition Profile
-				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileId', i) as any;
-				const profileId = normalizeAndValidateId(acquisitionProfileId.value || acquisitionProfileId, 'Acquisition Profile ID');
-
-				responseData = await acquisitionsApi.deleteAcquisitionProfile(this, credentials, profileId);
-				responseData = { success: true, deleted: true, _id: profileId };
 
 			} else if (operation === 'assignEvidenceTask') {
 				// Assign Evidence Acquisition Task

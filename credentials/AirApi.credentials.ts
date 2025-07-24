@@ -13,7 +13,7 @@ export interface AirCredentials {
 export class AirApi implements ICredentialType {
 	name = 'airApi';
 	displayName = 'Binalyze AIR API';
-	documentationUrl = 'https://kb.binalyze.com'; //TODO: Add KB url once available
+	documentationUrl = 'https://github.com/binalyze/n8n-nodes-binalyze-air?tab=readme-ov-file#configuration';
 	icon = {
 		light: 'file:b-logo-dark.svg',
 		dark: 'file:b-logo-light.svg',
@@ -59,7 +59,7 @@ export class AirApi implements ICredentialType {
 	// The block below tells how this credential can be tested
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: '={{$credentials?.instanceUrl}}',
+			baseURL: '={{$credentials?.instanceUrl.trimEnd("/")}}',
 			url: '/api/public/auth/check',
 		},
 	};

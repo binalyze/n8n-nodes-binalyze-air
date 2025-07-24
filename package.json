@@ -31,11 +31,10 @@
   "scripts": {
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "./scripts/dev-watch.sh",
+    "dev:link": "./scripts/dev-link.sh",
     "watch:ts": "tsc --watch --preserveWatchOutput",
     "watch:restart": "chokidar \"**/*.ts\" -c \"./scripts/restart-n8n.sh\" --ignore \"dist/**/*.d.ts\" --ignore \"dist/**/*.map\" --initial",
     "restart:n8n": "./scripts/restart-n8n.sh",
-    "setup-dev": "./scripts/setup-dev-link.sh",
-    "check-node": "./scripts/check-node-loaded.sh",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
@@ -66,6 +65,7 @@
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",
     "js-yaml": "^4.1.0",
+    "n8n-workflow": "^1.0.0",
     "prettier": "^3.5.3",
     "tsx": "^4.20.3",
     "typescript": "^5.8.2"

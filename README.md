@@ -11,19 +11,14 @@ This is an n8n community node that integrates with Binalyze AIR (Automated Incid
 - [Error Handling](#error-handling)
 - [Supported Resources](#supported-resources)
   - [Acquisitions](#acquisitions)
-  - [API Tokens](#api-tokens)
   - [Assets](#assets)
-  - [Authentication](#authentication)
   - [Auto Asset Tags](#auto-asset-tags)
   - [Baselines](#baselines)
   - [Cases](#cases)
   - [Evidence](#evidence)
   - [InterACT](#interact)
-  - [Notifications](#notifications)
   - [Organizations](#organizations)
-  - [Policies](#policies)
   - [Repositories](#repositories)
-  - [Settings](#settings)
   - [Tasks](#tasks)
   - [Triage Rules](#triage-rules)
   - [Users](#users)
@@ -38,13 +33,25 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 Before using this node, you need to configure your Binalyze AIR credentials:
 
+### Step 1: Create AIR API Key
+
+1. Go to AIR > Integrations > API Tokens > Add New
+	* Provide a Token Name
+	* Select an Organization
+	* Select a Role
+	* Define Expiration time
+2. Click Save button, and copy the token as you will not be able to see it again
+3. Click 'I got the token' button
+
+### Step 2: Create AIR Credentials on your n8n instance
+
 1. In n8n, go to Settings → Credentials
 2. Add a new credential for "Binalyze AIR API"
 3. Enter your AIR instance URL and API token
 
 ## Supported Resources
 
-This node provides comprehensive coverage of Binalyze AIR's API with 145+ operations across 18 resources.
+This node provides comprehensive coverage of Binalyze AIR's features listed below:
 
 ### Acquisitions
 Manage evidence acquisition profiles and tasks.
@@ -59,16 +66,6 @@ Manage evidence acquisition profiles and tasks.
 - `getAll` - Retrieve many acquisition profiles
 - `update` - Update an acquisition profile
 
-### API Tokens
-Manage API tokens for programmatic access.
-
-**Operations:**
-- `create` - Create a new API token
-- `delete` - Delete an API token
-- `get` - Retrieve a specific API token
-- `getAll` - Retrieve many API tokens
-- `update` - Update an API token
-
 ### Assets
 Manage endpoints and their associated tasks, tags, and status.
 
@@ -81,12 +78,6 @@ Manage endpoints and their associated tasks, tags, and status.
 - `purgeAndUninstall` - Purge and uninstall assets by filter
 - `removeTags` - Remove tags from assets by filter
 - `uninstall` - Uninstall assets without purge by filter
-
-### Authentication
-Verify authentication status.
-
-**Operations:**
-- `check` - Check current authentication status
 
 ### Auto Asset Tags
 Create and manage automatic asset tagging rules.
@@ -147,15 +138,6 @@ Execute commands and interact with endpoints remotely.
 - `getCommandMessage` - Get the result of a command execution
 - `interruptCommand` - Interrupt a running command
 
-### Notifications
-Manage system notifications.
-
-**Operations:**
-- `deleteAll` - Delete all notifications of current user
-- `getAll` - Retrieve many notifications
-- `markAllAsRead` - Mark all notifications as read
-- `markAsReadById` - Mark a specific notification as read
-
 ### Organizations
 Manage organizations and their users.
 
@@ -175,31 +157,12 @@ Manage organizations and their users.
 - `updateDeploymentToken` - Update organization deployment token
 - `updateShareableDeployment` - Update organization shareable deployment status
 
-
-### Policies
-Create and manage collection policies.
-
-**Operations:**
-- `create` - Create a new policy
-- `delete` - Delete a policy
-- `get` - Retrieve a specific policy
-- `getAll` - Retrieve many policies
-- `getMatchStats` - Get policy match statistics by filter
-- `updatePriorities` - Update priorities of multiple policies
-- `update` - Update a policy
-
 ### Repositories
 Manage evidence repositories.
 
 **Operations:**
 - `get` - Get a repository by name
 - `getAll` - Get many repositories
-
-### Settings
-Access system settings.
-
-**Operations:**
-- `updateBanner` - Update the system banner message
 
 ### Tasks
 Manage and monitor tasks and assignments.
@@ -241,7 +204,10 @@ To set up the development environment:
 1. Clone this repository
 2. Install dependencies: `yarn install`
 3. Build the project: `yarn build`
-4. Link for local development and then run: `yarn dev`
+3. Link the project using: 
+ - `npm link` 
+ - `npm link n8n-nodes-binalyze-air` 
+4. And then run: `yarn dev` to start n8n in watch mode
 
 ## Testing
 

@@ -151,35 +151,6 @@ export const api = {
     );
   },
 
-  async updateAcquisitionProfile(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    id: string,
-    data: UpdateAcquisitionProfileRequest
-  ): Promise<UpdateAcquisitionProfileResponse> {
-    return await executeHttpRequest<UpdateAcquisitionProfileRequest, UpdateAcquisitionProfileResponse>(
-      context,
-      credentials,
-      'PUT',
-      `/api/public/acquisitions/profiles/${id}`,
-      'Update Acquisition Profile',
-      data
-    );
-  },
-
-  async deleteAcquisitionProfile(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    id: string
-  ): Promise<DeleteAcquisitionProfileResponse> {
-    return await executeHttpRequest<undefined, DeleteAcquisitionProfileResponse>(
-      context,
-      credentials,
-      'DELETE',
-      `/api/public/acquisitions/profiles/${id}`,
-      'Delete Acquisition Profile'
-    );
-  },
 
   async getAcquisitionProfileById(
     context: IExecuteFunctions | ILoadOptionsFunctions,

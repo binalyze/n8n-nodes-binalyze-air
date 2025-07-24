@@ -72,35 +72,9 @@ import {
 	executeAcquisitions
 } from './resources/acquisitions';
 import {
-	NotificationsOperations,
-	getNotifications,
-	getNotificationsOptions,
-	executeNotifications
-} from './resources/notifications';
-import {
-	AuthOperations,
-	executeAuth
-} from './resources/auth';
-import {
 	EvidenceOperations,
 	executeEvidence
 } from './resources/evidence';
-import {
-	PoliciesOperations,
-	getPolicies,
-	getPoliciesOptions,
-	executePolicies
-} from './resources/policies';
-import {
-	SettingsOperations,
-	executeSettings
-} from './resources/settings';
-import {
-	ApiTokensOperations,
-	getApiTokens,
-	getApiTokensOptions,
-	executeApiTokens
-} from './resources/apitokens';
 
 import {
 	InterACTOperations,
@@ -143,19 +117,9 @@ export class Air implements INodeType {
 						description: 'Manage acquisition profiles and remote acquisitions',
 					},
 					{
-						name: 'API Token',
-						value: 'apitokens',
-						description: 'Manage API tokens',
-					},
-					{
 						name: 'Asset',
 						value: 'assets',
 						description: 'Manage endpoint assets and their operations',
-					},
-					{
-						name: 'Auth',
-						value: 'auth',
-						description: 'Authentication and session management',
 					},
 					{
 						name: 'Auto Asset Tag',
@@ -183,29 +147,14 @@ export class Air implements INodeType {
 						description: 'Interactive shell sessions and command execution on devices',
 					},
 					{
-						name: 'Notification',
-						value: 'notifications',
-						description: 'Manage user notifications',
-					},
-					{
 						name: 'Organization',
 						value: 'organizations',
 						description: 'Manage organizations',
 					},
 					{
-						name: 'Policy',
-						value: 'policies',
-						description: 'Manage security policies',
-					},
-					{
 						name: 'Repository',
 						value: 'repositories',
 						description: 'Manage evidence repositories',
-					},
-					{
-						name: 'Setting',
-						value: 'settings',
-						description: 'System settings management',
 					},
 					{
 						name: 'Task',
@@ -227,19 +176,14 @@ export class Air implements INodeType {
 			},
 
 			...AcquisitionsOperations,
-			...ApiTokensOperations,
 			...AssetsOperations,
-			...AuthOperations,
 			...AutoAssetTagsOperations,
 			...BaselinesOperations,
 			...CasesOperations,
 			...EvidenceOperations,
 			...InterACTOperations,
-			...NotificationsOperations,
 			...OrganizationsOperations,
-			...PoliciesOperations,
 			...RepositoriesOperations,
-			...SettingsOperations,
 			...TasksOperations,
 			...TriageRulesOperations,
 			...UsersOperations,
@@ -251,10 +195,6 @@ export class Air implements INodeType {
 			// Import load options methods from Acquisitions
 			async getAcquisitionProfiles(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getAcquisitionProfilesOptions.call(this);
-			},
-			// Import load options methods from API Tokens
-			async getApiTokens(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getApiTokensOptions.call(this);
 			},
 			// Import load options methods from Assets
 			async getAssets(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -268,17 +208,9 @@ export class Air implements INodeType {
 			async getCases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getCasesOptions.call(this);
 			},
-			// Import load options methods from Notifications
-			async getNotifications(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getNotificationsOptions.call(this);
-			},
 			// Import load options methods from Organizations
 			async getOrganizations(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getOrganizationsOptions.call(this);
-			},
-			// Import load options methods from Policies
-			async getPolicies(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getPoliciesOptions.call(this);
 			},
 			// Import load options methods from Repositories
 			async getRepositories(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -306,10 +238,6 @@ export class Air implements INodeType {
 			async getAcquisitionProfiles(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAcquisitionProfiles.call(this, filter);
 			},
-			// Import list search methods from API Tokens for resource locators
-			async getApiTokens(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getApiTokens.call(this, filter);
-			},
 			// Import list search methods from Assets for resource locators
 			async getAssets(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAssets.call(this, filter);
@@ -322,17 +250,9 @@ export class Air implements INodeType {
 			async getCases(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getCases.call(this, filter);
 			},
-			// Import list search methods from Notifications for resource locators
-			async getNotifications(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getNotifications.call(this, filter);
-			},
 			// Import list search methods from Organizations for resource locators
 			async getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getOrganizations.call(this, filter);
-			},
-			// Import list search methods from Policies for resource locators
-			async getPolicies(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getPolicies.call(this, filter);
 			},
 			// Import list search methods from Repositories for resource locators
 			async getRepositories(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
@@ -366,12 +286,8 @@ export class Air implements INodeType {
 		switch (resource) {
 			case 'acquisitions':
 				return executeAcquisitions.call(this);
-			case 'apitokens':
-				return executeApiTokens.call(this);
 			case 'assets':
 				return executeAssets.call(this);
-			case 'auth':
-				return executeAuth.call(this);
 			case 'autoassettags':
 				return executeAutoAssetTags.call(this);
 			case 'baselines':
@@ -382,16 +298,10 @@ export class Air implements INodeType {
 				return executeEvidence.call(this);
 			case 'interact':
 				return executeInterACT.call(this);
-			case 'notifications':
-				return executeNotifications.call(this);
 			case 'organizations':
 				return executeOrganizations.call(this);
-			case 'policies':
-				return executePolicies.call(this);
 			case 'repositories':
 				return executeRepositories.call(this);
-			case 'settings':
-				return executeSettings.call(this);
 			case 'tasks':
 				return executeTasks.call(this);
 			case 'triagerules':

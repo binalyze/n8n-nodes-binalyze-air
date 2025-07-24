@@ -18,7 +18,7 @@ cd ~/.n8n/nodes
 
 # Install/link the custom node
 echo "Installing custom node in n8n nodes directory..."
-npm install /Users/emre/Projects/Binalyze/n8n-nodes-binalyze-air
+npm install ~/Projects/Binalyze/n8n-nodes-binalyze-air
 
 echo "✅ Development link setup complete!"
 echo "Your custom node should now be available in n8n."
