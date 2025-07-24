@@ -106,7 +106,7 @@ export const UsersOperations: INodeProperties[] = [
 		displayName: 'Organization',
 		name: 'organizationId',
 		type: 'resourceLocator',
-		default: { mode: 'id', value: '0' },
+		default: { mode: 'list', value: '' },
 		placeholder: 'Select an organization...',
 		displayOptions: {
 			show: {
@@ -115,6 +115,16 @@ export const UsersOperations: INodeProperties[] = [
 			},
 		},
 		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
 			{
 				displayName: 'By ID',
 				name: 'id',
@@ -363,7 +373,7 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 
 					let organizationId: string;
 
-					if (organizationResource.mode === 'id') {
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
 						organizationId = organizationResource.value;
 					} else if (organizationResource.mode === 'name') {
 						try {

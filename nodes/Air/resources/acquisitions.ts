@@ -15,8 +15,6 @@ import {
 	createListSearchResults,
 	createLoadOptions,
 	handleExecuteError,
-	extractPaginationInfo,
-	processApiResponseEntities,
 	normalizeAndValidateId,
 	catchAndFormatError,
 } from '../utils/helpers';
@@ -50,12 +48,6 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				action: 'Assign an image acquisition task',
 			},
 			{
-				name: 'Create Acquisition Profile',
-				value: 'create',
-				description: 'Create a new acquisition profile',
-				action: 'Create an acquisition profile',
-			},
-			{
 				name: 'Create Off-Network Acquisition Task',
 				value: 'createOffNetworkTask',
 				description: 'Create an off-network acquisition task',
@@ -67,15 +59,60 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				description: 'Retrieve a specific acquisition profile',
 				action: 'Get an acquisition profile',
 			},
+		],
+		default: 'get',
+	},
+
+	// Organization for off-network tasks
+	{
+		displayName: 'Organization',
+		name: 'organizationIdForTask',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['createOffNetworkTask'],
+			},
+		},
+		modes: [
 			{
-				name: 'Get Many',
-				value: 'getAll',
-				description: 'Retrieve many acquisition profiles',
-				action: 'Get many acquisition profiles',
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be numeric)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID (e.g., 123)',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
 			},
 		],
-		default: 'getAll',
+		required: true,
+		description: 'The organization for the off-network acquisition task',
 	},
+
 	{
 		displayName: 'Acquisition Profile',
 		name: 'acquisitionProfileId',
@@ -117,89 +154,6 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		],
 		required: true,
 		description: 'The acquisition profile to operate on',
-	},
-
-	// Profile Name
-	{
-		displayName: 'Profile Name',
-		name: 'name',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter acquisition profile name',
-		displayOptions: {
-			show: {
-				resource: ['acquisitions'],
-				operation: ['create'],
-			},
-		},
-		required: true,
-		description: 'Name of the acquisition profile',
-	},
-
-	// Profile Description
-	{
-		displayName: 'Description',
-		name: 'description',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter acquisition profile description',
-		displayOptions: {
-			show: {
-				resource: ['acquisitions'],
-				operation: ['create'],
-			},
-		},
-		description: 'Description of the acquisition profile',
-	},
-
-	// Organization ID for create operations
-	{
-		displayName: 'Organization',
-		name: 'organizationId',
-		type: 'resourceLocator',
-		default: { mode: 'list', value: '' },
-		placeholder: 'Select an organization...',
-		displayOptions: {
-			show: {
-				resource: ['acquisitions'],
-				operation: ['create'],
-			},
-		},
-		modes: [
-			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				placeholder: 'Select an organization...',
-				typeOptions: {
-					searchListMethod: 'getOrganizations',
-					searchable: true,
-				},
-			},
-			{
-				displayName: 'By ID',
-				name: 'id',
-				type: 'string',
-				validation: [
-					{
-						type: 'regex',
-						properties: {
-							regex: '^[0-9]+$',
-							errorMessage: 'Not a valid organization ID (must be numeric)',
-						},
-					},
-				],
-				placeholder: 'Enter organization ID (e.g., 123)',
-			},
-			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter organization name',
-			},
-		],
-		required: true,
-		description: 'The organization for the acquisition profile',
 	},
 
 	// Case ID for task operations
@@ -323,56 +277,6 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		description: 'Description of the off-network acquisition task',
 	},
 
-	// Organization for off-network tasks
-	{
-		displayName: 'Organization',
-		name: 'organizationIdForTask',
-		type: 'resourceLocator',
-		default: { mode: 'list', value: '' },
-		placeholder: 'Select an organization...',
-		displayOptions: {
-			show: {
-				resource: ['acquisitions'],
-				operation: ['createOffNetworkTask'],
-			},
-		},
-		modes: [
-			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				placeholder: 'Select an organization...',
-				typeOptions: {
-					searchListMethod: 'getOrganizations',
-					searchable: true,
-				},
-			},
-			{
-				displayName: 'By ID',
-				name: 'id',
-				type: 'string',
-				validation: [
-					{
-						type: 'regex',
-						properties: {
-							regex: '^[0-9]+$',
-							errorMessage: 'Not a valid organization ID (must be numeric)',
-						},
-					},
-				],
-				placeholder: 'Enter organization ID (e.g., 123)',
-			},
-			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter organization name',
-			},
-		],
-		required: true,
-		description: 'The organization for the off-network acquisition task',
-	},
-
 	// Additional Fields
 	{
 		displayName: 'Additional Fields',
@@ -383,88 +287,10 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['getAll', 'create', 'assignEvidenceTask', 'assignImageTask'],
+				operation: ['assignEvidenceTask', 'assignImageTask'],
 			},
 		},
 		options: [
-			{
-				displayName: 'Artifacts',
-				name: 'artifacts',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select artifacts to collect',
-				displayOptions: {
-					show: {
-						'/operation': ['create'],
-					},
-				},
-				options: [
-					{
-						name: 'Browser History',
-						value: 'browser_history',
-					},
-					{
-						name: 'File System',
-						value: 'file_system',
-					},
-					{
-						name: 'Installed Software',
-						value: 'installed_software',
-					},
-					{
-						name: 'Memory Dump',
-						value: 'memory_dump',
-					},
-					{
-						name: 'Network Connections',
-						value: 'network_connections',
-					},
-					{
-						name: 'Registry',
-						value: 'registry',
-					},
-					{
-						name: 'System Information',
-						value: 'system_info',
-					},
-				],
-				description: 'Artifacts to collect during acquisition',
-			},
-			{
-				displayName: 'Evidence Types',
-				name: 'evidence',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select evidence types to collect',
-				displayOptions: {
-					show: {
-						'/operation': ['create'],
-					},
-				},
-				options: [
-					{
-						name: 'Documents',
-						value: 'documents',
-					},
-					{
-						name: 'Executables',
-						value: 'executables',
-					},
-					{
-						name: 'Files',
-						value: 'files',
-					},
-					{
-						name: 'Images',
-						value: 'images',
-					},
-					{
-						name: 'Logs',
-						value: 'logs',
-					},
-				],
-				description: 'Evidence types to collect during acquisition',
-			},
 			{
 				displayName: 'Filter By Asset Name',
 				name: 'assetName',
@@ -553,22 +379,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				},
 				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
-			{
-				displayName: 'Filter By Organization',
-				name: 'organizationIds',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select organizations to filter by',
-				displayOptions: {
-					show: {
-						'/operation': ['getAll'],
-					},
-				},
-				typeOptions: {
-					loadOptionsMethod: 'getOrganizationsOptions',
-				},
-				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
-			},
+
 			{
 				displayName: 'Filter By Platform',
 				name: 'platform',
@@ -626,21 +437,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				},
 				description: 'Filter assets by tags (comma-separated)',
 			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				default: 50,
-				displayOptions: {
-					show: {
-						'/operation': ['getAll'],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				description: 'Max number of results to return',
-			},
+
 		],
 	},
 ];
@@ -677,23 +474,7 @@ export async function fetchAllAcquisitionProfiles(
 	}
 }
 
-export function buildAcquisitionProfileQueryParams(organizationIds: string, additionalFields: any): Record<string, string | number> {
-	const queryParams: Record<string, string | number> = {};
 
-	// Handle organization filter
-	if (additionalFields.organizationIds && additionalFields.organizationIds.length > 0) {
-		queryParams['filter[organizationIds]'] = additionalFields.organizationIds.join(',');
-	} else if (organizationIds !== '0') {
-		queryParams['filter[organizationIds]'] = organizationIds;
-	}
-
-	// Handle limit
-	if (additionalFields.limit) {
-		queryParams.pageSize = additionalFields.limit;
-	}
-
-	return queryParams;
-}
 
 // Load options methods
 export async function getAcquisitionProfiles(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
@@ -761,67 +542,12 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 		try {
 			let responseData: any;
 
-			if (operation === 'getAll') {
-				// Get Many Acquisition Profiles
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-				const organizationIds = '0'; // Default or get from context
-
-				const queryParams = buildAcquisitionProfileQueryParams(organizationIds, additionalFields);
-				const response = await acquisitionsApi.getAcquisitionProfiles(this, credentials, organizationIds, queryParams);
-
-				const entities = response.result.entities || [];
-				const paginationInfo = extractPaginationInfo(response.result);
-
-				processApiResponseEntities(entities, returnData, i, {
-					includePagination: true,
-					paginationData: paginationInfo,
-				});
-
-				continue;
-
-			} else if (operation === 'get') {
+			if (operation === 'get') {
 				// Get Single Acquisition Profile
 				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileId', i) as any;
 				const profileId = normalizeAndValidateId(acquisitionProfileId.value || acquisitionProfileId, 'Acquisition Profile ID');
 
 				responseData = await acquisitionsApi.getAcquisitionProfileById(this, credentials, profileId);
-				responseData = responseData.result;
-
-			} else if (operation === 'create') {
-				// Create Acquisition Profile
-				const name = this.getNodeParameter('name', i) as string;
-				const description = this.getNodeParameter('description', i, '') as string;
-				const organizationId = this.getNodeParameter('organizationId', i) as any;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-
-				let orgId: number;
-				if (organizationId.mode === 'name') {
-					const orgIdString = await findOrganizationByName(this, credentials, organizationId.value);
-					orgId = parseInt(orgIdString, 10);
-				} else {
-					orgId = parseInt(organizationId.value || organizationId, 10);
-				}
-
-				const profileData: any = {
-					name,
-					organizationId: orgId,
-				};
-
-				if (description) {
-					profileData.description = description;
-				}
-
-				if (additionalFields.artifacts || additionalFields.evidence) {
-					profileData.settings = {};
-					if (additionalFields.artifacts) {
-						profileData.settings.artifacts = additionalFields.artifacts;
-					}
-					if (additionalFields.evidence) {
-						profileData.settings.evidence = additionalFields.evidence;
-					}
-				}
-
-				responseData = await acquisitionsApi.createAcquisitionProfile(this, credentials, profileData);
 				responseData = responseData.result;
 
 			} else if (operation === 'assignEvidenceTask') {

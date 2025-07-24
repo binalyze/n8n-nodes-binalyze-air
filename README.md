@@ -59,11 +59,9 @@ Manage evidence acquisition profiles and tasks.
 **Operations:**
 - `assignEvidenceTask` - Assign an evidence acquisition task by filter
 - `assignImageTask` - Assign an image acquisition task by filter
-- `create` - Create a new acquisition profile
 - `createOffNetworkTask` - Create an off-network acquisition task
 - `delete` - Delete an acquisition profile
 - `get` - Retrieve a specific acquisition profile
-- `getAll` - Retrieve many acquisition profiles
 - `update` - Update an acquisition profile
 
 ### Assets
@@ -146,7 +144,6 @@ Manage organizations and their users.
 - `assignUsers` - Assign users to an organization
 - `checkNameExists` - Check if an organization name already exists
 - `create` - Create a new organization
-- `delete` - Delete an organization
 - `get` - Retrieve a specific organization
 - `getAll` - Retrieve many organizations
 - `getShareableDeploymentInfo` - Get shareable deployment information
@@ -154,7 +151,6 @@ Manage organizations and their users.
 - `removeTags` - Remove tags from an organization
 - `removeUser` - Remove a user from an organization
 - `update` - Update an organization
-- `updateDeploymentToken` - Update organization deployment token
 - `updateShareableDeployment` - Update organization shareable deployment status
 
 ### Repositories

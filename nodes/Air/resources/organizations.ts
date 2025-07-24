@@ -61,12 +61,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 				description: 'Create a new organization',
 				action: 'Create an organization',
 			},
-			{
-				name: 'Delete',
-				value: 'delete',
-				description: 'Delete an organization',
-				action: 'Delete an organization',
-			},
+
 			{
 				name: 'Get',
 				value: 'get',
@@ -110,12 +105,6 @@ export const OrganizationsOperations: INodeProperties[] = [
 				action: 'Update an organization',
 			},
 			{
-				name: 'Update Deployment Token',
-				value: 'updateDeploymentToken',
-				description: 'Update organization deployment token',
-				action: 'Update organization deployment token',
-			},
-			{
 				name: 'Update Shareable Deployment',
 				value: 'updateShareableDeployment',
 				description: 'Update organization shareable deployment status',
@@ -133,7 +122,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['get', 'getUsers', 'addTags', 'removeTags', 'delete', 'assignUsers', 'removeUser', 'update', 'updateShareableDeployment', 'updateDeploymentToken'],
+				operation: ['get', 'getUsers', 'addTags', 'removeTags', 'assignUsers', 'removeUser', 'update', 'updateShareableDeployment'],
 			},
 		},
 		modes: [
@@ -303,7 +292,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['getShareableDeploymentInfo', 'updateDeploymentToken'],
+				operation: ['getShareableDeploymentInfo'],
 			},
 		},
 		required: true,
@@ -1105,52 +1094,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					break;
 				}
 
-				case 'delete': {
-					const organizationResource = this.getNodeParameter('organizationId', i) as any;
-					let organizationId: string;
 
-					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-						organizationId = organizationResource.value;
-					} else if (organizationResource.mode === 'name') {
-						try {
-							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-						}
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-							itemIndex: i,
-						});
-					}
-
-					try {
-						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
-					}
-
-					const response = await organizationsApi.deleteOrganization(this, credentials, parseInt(organizationId));
-
-					if (!response.success) {
-						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to delete organization: ${errorMessage}`, {
-							itemIndex: i,
-						});
-					}
-
-					returnData.push({
-						json: {
-							organizationId: parseInt(organizationId),
-							deleted: true,
-							success: response.success,
-							statusCode: response.statusCode,
-						},
-						pairedItem: i,
-					});
-					break;
-				}
 
 				case 'update': {
 					const organizationResource = this.getNodeParameter('organizationId', i) as any;
@@ -1329,61 +1273,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					break;
 				}
 
-				case 'updateDeploymentToken': {
-					const organizationResource = this.getNodeParameter('organizationId', i) as any;
-					const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
-
-					let organizationId: string;
-
-					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-						organizationId = organizationResource.value;
-					} else if (organizationResource.mode === 'name') {
-						try {
-							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-						}
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-							itemIndex: i,
-						});
-					}
-
-					try {
-						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
-					}
-
-					const trimmedToken = deploymentToken.trim();
-					if (!trimmedToken) {
-						throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
-							itemIndex: i,
-						});
-					}
-
-					const response = await organizationsApi.updateOrganizationDeploymentToken(this, credentials, parseInt(organizationId), trimmedToken);
-
-					if (!response.success) {
-						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to update deployment token: ${errorMessage}`, {
-							itemIndex: i,
-						});
-					}
-
-					returnData.push({
-						json: {
-							organizationId: parseInt(organizationId),
-							deploymentToken: trimmedToken,
-							success: response.success,
-							statusCode: response.statusCode,
-						},
-						pairedItem: i,
-					});
-					break;
-				}
 
 				case 'assignUsers': {
 					const organizationResource = this.getNodeParameter('organizationId', i) as any;

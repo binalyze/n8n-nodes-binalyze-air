@@ -323,26 +323,6 @@ export const api = {
     }
   },
 
-  async updateOrganizationDeploymentToken(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    id: number,
-    deploymentToken: string
-  ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
-    try {
-      const requestOptions = buildRequestOptionsWithErrorHandling(
-        credentials,
-        'POST',
-        `/api/public/organizations/${id}/deployment-token`
-      );
-      requestOptions.body = { deploymentToken };
-
-      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `update organization ${id} deployment token`);
-    } catch (error) {
-      throw new Error(`Failed to update organization ${id} deployment token: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  },
-
   async deleteOrganization(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
