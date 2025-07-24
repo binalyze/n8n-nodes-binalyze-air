@@ -59,11 +59,12 @@ Manage evidence acquisition profiles and tasks with comprehensive configuration 
 **Operations:**
 - `assignEvidenceTask` - Assign an evidence acquisition task by filter with advanced configuration
   - **Enhanced Features:**
-    - Task naming and scheduling (immediate or scheduled execution)
-    - Task configuration (CPU limits, bandwidth limits, disk space limits, compression settings)
-    - Drone analysis configuration (auto-pilot mode, custom analyzers, MITRE ATT&CK framework)
-    - Event log collection settings (date ranges, event count limits)
-    - Advanced endpoint filtering (by platform, status, tags, organization, etc.)
+    - **Task Configuration:** Comprehensive task customization with policy or custom options
+    - **Evidence Repository Selection:** Choose evidence repositories for automatic evidence storage
+    - **Platform Configuration:** Automatic repository configuration for Windows, Linux, macOS, and AIX
+    - **Resource Management:** CPU limits, bandwidth limits, disk space reservation
+    - **Compression & Encryption:** Enable compression and optional encryption with password protection
+    - **Advanced Endpoint Filtering:** Filter by platform, status, tags, organization, IP address, etc.
 - `assignImageTask` - Assign an image acquisition task by filter with advanced configuration
   - **Enhanced Features:**
     - Same comprehensive configuration options as evidence tasks
@@ -207,10 +208,54 @@ To set up the development environment:
 1. Clone this repository
 2. Install dependencies: `yarn install`
 3. Build the project: `yarn build`
-3. Link the project using: 
- - `npm link` 
- - `npm link n8n-nodes-binalyze-air` 
-4. And then run: `yarn dev` to start n8n in watch mode
+4. Link the project using: 
+   - `npm link` 
+   - `npm link n8n-nodes-binalyze-air` 
+5. Start the development environment:
+   - `yarn dev` - Start n8n in watch mode with automatic rebuilds
+   - `yarn debug` - Start n8n in debug mode with verbose logging
+
+### Development Scripts
+
+- `yarn build` - Build the project
+- `yarn dev` - Start development environment with file watching
+- `yarn debug` - Start development environment with debug logging enabled
+- `yarn restart:n8n` - Restart n8n without rebuilding
+
+### Debug Mode
+
+The `yarn debug` command enables comprehensive debug logging to help troubleshoot issues:
+
+**Features:**
+- **Verbose Logging**: Sets `N8N_LOG_LEVEL=debug` for detailed n8n logs
+- **Console Output**: Direct log output to console (`N8N_LOG_OUTPUT=console`)
+- **Debug Patterns**: Enables debug output for n8n core and community nodes (`DEBUG=n8n*,n8n-nodes-*`)
+- **Error Details**: Shows detailed error information (`N8N_DETAILED_ERROR_OUTPUT=true`)
+- **Development Mode**: Sets `NODE_ENV=development` for enhanced debugging
+
+**Usage:**
+```bash
+# Start development with debug logging
+yarn debug
+
+# Or manually start debug mode
+./scripts/dev-watch.sh --debug
+./scripts/restart-n8n.sh --debug
+```
+
+**Debug Output Examples:**
+```
+16:38:21.490   debug   Loaded all credentials and nodes from n8n-nodes-binalyze-air { "credentials": 1, "nodes": 1 }
+16:38:21.662   info    n8n ready on ::, port 5678
+16:38:23.607   info    Version: 1.103.2
+```
+
+When debug mode is active, you'll see detailed information about:
+- Node and credential loading
+- API requests and responses
+- Workflow execution steps
+- Error stack traces
+- Internal n8n operations
 
 ## Testing
 

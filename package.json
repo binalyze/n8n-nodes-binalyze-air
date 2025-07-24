@@ -31,6 +31,7 @@
   "scripts": {
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "./scripts/dev-watch.sh",
+    "debug": "./scripts/dev-watch.sh --debug",
     "dev:link": "./scripts/dev-link.sh",
     "watch:ts": "tsc --watch --preserveWatchOutput",
     "watch:restart": "chokidar \"**/*.ts\" -c \"./scripts/restart-n8n.sh\" --ignore \"dist/**/*.d.ts\" --ignore \"dist/**/*.map\" --initial",
