@@ -43,7 +43,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				action: 'Assign an evidence acquisition task',
 			},
 			{
-				name: 'Get',
+				name: 'Get Profile',
 				value: 'get',
 				description: 'Retrieve a specific acquisition profile',
 				action: 'Get an acquisition profile',
