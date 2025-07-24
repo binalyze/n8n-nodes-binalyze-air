@@ -23,6 +23,8 @@ import {
 	catchAndFormatError,
 } from '../utils/helpers';
 
+import { findOrganizationByName } from './organizations';
+
 export const RepositoriesOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
@@ -99,22 +101,52 @@ export const RepositoriesOperations: INodeProperties[] = [
 		description: 'The repository to retrieve',
 	},
 	{
-		displayName: 'Organization IDs',
+		displayName: 'Organization',
 		name: 'organizationId',
-		type: 'number',
-		required: true,
-		default: 0,
-		placeholder: 'Enter Organization IDs (0 for default organization)',
+		type: 'resourceLocator',
+		default: { mode: 'id', value: '0' },
+		placeholder: 'Select organization...',
 		displayOptions: {
 			show: {
 				resource: ['repositories'],
 				operation: ['getAll'],
 			},
 		},
-		description: 'Comma-separated list of Organization IDs to filter repositories by (0 for default organization). Use "0" to retrieve repositories that are visible to all organizations. Specify a single organization ID to retrieve repositories that are visible to that organization only alongside those that are visible to all organizations.',
-		typeOptions: {
-			minValue: 0,
-		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9,\\s]+$',
+							errorMessage: 'Organization IDs must be comma-separated numbers. Use "0" for all organizations.',
+						},
+					},
+				],
+				placeholder: 'Enter organization IDs (comma-separated) or "0" for all',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'Organization(s) to filter repositories. Use "0" for all organizations, specific IDs for multiple organizations, or search by name for a single organization.',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -213,7 +245,7 @@ export const RepositoriesOperations: INodeProperties[] = [
 /**
  * Build query parameters for repositories API
  */
-export function buildRepositoryQueryParams(organizationId: number, additionalFields: any): Record<string, string | number> {
+export function buildRepositoryQueryParams(organizationId: string, additionalFields: any): Record<string, string | number> {
 	const queryParams: Record<string, string | number> = {
 		'filter[organizationIds]': organizationId,
 	};
@@ -266,7 +298,7 @@ export function extractRepositoryId(repository: any): string {
 export async function fetchAllRepositories(
 	context: ILoadOptionsFunctions | IExecuteFunctions,
 	credentials: any,
-	organizationId: number,
+	organizationId: string,
 	filter?: string,
 	pageSize: number = 100
 ): Promise<any[]> {
@@ -316,7 +348,7 @@ export async function fetchAllRepositories(
 export async function getRepositoryById(
 	context: IExecuteFunctions,
 	credentials: any,
-	organizationId: number,
+	organizationId: string,
 	repositoryId: string
 ): Promise<any | null> {
 	const queryParams: Record<string, string | number> = {
@@ -345,7 +377,7 @@ export async function getRepositoryById(
 export async function getRepositoryByName(
 	context: IExecuteFunctions,
 	credentials: any,
-	organizationId: number,
+	organizationId: string,
 	repositoryName: string
 ): Promise<any | null> {
 	const queryParams: Record<string, string | number> = {
@@ -389,7 +421,7 @@ export async function getRepositories(this: ILoadOptionsFunctions, filter?: stri
 		const credentials = await getAirCredentials(this);
 		// For this implementation, we'll need an organizationId parameter from context
 		// This is a simplified version - in practice you might want to get this from a parameter
-		const organizationId = 0; // Default to all organizations
+		const organizationId = '0'; // Default to all organizations
 		const allRepositories = await fetchAllRepositories(this, credentials, organizationId, filter);
 
 		return createListSearchResults(
@@ -412,7 +444,7 @@ export async function getRepositoriesOptions(this: ILoadOptionsFunctions): Promi
 	try {
 		const credentials = await getAirCredentials(this);
 		// For this implementation, we'll use default organizationId
-		const organizationId = 0;
+		const organizationId = '0';
 		const allRepositories = await fetchAllRepositories(this, credentials, organizationId);
 
 		return createLoadOptions(
@@ -448,7 +480,7 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 			switch (operation) {
 				case 'get': {
 					// Use default organization ID (0) for get operation to retrieve repositories visible to all organizations
-					const organizationId = 0;
+					const organizationId = '0';
 					const repositoryResource = this.getNodeParameter('repositoryId', i) as any;
 
 					let repository: any | null = null;
@@ -493,12 +525,27 @@ export async function executeRepositories(this: IExecuteFunctions): Promise<INod
 				}
 
 				case 'getAll': {
-					const organizationId = this.getNodeParameter('organizationId', i) as number;
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+					let organizationId: string;
+
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
 
 					// Validate organization ID
-					if (organizationId === undefined || organizationId === null || (typeof organizationId !== 'number') || organizationId < 0) {
-						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number (0 or greater)', {
+					if (!organizationId || String(organizationId).trim() === '') {
+						throw new NodeOperationError(this.getNode(), 'Organization ID cannot be empty', {
 							itemIndex: i,
 						});
 					}
