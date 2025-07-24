@@ -21,6 +21,7 @@ import {
 
 import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import { api as acquisitionsApi } from '../api/acquisitions/acquisitions';
+import { api as evidenceRepositoriesApi } from '../api/evidence/evidencerepositories';
 import { findOrganizationByName } from './organizations';
 
 export const AcquisitionsOperations: INodeProperties[] = [
@@ -200,7 +201,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		description: 'The case to assign the acquisition task to',
 	},
 
-	// Acquisition Profile for task operations
+	// Acquisition Profile for evidence acquisition and off-network tasks only
 	{
 		displayName: 'Acquisition Profile',
 		name: 'acquisitionProfileIdForTask',
@@ -210,7 +211,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['assignEvidenceTask', 'assignImageTask', 'createOffNetworkTask'],
+				operation: ['assignEvidenceTask', 'createOffNetworkTask'],
 			},
 		},
 		modes: [
@@ -406,170 +407,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		],
 	},
 
-	// Keep Additional Fields for assignImageTask operation only
-	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		placeholder: 'Add Field',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['acquisitions'],
-				operation: ['assignImageTask'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Filter By Asset Name',
-				name: 'assetName',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter asset name',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				description: 'Filter assets by name',
-			},
-			{
-				displayName: 'Filter By IP Address',
-				name: 'ipAddress',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter IP address',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				description: 'Filter assets by IP address',
-			},
-			{
-				displayName: 'Filter By Management Status',
-				name: 'managedStatus',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select management status',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				options: [
-					{
-						name: 'Managed',
-						value: 'managed',
-					},
-					{
-						name: 'Unmanaged',
-						value: 'unmanaged',
-					},
-				],
-				description: 'Filter assets by management status',
-			},
-			{
-				displayName: 'Filter By Online Status',
-				name: 'onlineStatus',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select online status',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				options: [
-					{
-						name: 'Online',
-						value: 'online',
-					},
-					{
-						name: 'Offline',
-						value: 'offline',
-					},
-				],
-				description: 'Filter assets by online status',
-			},
-			{
-				displayName: 'Filter By Organization',
-				name: 'filterOrganizationIds',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select organizations to filter by',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				typeOptions: {
-					loadOptionsMethod: 'getOrganizationsOptions',
-				},
-				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
-			},
-
-			{
-				displayName: 'Filter By Platform',
-				name: 'platform',
-				type: 'multiOptions',
-				default: [],
-				placeholder: 'Select platforms',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				options: [
-					{
-						name: 'Windows',
-						value: 'windows',
-					},
-					{
-						name: 'Linux',
-						value: 'linux',
-					},
-					{
-						name: 'macOS',
-						value: 'macos',
-					},
-					{
-						name: 'AIX',
-						value: 'aix',
-					},
-				],
-				description: 'Filter assets by platform',
-			},
-			{
-				displayName: 'Filter By Search Term',
-				name: 'searchTerm',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter search term',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				description: 'Filter assets by search term',
-			},
-			{
-				displayName: 'Filter By Tags',
-				name: 'tags',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter comma-separated tags',
-				displayOptions: {
-					show: {
-						'/operation': ['assignImageTask'],
-					},
-				},
-				description: 'Filter assets by tags (comma-separated)',
-			},
-		],
-	},
-
-	// Task Configuration (keep for assignImageTask only)
+	// Task Configuration
 	{
 		displayName: 'Task Configuration',
 		name: 'taskConfig',
@@ -579,9 +417,10 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['acquisitions'],
-				operation: ['assignImageTask'],
+				operation: ['assignEvidenceTask'],
 			},
 		},
+		required: true,
 		options: [
 			{
 				displayName: 'Bandwidth Limit (MB/s)',
@@ -594,7 +433,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				},
 				displayOptions: {
 					show: {
-						choice: ['useCustomOptions'],
+						choice: ['use-custom-options'],
 					},
 				},
 				description: 'Maximum bandwidth usage in MB/s (0 for unlimited)',
@@ -603,16 +442,16 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				displayName: 'Configuration Choice',
 				name: 'choice',
 				type: 'options',
-				default: 'useCustomOptions',
-				description: 'Whether to use custom options or default configuration',
+				default: 'use-custom-options',
+				description: 'Whether to use custom options or default policy',
 				options: [
 					{
 						name: 'Use Custom Options',
-						value: 'useCustomOptions',
+						value: 'use-custom-options',
 					},
 					{
-						name: 'Use Default Options',
-						value: 'useDefaultOptions',
+						name: 'Use Policy',
+						value: 'use-policy',
 					},
 				],
 			},
@@ -628,14 +467,14 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				},
 				displayOptions: {
 					show: {
-						choice: ['useCustomOptions'],
+						choice: ['use-custom-options'],
 					},
 				},
 				description: 'Maximum CPU usage percentage for the task',
 			},
 			{
-				displayName: 'Disk Space Limit (GB)',
-				name: 'diskSpaceLimit',
+				displayName: 'Disk Space Reserve (GB)',
+				name: 'diskSpaceReserve',
 				type: 'number',
 				default: 0,
 				placeholder: '0 = unlimited',
@@ -644,10 +483,10 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				},
 				displayOptions: {
 					show: {
-						choice: ['useCustomOptions'],
+						choice: ['use-custom-options'],
 					},
 				},
-				description: 'Maximum disk space usage in GB (0 for unlimited)',
+				description: 'Disk space to reserve in GB (0 for unlimited)',
 			},
 			{
 				displayName: 'Enable Compression',
@@ -656,20 +495,138 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				default: true,
 				displayOptions: {
 					show: {
-						choice: ['useCustomOptions'],
+						choice: ['use-custom-options'],
 					},
 				},
 				description: 'Whether to enable compression for evidence files',
 			},
+			{
+				displayName: 'Enable Encryption',
+				name: 'enableEncryption',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					show: {
+						choice: ['use-custom-options'],
+					},
+				},
+				description: 'Whether to enable encryption for evidence files',
+			},
+			{
+				displayName: 'Encryption Password',
+				name: 'encryptionPassword',
+				type: 'string',
+				typeOptions: { password: true },
+				default: '',
+				placeholder: 'Enter encryption password',
+				displayOptions: {
+					show: {
+						choice: ['use-custom-options'],
+						enableEncryption: [true],
+					},
+				},
+				description: 'Password for encrypting evidence files',
+			},
+			{
+				displayName: 'Evidence Repository',
+				name: 'evidenceRepository',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				placeholder: 'Select an evidence repository...',
+				displayOptions: {
+					show: {
+						choice: ['use-custom-options'],
+					},
+				},
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select an evidence repository...',
+										typeOptions: {
+					searchListMethod: 'getRepositories',
+					searchable: true,
+				},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						validation: [
+							{
+								type: 'regex',
+								properties: {
+									regex: '^[a-zA-Z0-9-_]+$',
+									errorMessage: 'Not a valid evidence repository ID (must contain only letters, numbers, hyphens, and underscores)',
+								},
+							},
+						],
+						placeholder: 'Enter evidence repository ID',
+					},
+				],
+				required: true,
+				description: 'The evidence repository to store evidence files',
+			},
 		],
 	},
 
-	// Drone Configuration (keep for assignImageTask only)
+	// Organization for image acquisition (simplified filtering)
 	{
-		displayName: 'Drone Configuration',
-		name: 'droneConfig',
+		displayName: 'Organization',
+		name: 'imageOrganizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignImageTask'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be numeric)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID (e.g., 123)',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization context for the image acquisition task',
+	},
+
+	// Disk Image Options for assignImageTask operation
+	{
+		displayName: 'Disk Image Options',
+		name: 'diskImageOptions',
 		type: 'collection',
-		placeholder: 'Add Drone Settings',
+		placeholder: 'Configure Image Settings',
 		default: {},
 		displayOptions: {
 			show: {
@@ -677,115 +634,219 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				operation: ['assignImageTask'],
 			},
 		},
+		required: true,
 		options: [
 			{
-				displayName: 'Auto Pilot',
-				name: 'autoPilot',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to enable automatic drone analysis',
-			},
-			{
-				displayName: 'Enable Drone',
-				name: 'enabled',
-				type: 'boolean',
-				default: false,
-				displayOptions: {
-					hide: {
-						autoPilot: [true],
-					},
-				},
-				description: 'Whether to enable drone analysis with custom settings',
-			},
-			{
-				displayName: 'Enable MITRE ATT&CK',
-				name: 'mitreEnabled',
-				type: 'boolean',
-				default: true,
-				displayOptions: {
-					show: {
-						autoPilot: [false],
-					},
-				},
-				description: 'Whether to enable MITRE ATT&CK framework analysis',
-			},
-			{
-				displayName: 'Keywords',
-				name: 'keywords',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter comma-separated keywords',
-				displayOptions: {
-					show: {
-						autoPilot: [false],
-						enabled: [true],
-					},
-				},
-				description: 'Keywords for drone analysis (comma-separated)',
-			},
-			{
-				displayName: 'Minimum Score',
-				name: 'minScore',
+				displayName: 'Chunk Size (Bytes)',
+				name: 'chunkSize',
 				type: 'number',
-				default: 50,
+				default: 0,
+				placeholder: '0 = default',
 				typeOptions: {
 					minValue: 0,
+				},
+				description: 'Size of chunks in bytes (0 for default)',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter image description',
+				displayOptions: {
+					show: {
+						imageType: ['EWF2'],
+					},
+				},
+				description: 'Description for the EWF2 image (only for EWF2 format)',
+			},
+			{
+				displayName: 'Endpoints and Volumes',
+				name: 'endpoints',
+				type: 'fixedCollection',
+				default: [],
+				placeholder: 'Add Endpoint',
+				typeOptions: {
+					multipleValues: true,
+					minValue: 1,
+				},
+				options: [
+					{
+						displayName: 'Endpoint',
+						name: 'endpoint',
+						values: [
+							{
+								displayName: 'Endpoint ID',
+								name: 'endpointId',
+								type: 'string',
+								default: '',
+								placeholder: 'Enter endpoint ID',
+								required: true,
+								description: 'The ID of the endpoint to image',
+							},
+							{
+								displayName: 'Volumes',
+								name: 'volumes',
+								type: 'string',
+								default: '',
+								placeholder: 'Enter comma-separated volumes (e.g., /dev/disk3s5,/dev/disk3s4)',
+								required: true,
+								description: 'Comma-separated list of volumes to image',
+							},
+						],
+					},
+				],
+				description: 'Configure which endpoints and volumes to image',
+			},
+			{
+				displayName: 'Examiner Name',
+				name: 'examinerName',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter examiner name',
+				displayOptions: {
+					show: {
+						imageType: ['EWF2'],
+					},
+				},
+				description: 'Name of the examiner for the EWF2 image (only for EWF2 format)',
+			},
+			{
+				displayName: 'Image Type',
+				name: 'imageType',
+				type: 'options',
+				default: 'dd',
+				required: true,
+				options: [
+					{
+						name: 'DD (Raw Image)',
+						value: 'dd',
+					},
+					{
+						name: 'EWF2 (Expert Witness Format)',
+						value: 'EWF2',
+					},
+				],
+				description: 'The format for the disk image',
+			},
+			{
+				displayName: 'Single File',
+				name: 'singleFile',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to create a single image file',
+			},
+			{
+				displayName: 'Start Offset (Bytes)',
+				name: 'startOffset',
+				type: 'number',
+				default: 0,
+				placeholder: '0 = start from beginning',
+				typeOptions: {
+					minValue: 0,
+				},
+				description: 'Starting offset in bytes (0 for beginning)',
+			},
+		],
+	},
+
+	// Task Configuration for assignImageTask operation
+	{
+		displayName: 'Task Configuration',
+		name: 'taskConfig',
+		type: 'collection',
+		placeholder: 'Add Configuration',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignImageTask'],
+			},
+		},
+		required: true,
+		options: [
+			{
+				displayName: 'Bandwidth Limit (MB/s)',
+				name: 'bandwidthLimit',
+				type: 'number',
+				default: 0,
+				placeholder: '0 = unlimited',
+				typeOptions: {
+					minValue: 0,
+				},
+				displayOptions: {
+					show: {
+						choice: ['use-custom-options'],
+					},
+				},
+				description: 'Maximum bandwidth usage in MB/s (0 for unlimited)',
+			},
+			{
+				displayName: 'Configuration Choice',
+				name: 'choice',
+				type: 'options',
+				default: 'use-custom-options',
+				description: 'Whether to use custom options or default policy',
+				options: [
+					{
+						name: 'Use Custom Options',
+						value: 'use-custom-options',
+					},
+					{
+						name: 'Use Policy',
+						value: 'use-policy',
+					},
+				],
+			},
+			{
+				displayName: 'CPU Usage Limit (%)',
+				name: 'cpuUsageLimit',
+				type: 'number',
+				default: 50,
+				placeholder: '50',
+				typeOptions: {
+					minValue: 1,
 					maxValue: 100,
 				},
 				displayOptions: {
 					show: {
-						autoPilot: [false],
-						enabled: [true],
+						choice: ['use-custom-options'],
 					},
 				},
-				description: 'Minimum score for drone findings',
-			},
-		],
-	},
-
-	// Event Log Records Configuration (keep for assignImageTask only)
-	{
-		displayName: 'Event Log Configuration',
-		name: 'eventLogConfig',
-		type: 'collection',
-		placeholder: 'Add Event Log Settings',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['acquisitions'],
-				operation: ['assignImageTask'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Start Date',
-				name: 'startDate',
-				type: 'dateTime',
-				default: '',
-				description: 'Start date for event log collection (ISO8601 UTC format)',
+				description: 'Maximum CPU usage percentage for the task',
 			},
 			{
-				displayName: 'End Date',
-				name: 'endDate',
-				type: 'dateTime',
-				default: '',
-				description: 'End date for event log collection (ISO8601 UTC format)',
-			},
-			{
-				displayName: 'Max Event Count',
-				name: 'maxEventCount',
+				displayName: 'Disk Space Reserve (GB)',
+				name: 'diskSpaceReserve',
 				type: 'number',
-				default: 4000,
-				placeholder: '4000',
+				default: 0,
+				placeholder: '0 = unlimited',
 				typeOptions: {
-					minValue: -1,
+					minValue: 0,
 				},
-				description: 'Maximum number of events to collect per event type (-1 for unlimited)',
+				displayOptions: {
+					show: {
+						choice: ['use-custom-options'],
+					},
+				},
+				description: 'Disk space to reserve in GB (0 for unlimited)',
+			},
+			{
+				displayName: 'Enable Compression',
+				name: 'enableCompression',
+				type: 'boolean',
+				default: true,
+				displayOptions: {
+					show: {
+						choice: ['use-custom-options'],
+					},
+				},
+				description: 'Whether to enable compression for image files',
 			},
 		],
 	},
 
-	// Task Scheduler Configuration (keep for assignImageTask only)
+	// Task Scheduler Configuration for assignImageTask operation
 	{
 		displayName: 'Scheduler Configuration',
 		name: 'schedulerConfig',
@@ -912,6 +973,36 @@ export async function fetchAllAcquisitionProfiles(
 	}
 }
 
+// Helper functions for evidence repositories
+export function extractEvidenceRepositoryId(evidenceRepository: any): string {
+	return extractEntityId(evidenceRepository, 'evidence repository');
+}
+
+export function isValidEvidenceRepository(evidenceRepository: any): boolean {
+	return isValidEntity(evidenceRepository, ['name']);
+}
+
+export async function fetchAllEvidenceRepositories(
+	context: ILoadOptionsFunctions | IExecuteFunctions,
+	credentials: AirCredentials,
+	organizationIds: string = '0',
+	searchFilter?: string,
+	pageSize: number = 100
+): Promise<any[]> {
+	try {
+		const repositories = await evidenceRepositoriesApi.getAllEvidenceRepositories(
+			context,
+			credentials,
+			organizationIds,
+			searchFilter,
+			pageSize
+		);
+		return repositories || [];
+	} catch (error) {
+		throw new Error(`Failed to fetch evidence repositories: ${error instanceof Error ? error.message : String(error)}`);
+	}
+}
+
 
 
 // Load options methods
@@ -968,6 +1059,59 @@ export async function getAcquisitionProfilesOptions(this: ILoadOptionsFunctions)
 	}
 }
 
+export async function getEvidenceRepositories(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+		const organizationIds = '0'; // Use default or get from context
+
+		const evidenceRepositories = await fetchAllEvidenceRepositories(
+			this,
+			credentials,
+			organizationIds,
+			searchTerm
+		);
+
+		return createListSearchResults(
+			evidenceRepositories,
+			isValidEvidenceRepository,
+			(repository) => ({
+				name: repository.name,
+				value: extractEvidenceRepositoryId(repository),
+				url: '',
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		const formattedError = catchAndFormatError(error, 'search evidence repositories');
+		throw formattedError;
+	}
+}
+
+export async function getEvidenceRepositoriesOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	try {
+		const credentials = await getAirCredentials(this);
+		const organizationIds = '0'; // Use default or get from context
+
+		const evidenceRepositories = await fetchAllEvidenceRepositories(
+			this,
+			credentials,
+			organizationIds
+		);
+
+		return createLoadOptions(
+			evidenceRepositories,
+			isValidEvidenceRepository,
+			(repository) => ({
+				name: repository.name,
+				value: extractEvidenceRepositoryId(repository),
+			})
+		);
+	} catch (error) {
+		const formattedError = catchAndFormatError(error, 'load evidence repositories options');
+		throw formattedError;
+	}
+}
+
 // Main execute function
 export async function executeAcquisitions(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
@@ -995,6 +1139,20 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileIdForTask', i) as any;
 				const taskName = this.getNodeParameter('taskName', i) as string;
 				const endpointFilters = this.getNodeParameter('endpointFilters', i) as any;
+				const taskConfig = this.getNodeParameter('taskConfig', i) as any;
+
+				// Validate that at least one endpoint filter is provided
+				const hasFilters = endpointFilters && Object.keys(endpointFilters).some(key => {
+					const value = endpointFilters[key];
+					if (Array.isArray(value)) {
+						return value.length > 0;
+					}
+					return value && value.toString().trim().length > 0;
+				});
+
+				if (!hasFilters) {
+					throw new NodeOperationError(this.getNode(), 'At least one endpoint filter must be provided to target specific endpoints');
+				}
 
 				// Get organization ID
 				let orgId: number;
@@ -1026,54 +1184,160 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 				if (endpointFilters.managedStatus) taskData.filter.managedStatus = endpointFilters.managedStatus;
 				if (endpointFilters.tags) taskData.filter.tags = endpointFilters.tags.split(',').map((tag: string) => tag.trim());
 
+				// Build TaskConfig
+				taskData.taskConfig = {
+					choice: taskConfig.choice || 'use-custom-options',
+				};
+
+				if (taskConfig.choice === 'use-custom-options') {
+					// Get evidence repository ID
+					const evidenceRepositoryId = normalizeAndValidateId(
+						taskConfig.evidenceRepository?.value || taskConfig.evidenceRepository,
+						'Evidence Repository ID'
+					);
+
+					// Configure save to repository for all platforms
+					taskData.taskConfig.saveTo = {
+						windows: {
+							location: 'repository',
+							path: 'C:\\Binalyze\\AIR',
+							useMostFreeVolume: true,
+							repositoryId: evidenceRepositoryId,
+							tmp: 'Binalyze\\AIR\\tmp',
+							directCollection: false,
+						},
+						linux: {
+							location: 'repository',
+							path: 'opt/binalyze/air',
+							useMostFreeVolume: true,
+							repositoryId: evidenceRepositoryId,
+							tmp: 'opt/binalyze/air/tmp',
+							directCollection: false,
+						},
+						macos: {
+							location: 'repository',
+							path: 'opt/binalyze/air',
+							useMostFreeVolume: true,
+							repositoryId: evidenceRepositoryId,
+							tmp: 'opt/binalyze/air/tmp',
+							directCollection: false,
+						},
+						aix: {
+							location: 'repository',
+							path: 'opt/binalyze/air',
+							useMostFreeVolume: true,
+							repositoryId: evidenceRepositoryId,
+							tmp: 'opt/binalyze/air/tmp',
+						},
+					};
+
+					// Configure other task settings
+					taskData.taskConfig.cpu = {
+						limit: taskConfig.cpuUsageLimit || 50,
+					};
+
+					taskData.taskConfig.bandwidth = {
+						limit: taskConfig.bandwidthLimit || 0,
+					};
+
+					taskData.taskConfig.diskSpace = {
+						reserve: taskConfig.diskSpaceReserve || 0,
+					};
+
+					taskData.taskConfig.compression = {
+						enabled: taskConfig.enableCompression !== false,
+						encryption: {
+							enabled: taskConfig.enableEncryption || false,
+							password: taskConfig.encryptionPassword || null,
+						},
+					};
+
+					// Set sendTo location based on whether evidence repository is selected
+					if (taskConfig.evidenceRepository) {
+						taskData.taskConfig.sendTo = {
+							location: 'repository',
+							repositoryId: evidenceRepositoryId,
+						};
+					} else {
+						taskData.taskConfig.sendTo = {
+							location: 'user-local',
+						};
+					}
+				}
+
 				responseData = await acquisitionsApi.assignEvidenceAcquisitionTask(this, credentials, taskData);
 				responseData = responseData.result;
 
 			} else if (operation === 'assignImageTask') {
 				// Assign Image Acquisition Task
 				const caseId = this.getNodeParameter('caseId', i) as any;
-				const acquisitionProfileId = this.getNodeParameter('acquisitionProfileIdForTask', i) as any;
 				const taskName = this.getNodeParameter('taskName', i) as string;
-				const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+				const imageOrganizationId = this.getNodeParameter('imageOrganizationId', i) as any;
+				const diskImageOptions = this.getNodeParameter('diskImageOptions', i) as any;
 				const taskConfig = this.getNodeParameter('taskConfig', i) as any;
-				const droneConfig = this.getNodeParameter('droneConfig', i) as any;
-				const eventLogConfig = this.getNodeParameter('eventLogConfig', i) as any;
 				const schedulerConfig = this.getNodeParameter('schedulerConfig', i) as any;
+
+				// Get organization ID
+				let orgId: number;
+				if (imageOrganizationId.mode === 'name') {
+					const orgIdString = await findOrganizationByName(this, credentials, imageOrganizationId.value);
+					orgId = parseInt(orgIdString, 10);
+				} else {
+					orgId = parseInt(imageOrganizationId.value || imageOrganizationId, 10);
+				}
+
+				// Transform endpoints array format for API
+				const endpoints = diskImageOptions.endpoints?.endpoint?.map((ep: any) => ({
+					endpointId: ep.endpointId,
+					volumes: ep.volumes.split(',').map((vol: string) => vol.trim()),
+				})) || [];
+
+				if (endpoints.length === 0) {
+					throw new NodeOperationError(this.getNode(), 'At least one endpoint with volumes must be configured for image acquisition');
+				}
 
 				const taskData: any = {
 					caseId: normalizeAndValidateId(caseId.value || caseId, 'Case ID'),
-					acquisitionProfileId: normalizeAndValidateId(acquisitionProfileId.value || acquisitionProfileId, 'Acquisition Profile ID'),
-					filter: {},
+					filter: {
+						organizationIds: [orgId],
+					},
 					taskConfig: {
-						choice: taskConfig.choice || 'useCustomOptions',
-						saveTo: {},
-						cpu: { usageLimit: taskConfig.cpuUsageLimit || 50 },
-						bandwidth: { limit: taskConfig.bandwidthLimit || 0 },
-						diskSpace: { limit: taskConfig.diskSpaceLimit || 0 },
-						compression: { enabled: taskConfig.enableCompression !== false },
-						sendTo: {},
+						choice: taskConfig.choice || 'use-custom-options',
 					},
-					droneConfig: {
-						autoPilot: droneConfig.autoPilot || false,
-						enabled: droneConfig.enabled || false,
-						mitreEnabled: droneConfig.mitreEnabled !== false,
-						analyzers: [],
-						keywords: droneConfig.keywords ? droneConfig.keywords.split(',').map((k: string) => k.trim()) : [],
-						minScore: droneConfig.minScore || 50,
+					diskImageOptions: {
+						endpoints: endpoints,
+						chunkSize: diskImageOptions.chunkSize || 0,
+						startOffset: diskImageOptions.startOffset || 0,
+						singleFile: diskImageOptions.singleFile || false,
+						imageType: diskImageOptions.imageType || 'dd',
 					},
-					eventLogRecordsConfig: {
-						startDate: eventLogConfig.startDate || null,
-						endDate: eventLogConfig.endDate || null,
-						maxEventCount: eventLogConfig.maxEventCount || 4000,
-					},
+					schedulerConfig: { when: 'now' },
 				};
+
+				// Add EWF2-specific options if applicable
+				if (diskImageOptions.imageType === 'EWF2') {
+					if (diskImageOptions.description) {
+						taskData.diskImageOptions.description = diskImageOptions.description;
+					}
+					if (diskImageOptions.examinerName) {
+						taskData.diskImageOptions.examinerName = diskImageOptions.examinerName;
+					}
+				}
 
 				if (taskName) {
 					taskData.taskName = taskName;
 				}
 
+				// Configure task settings if using custom options
+				if (taskConfig.choice === 'use-custom-options') {
+					taskData.taskConfig.cpu = { limit: taskConfig.cpuUsageLimit || 50 };
+					taskData.taskConfig.bandwidth = { limit: taskConfig.bandwidthLimit || 0 };
+					taskData.taskConfig.diskSpace = { reserve: taskConfig.diskSpaceReserve || 0 };
+					taskData.taskConfig.compression = { enabled: taskConfig.enableCompression !== false };
+				}
+
 				// Add scheduler configuration if provided
-				if (schedulerConfig.when && schedulerConfig.when !== 'now') {
+				if (schedulerConfig && schedulerConfig.when && schedulerConfig.when !== 'now') {
 					taskData.schedulerConfig = {
 						when: schedulerConfig.when,
 						timezoneType: schedulerConfig.timezoneType || 'asset',
@@ -1081,19 +1345,7 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 						startDate: schedulerConfig.startDate ? new Date(schedulerConfig.startDate).getTime() : undefined,
 						isRepeat: schedulerConfig.isRepeat || false,
 					};
-				} else {
-					taskData.schedulerConfig = { when: 'now' };
 				}
-
-				// Build filter from additional fields
-				if (additionalFields.searchTerm) taskData.filter.searchTerm = additionalFields.searchTerm;
-				if (additionalFields.assetName) taskData.filter.name = additionalFields.assetName;
-				if (additionalFields.ipAddress) taskData.filter.ipAddress = additionalFields.ipAddress;
-				if (additionalFields.platform) taskData.filter.platform = additionalFields.platform;
-				if (additionalFields.onlineStatus) taskData.filter.onlineStatus = additionalFields.onlineStatus;
-				if (additionalFields.managedStatus) taskData.filter.managedStatus = additionalFields.managedStatus;
-				if (additionalFields.tags) taskData.filter.tags = additionalFields.tags.split(',').map((tag: string) => tag.trim());
-				if (additionalFields.filterOrganizationIds) taskData.filter.organizationIds = additionalFields.filterOrganizationIds.map((id: string) => parseInt(id, 10));
 
 				responseData = await acquisitionsApi.assignImageAcquisitionTask(this, credentials, taskData);
 				responseData = responseData.result;
@@ -1148,3 +1400,4 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 
 	return [returnData];
 }
+
