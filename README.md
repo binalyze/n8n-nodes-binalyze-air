@@ -8,7 +8,6 @@ This is an n8n community node that integrates with Binalyze AIR (Automated Incid
 
 - [Installation](#installation)
 - [Configuration](#configuration)
-- [Error Handling](#error-handling)
 - [Supported Resources](#supported-resources)
   - [Acquisitions](#acquisitions)
   - [Assets](#assets)
@@ -59,6 +58,10 @@ Manage evidence acquisition profiles and tasks with comprehensive configuration 
 **Operations:**
 - `assignEvidenceTask` - Assign an evidence acquisition task by filter with advanced configuration
   - **Enhanced Features:**
+    - **Save To Configuration:** Choose between local storage or evidence repositories
+      - **Local Storage:** Configure platform-specific paths for Windows, Linux, and macOS (when custom paths are needed)
+      - **Repository Storage:** Select evidence repositories with resource locator support
+      - **Volume Management:** Automatically use the most free volume (default) or configure custom paths per platform
     - **Task Configuration:** Comprehensive task customization with policy or custom options
     - **Evidence Repository Selection:** Choose evidence repositories for automatic evidence storage
     - **Platform Configuration:** Automatic repository configuration for Windows, Linux, macOS, and AIX

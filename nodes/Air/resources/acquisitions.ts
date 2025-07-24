@@ -22,6 +22,7 @@ import {
 import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import { api as acquisitionsApi } from '../api/acquisitions/acquisitions';
 import { findOrganizationByName } from './organizations';
+import { getRepositories } from './repositories';
 
 export const AcquisitionsOperations: INodeProperties[] = [
 	{
@@ -248,6 +249,149 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		description: 'Optional name for the acquisition task',
 	},
 
+	// Save To Configuration
+	{
+		displayName: 'Save To',
+		name: 'saveToLocation',
+		type: 'options',
+		default: 'local',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+			},
+		},
+		options: [
+			{
+				name: 'Local',
+				value: 'local',
+				description: 'Save evidence to local storage on each platform',
+			},
+			{
+				name: 'Repository',
+				value: 'repository',
+				description: 'Save evidence to a configured evidence repository',
+			},
+		],
+		description: 'Where to save the acquired evidence',
+	},
+
+	// Repository selector for when Save To is Repository
+	{
+		displayName: 'Evidence Repository',
+		name: 'repositoryId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an evidence repository...',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+				saveToLocation: ['repository'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an evidence repository...',
+				typeOptions: {
+					searchListMethod: 'getRepositories',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid repository ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter repository ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter repository name',
+			},
+		],
+		required: true,
+		description: 'The evidence repository to save the acquired evidence to',
+	},
+
+	// Use Most Free Volume option for local saves
+	{
+		displayName: 'Use Most Free Volume',
+		name: 'useMostFreeVolume',
+		type: 'boolean',
+		default: true,
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+				saveToLocation: ['local'],
+			},
+		},
+		description: 'Whether to automatically select the volume with the most free space for evidence storage',
+	},
+
+	// Local save paths for each platform (only shown when useMostFreeVolume is false)
+	{
+		displayName: 'Windows Save Path',
+		name: 'windowsPath',
+		type: 'string',
+		default: 'C:\\Binalyze\\AIR',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+				saveToLocation: ['local'],
+				useMostFreeVolume: [false],
+			},
+		},
+		description: 'Local path on Windows systems where evidence will be saved',
+	},
+
+	{
+		displayName: 'Linux Save Path',
+		name: 'linuxPath',
+		type: 'string',
+		default: 'opt/binalyze/air',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+				saveToLocation: ['local'],
+				useMostFreeVolume: [false],
+			},
+		},
+		description: 'Local path on Linux systems where evidence will be saved',
+	},
+
+	{
+		displayName: 'macOS Save Path',
+		name: 'macosPath',
+		type: 'string',
+		default: 'opt/binalyze/air',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+				saveToLocation: ['local'],
+				useMostFreeVolume: [false],
+			},
+		},
+		description: 'Local path on macOS systems where evidence will be saved',
+	},
+
 	// Endpoint Filters (required for evidence tasks)
 	{
 		displayName: 'Endpoint Filters (Required)',
@@ -397,6 +541,8 @@ export async function fetchAllAcquisitionProfiles(
 
 
 // Load options methods
+export { getRepositories };
+
 export async function getAcquisitionProfiles(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
@@ -478,6 +624,14 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 				const taskName = this.getNodeParameter('taskName', i) as string;
 				const endpointFilters = this.getNodeParameter('endpointFilters', i) as any;
 
+				// Save To configuration parameters
+				const saveToLocation = this.getNodeParameter('saveToLocation', i) as string;
+				const repositoryId = saveToLocation === 'repository' ? this.getNodeParameter('repositoryId', i) as any : undefined;
+				const useMostFreeVolume = saveToLocation === 'local' ? this.getNodeParameter('useMostFreeVolume', i) as boolean : undefined;
+				const windowsPath = saveToLocation === 'local' && !useMostFreeVolume ? this.getNodeParameter('windowsPath', i) as string : undefined;
+				const linuxPath = saveToLocation === 'local' && !useMostFreeVolume ? this.getNodeParameter('linuxPath', i) as string : undefined;
+				const macosPath = saveToLocation === 'local' && !useMostFreeVolume ? this.getNodeParameter('macosPath', i) as string : undefined;
+
 				// Validate that at least one endpoint filter is provided
 				const hasFilter = Boolean(
 					endpointFilters.searchTerm ||
@@ -512,6 +666,50 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 
 				if (taskName) {
 					taskData.taskName = taskName;
+				}
+
+				// Build Save To configuration
+				taskData.taskConfig = {
+					choice: 'use-custom-options',
+					saveTo: {
+						windows: {
+							location: saveToLocation,
+							useMostFreeVolume: useMostFreeVolume || true,
+							directCollection: false,
+							tmp: 'Binalyze\\AIR\\tmp',
+						},
+						linux: {
+							location: saveToLocation,
+							useMostFreeVolume: useMostFreeVolume || true,
+							directCollection: false,
+							tmp: 'opt/binalyze/air/tmp',
+						},
+						macos: {
+							location: saveToLocation,
+							useMostFreeVolume: useMostFreeVolume || true,
+							directCollection: false,
+							tmp: 'opt/binalyze/air/tmp',
+						},
+						aix: {
+							location: saveToLocation,
+							useMostFreeVolume: useMostFreeVolume || true,
+							tmp: 'opt/binalyze/air/tmp',
+						},
+					},
+				};
+
+				// Set platform-specific paths or repository ID
+				if (saveToLocation === 'local') {
+					taskData.taskConfig.saveTo.windows.path = windowsPath || 'C:\\Binalyze\\AIR';
+					taskData.taskConfig.saveTo.linux.path = linuxPath || 'opt/binalyze/air';
+					taskData.taskConfig.saveTo.macos.path = macosPath || 'opt/binalyze/air';
+					taskData.taskConfig.saveTo.aix.path = 'opt/binalyze/air'; // Use default path for AIX
+				} else if (saveToLocation === 'repository') {
+					const repoId = normalizeAndValidateId(repositoryId.value || repositoryId, 'Repository ID');
+					taskData.taskConfig.saveTo.windows.repositoryId = repoId;
+					taskData.taskConfig.saveTo.linux.repositoryId = repoId;
+					taskData.taskConfig.saveTo.macos.repositoryId = repoId;
+					taskData.taskConfig.saveTo.aix.repositoryId = repoId;
 				}
 
 				// Build filter from endpoint filters
