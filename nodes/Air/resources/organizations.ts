@@ -683,7 +683,6 @@ export async function getOrganizations(this: ILoadOptionsFunctions, filter?: str
 				return {
 					name: name,
 					value: resourceValue,
-					url: organization.deploymentToken || '',
 				};
 			},
 			filter

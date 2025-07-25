@@ -6,7 +6,32 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Parse command line arguments
+DEBUG_MODE=false
+for arg in "$@"; do
+    case $arg in
+        --debug)
+            DEBUG_MODE=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--debug] [--help]"
+            echo "  --debug    Enable verbose debug logging for n8n"
+            echo "  --help     Show this help message"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}❌ Unknown argument: $arg${NC}"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 echo -e "${YELLOW}🔄 Restarting n8n...${NC}"
+if [ "$DEBUG_MODE" = true ]; then
+    echo -e "${YELLOW}🐛 Debug mode enabled - verbose logging activated${NC}"
+fi
 
 # Function to kill n8n processes
 kill_n8n() {
@@ -48,19 +73,44 @@ start_n8n() {
         rm -f ~/.n8n/database.sqlite.lock
     fi
 
+    # Set up environment variables
+    export N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+    export N8N_RUNNERS_ENABLED=true
+
+    if [ "$DEBUG_MODE" = true ]; then
+        echo -e "${YELLOW}🐛 Enabling comprehensive debug logging...${NC}"
+        export N8N_LOG_LEVEL=debug
+        export N8N_LOG_OUTPUT=console
+        export DEBUG=n8n*,n8n-nodes-*
+        export NODE_ENV=development
+        export N8N_DETAILED_ERROR_OUTPUT=true
+        echo -e "${YELLOW}Debug environment variables set:${NC}"
+        echo -e "${YELLOW}  N8N_LOG_LEVEL=debug${NC}"
+        echo -e "${YELLOW}  N8N_LOG_OUTPUT=console${NC}"
+        echo -e "${YELLOW}  DEBUG=n8n*,n8n-nodes-*${NC}"
+        echo -e "${YELLOW}  N8N_DETAILED_ERROR_OUTPUT=true${NC}"
+    fi
+
     # Check if n8n is installed globally
     if command -v n8n &> /dev/null; then
         echo -e "${GREEN}📦 Using globally installed n8n${NC}"
-        # Set environment variables to avoid warnings and improve stability
-        N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false \
-        N8N_RUNNERS_ENABLED=true \
-        nohup n8n > /dev/null 2>&1 &
+        if [ "$DEBUG_MODE" = true ]; then
+            # In debug mode, run in foreground with visible output
+            echo -e "${YELLOW}🐛 Running n8n in debug mode (logs will be visible)${NC}"
+            n8n &
+        else
+            nohup n8n > /dev/null 2>&1 &
+        fi
     # Check if n8n is available via npx
     elif command -v npx &> /dev/null; then
         echo -e "${GREEN}📦 Using n8n via npx${NC}"
-        N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false \
-        N8N_RUNNERS_ENABLED=true \
-        nohup npx n8n > /dev/null 2>&1 &
+        if [ "$DEBUG_MODE" = true ]; then
+            # In debug mode, run in foreground with visible output
+            echo -e "${YELLOW}🐛 Running n8n in debug mode (logs will be visible)${NC}"
+            npx n8n &
+        else
+            nohup npx n8n > /dev/null 2>&1 &
+        fi
     else
         echo -e "${RED}❌ n8n not found. Please install n8n globally with: npm install -g n8n${NC}"
         exit 1

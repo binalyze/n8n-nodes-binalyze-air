@@ -163,13 +163,6 @@ export const UsersOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Include Users Not in Organization',
-				name: 'includeNotInOrganization',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to include users not assigned to any organization',
-			},
-			{
 				displayName: 'Page Number',
 				name: 'pageNumber',
 				type: 'number',
@@ -400,7 +393,6 @@ export async function executeUsers(this: IExecuteFunctions): Promise<INodeExecut
 
 					// Build additional parameters from the additionalFields
 					const additionalParams = {
-						includeNotInOrganization: additionalFields.includeNotInOrganization,
 						pageNumber: additionalFields.pageNumber,
 						pageSize: additionalFields.pageSize,
 						roles: additionalFields.roles,

@@ -66,58 +66,60 @@ export interface GetAssetResponse {
 
 export interface AssetTask {
   _id: string;
+  taskId: string;
   name: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  assetId: string;
-  caseId?: string;
   type: string;
+  endpointId: string;
+  endpointName: string;
+  organizationId: number;
+  status: string;
+  recurrence: string | null;
+  progress: number;
+  durations: {
+    processing?: number;
+  } | null;
+  duration: number | null;
+  caseIds: string[];
+  metadata: {
+    purged: boolean;
+    hasCaseDb: boolean;
+    hasCasePpc: boolean;
+    hasDroneData: boolean;
+  };
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  response: {
+    errorMessage: string | null;
+    caseDirectory: string | null;
+    matchCount: string | null;
+    result: any;
+  } | null;
 }
 
 export interface AssetTasksResponse {
   success: boolean;
-  result: AssetTask[];
+  result: {
+    entities: AssetTask[];
+    filters: Array<{
+      name: string;
+      type: string;
+      options: string[];
+      filterUrl: string | null;
+    }>;
+    sortables: string[];
+    totalEntityCount: number;
+    currentPage: number;
+    pageSize: number;
+    previousPage: number;
+    totalPageCount: number;
+    nextPage: number;
+  };
   statusCode: number;
   errors: string[];
 }
 
-export interface AssignTaskRequest {
-  caseId: string;
-  taskConfig: {
-    choice: string;
-  };
-  filter: {
-    searchTerm?: string;
-    name?: string;
-    ipAddress?: string;
-    groupId?: string;
-    groupFullPath?: string;
-    managedStatus?: string[];
-    isolationStatus?: string[];
-    platform?: string[];
-    issue?: string;
-    onlineStatus?: string[];
-    tags?: string[];
-    version?: string;
-    policy?: string;
-    includedEndpointIds?: string[];
-    excludedEndpointIds?: string[];
-    organizationIds?: (string | number)[];
-  };
-}
-
-export interface AssignTaskResponse {
-  success: boolean;
-  result: Array<{
-    _id: string;
-    name: string;
-    organizationId: number;
-  }>;
-  statusCode: number;
-  errors: string[];
-}
-
+// Updated interfaces based on platform code
 export interface AddTagsRequest {
   tags: string[];
   filter: {
@@ -126,17 +128,25 @@ export interface AddTagsRequest {
     ipAddress?: string;
     groupId?: string;
     groupFullPath?: string;
+    label?: string;
     managedStatus?: string[];
     isolationStatus?: string[];
     platform?: string[];
-    issue?: string;
+    issue?: string[];
     onlineStatus?: string[];
     tags?: string[];
     version?: string;
     policy?: string;
     includedEndpointIds?: string[];
     excludedEndpointIds?: string[];
-    organizationIds?: (string | number)[];
+    organizationIds: number[]; // Required field
+    connectionRouteId?: number;
+    hasConnectionRoute?: boolean;
+    caseId?: string;
+    awsRegions?: string[];
+    azureRegions?: string[];
+    agentInstalled?: boolean;
+    isServer?: boolean;
   };
 }
 
@@ -148,78 +158,31 @@ export interface RemoveTagsRequest {
     ipAddress?: string;
     groupId?: string;
     groupFullPath?: string;
+    label?: string;
     managedStatus?: string[];
     isolationStatus?: string[];
     platform?: string[];
-    issue?: string;
+    issue?: string[];
     onlineStatus?: string[];
     tags?: string[];
     version?: string;
     policy?: string;
     includedEndpointIds?: string[];
     excludedEndpointIds?: string[];
-    organizationIds?: (string | number)[];
+    organizationIds?: number[];
+    connectionRouteId?: number;
+    hasConnectionRoute?: boolean;
+    caseId?: string;
+    awsRegions?: string[];
+    azureRegions?: string[];
+    agentInstalled?: boolean;
+    isServer?: boolean;
   };
 }
 
 export interface TagsOperationResponse {
   success: boolean;
-  result: {
-    affectedAssets: number;
-    message: string;
-  };
-  statusCode: number;
-  errors: string[];
-}
-
-export interface UninstallAssetsRequest {
-  filter: {
-    searchTerm?: string;
-    name?: string;
-    ipAddress?: string;
-    groupId?: string;
-    groupFullPath?: string;
-    managedStatus?: string[];
-    isolationStatus?: string[];
-    platform?: string[];
-    issue?: string;
-    onlineStatus?: string[];
-    tags?: string[];
-    version?: string;
-    policy?: string;
-    includedEndpointIds?: string[];
-    excludedEndpointIds?: string[];
-    organizationIds?: (string | number)[];
-  };
-}
-
-export interface PurgeAssetsRequest {
-  filter: {
-    searchTerm?: string;
-    name?: string;
-    ipAddress?: string;
-    groupId?: string;
-    groupFullPath?: string;
-    managedStatus?: string[];
-    isolationStatus?: string[];
-    platform?: string[];
-    issue?: string;
-    onlineStatus?: string[];
-    tags?: string[];
-    version?: string;
-    policy?: string;
-    includedEndpointIds?: string[];
-    excludedEndpointIds?: string[];
-    organizationIds?: (string | number)[];
-  };
-}
-
-export interface UninstallAssetsResponse {
-  success: boolean;
-  result: {
-    affectedAssets: number;
-    message: string;
-  };
+  result: any; // The actual response doesn't have a specific structure
   statusCode: number;
   errors: string[];
 }
@@ -265,16 +228,6 @@ export const api = {
     return makeApiRequestWithErrorHandling<AssetTasksResponse>(context, options, `fetch tasks for asset ${id}`);
   },
 
-  async assignAssetTasks(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    data: AssignTaskRequest
-  ): Promise<AssignTaskResponse> {
-    const options = buildRequestOptionsWithErrorHandling(credentials, 'POST', '/api/public/assets/assign');
-    options.body = data;
-    return makeApiRequestWithErrorHandling<AssignTaskResponse>(context, options, 'assign asset tasks');
-  },
-
   async addTagsToAssets(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
@@ -293,25 +246,5 @@ export const api = {
     const options = buildRequestOptionsWithErrorHandling(credentials, 'DELETE', '/api/public/assets/tags');
     options.body = data;
     return makeApiRequestWithErrorHandling<TagsOperationResponse>(context, options, 'remove tags from assets');
-  },
-
-  async uninstallAssets(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    data: UninstallAssetsRequest
-  ): Promise<UninstallAssetsResponse> {
-    const options = buildRequestOptionsWithErrorHandling(credentials, 'DELETE', '/api/public/assets/uninstall');
-    options.body = data;
-    return makeApiRequestWithErrorHandling<UninstallAssetsResponse>(context, options, 'uninstall assets');
-  },
-
-  async purgeAndUninstallAssets(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    data: PurgeAssetsRequest
-  ): Promise<UninstallAssetsResponse> {
-    const options = buildRequestOptionsWithErrorHandling(credentials, 'DELETE', '/api/public/assets/purge');
-    options.body = data;
-    return makeApiRequestWithErrorHandling<UninstallAssetsResponse>(context, options, 'purge and uninstall assets');
   }
 };

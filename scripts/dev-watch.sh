@@ -7,8 +7,33 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Parse command line arguments
+DEBUG_MODE=false
+for arg in "$@"; do
+    case $arg in
+        --debug)
+            DEBUG_MODE=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--debug] [--help]"
+            echo "  --debug    Enable verbose debug logging for n8n"
+            echo "  --help     Show this help message"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}❌ Unknown argument: $arg${NC}"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 echo -e "${BLUE}🚀 Starting Binalyze AIR Development Environment${NC}"
 echo -e "${BLUE}=============================================${NC}"
+if [ "$DEBUG_MODE" = true ]; then
+    echo -e "${YELLOW}🐛 Debug mode enabled - verbose logging activated${NC}"
+fi
 
 # Function to cleanup on exit
 cleanup() {
@@ -46,7 +71,11 @@ echo -e "${GREEN}✅ Initial build completed${NC}"
 
 # Start n8n
 echo -e "${YELLOW}🌐 Starting n8n...${NC}"
-./scripts/restart-n8n.sh
+if [ "$DEBUG_MODE" = true ]; then
+    ./scripts/restart-n8n.sh --debug
+else
+    ./scripts/restart-n8n.sh
+fi
 
 # Function to build and restart on file changes
 watch_and_restart() {
@@ -67,8 +96,14 @@ watch_and_restart() {
 
             if [ $BUILD_STATUS -eq 0 ]; then
                 echo -e "${GREEN}✅ Build successful, restarting n8n...${NC}"
-                ./scripts/restart-n8n.sh
-                echo -e "${GREEN}🌐 n8n restarted and available at: http://localhost:5678${NC}"
+                if [ "$DEBUG_MODE" = true ]; then
+                    ./scripts/restart-n8n.sh --debug
+                    echo -e "${GREEN}🌐 n8n restarted in debug mode at: http://localhost:5678${NC}"
+                    echo -e "${YELLOW}🐛 Debug logs are now visible in this terminal${NC}"
+                else
+                    ./scripts/restart-n8n.sh
+                    echo -e "${GREEN}🌐 n8n restarted and available at: http://localhost:5678${NC}"
+                fi
             else
                 echo -e "${RED}❌ Build failed! Fix the errors before n8n will be restarted.${NC}"
                 echo -e "${YELLOW}Running build with verbose output to show errors:${NC}"
@@ -101,8 +136,14 @@ watch_and_restart() {
 
                 if [ $BUILD_STATUS -eq 0 ]; then
                     echo -e "${GREEN}✅ Build successful, restarting n8n...${NC}"
-                    ./scripts/restart-n8n.sh
-                    echo -e "${GREEN}🌐 n8n restarted and available at: http://localhost:5678${NC}"
+                    if [ "$DEBUG_MODE" = true ]; then
+                        ./scripts/restart-n8n.sh --debug
+                        echo -e "${GREEN}🌐 n8n restarted in debug mode at: http://localhost:5678${NC}"
+                        echo -e "${YELLOW}🐛 Debug logs are now visible in this terminal${NC}"
+                    else
+                        ./scripts/restart-n8n.sh
+                        echo -e "${GREEN}🌐 n8n restarted and available at: http://localhost:5678${NC}"
+                    fi
                 else
                     echo -e "${RED}❌ Build failed! Fix the errors before n8n will be restarted.${NC}"
                     echo -e "${YELLOW}Running build with verbose output to show errors:${NC}"
@@ -122,6 +163,10 @@ WATCHER_PID=$!
 echo -e "${GREEN}🎉 Development environment is ready!${NC}"
 echo -e "${GREEN}🌐 n8n is available at: http://localhost:5678${NC}"
 echo -e "${YELLOW}📝 Watching for TypeScript changes...${NC}"
+if [ "$DEBUG_MODE" = true ]; then
+    echo -e "${YELLOW}🐛 Debug mode is active - n8n logs will be visible in this terminal${NC}"
+    echo -e "${YELLOW}💡 To see only debug logs, you can filter with: | grep -E '(DEBUG|ERROR|WARN)'${NC}"
+fi
 echo -e "${YELLOW}Press Ctrl+C to stop${NC}"
 
 # Wait for the watcher process

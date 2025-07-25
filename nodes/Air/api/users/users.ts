@@ -65,7 +65,6 @@ export const api = {
     credentials: AirCredentials,
     organizationIds: string | string[] = '0',
     additionalParams?: {
-      includeNotInOrganization?: boolean;
       pageNumber?: number;
       pageSize?: number;
       roles?: string;
@@ -77,14 +76,12 @@ export const api = {
     const orgIds = Array.isArray(organizationIds) ? organizationIds.join(',') : organizationIds;
 
       const queryParams: Record<string, any> = {
-        'filter[organizationIds]': orgIds
+        'filter[organizationIds]': orgIds,
+        'filter[includeNotInOrganization]': false
       };
 
       // Add additional parameters if provided
       if (additionalParams) {
-        if (additionalParams.includeNotInOrganization !== undefined) {
-          queryParams['filter[includeNotInOrganization]'] = additionalParams.includeNotInOrganization;
-        }
         if (additionalParams.pageNumber) {
           queryParams.pageNumber = additionalParams.pageNumber;
         }

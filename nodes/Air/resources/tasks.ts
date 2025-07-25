@@ -39,30 +39,6 @@ export const TasksOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Cancel Task',
-				value: 'cancelTask',
-				description: 'Cancel a specific task',
-				action: 'Cancel a task',
-			},
-			{
-				name: 'Cancel Task Assignment',
-				value: 'cancelTaskAssignment',
-				description: 'Cancel a specific task assignment',
-				action: 'Cancel a task assignment',
-			},
-			{
-				name: 'Delete Task',
-				value: 'deleteTask',
-				description: 'Delete a specific task',
-				action: 'Delete a task',
-			},
-			{
-				name: 'Delete Task Assignment',
-				value: 'deleteTaskAssignment',
-				description: 'Delete a specific task assignment',
-				action: 'Delete a task assignment',
-			},
-			{
 				name: 'Get',
 				value: 'get',
 				description: 'Retrieve a specific task',
@@ -92,26 +68,11 @@ export const TasksOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['tasks'],
-				operation: ['get', 'cancelTask', 'deleteTask', 'getTaskAssignments'],
+				operation: ['get', 'getTaskAssignments'],
 			},
 		},
 		required: true,
 		description: 'The ID of the task',
-	},
-	{
-		displayName: 'Task Assignment ID',
-		name: 'taskAssignmentId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter task assignment ID',
-		displayOptions: {
-			show: {
-				resource: ['tasks'],
-				operation: ['cancelTaskAssignment', 'deleteTaskAssignment'],
-			},
-		},
-		required: true,
-		description: 'The ID of the task assignment',
 	},
 	{
 		displayName: 'Organization',
@@ -405,8 +366,6 @@ export function isValidTaskAssignment(assignment: any): boolean {
 	return isValidEntity(assignment, ['name']);
 }
 
-
-
 // List search method for resource locator
 export async function getTasks(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 	try {
@@ -588,72 +547,6 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 					break;
 				}
 
-				case 'cancelTask': {
-					const taskId = this.getNodeParameter('taskId', i) as string;
-
-					// Validate task ID
-					try {
-						normalizeAndValidateId(taskId, 'Task ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
-					}
-
-					const response = await tasksApi.cancelTaskById(this, credentials, taskId);
-
-					if (!response.success) {
-						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to cancel task: ${errorMessage}`, {
-							itemIndex: i,
-						});
-					}
-
-					returnData.push({
-						json: {
-							taskId,
-							cancelled: true,
-							success: response.success,
-							statusCode: response.statusCode,
-						},
-						pairedItem: i,
-					});
-					break;
-				}
-
-				case 'deleteTask': {
-					const taskId = this.getNodeParameter('taskId', i) as string;
-
-					// Validate task ID
-					try {
-						normalizeAndValidateId(taskId, 'Task ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
-					}
-
-					const response = await tasksApi.deleteTaskById(this, credentials, taskId);
-
-					if (!response.success) {
-						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to delete task: ${errorMessage}`, {
-							itemIndex: i,
-						});
-					}
-
-					returnData.push({
-						json: {
-							taskId,
-							deleted: true,
-							success: response.success,
-							statusCode: response.statusCode,
-						},
-						pairedItem: i,
-					});
-					break;
-				}
-
 				case 'getTaskAssignments': {
 					const taskId = this.getNodeParameter('taskId', i) as string;
 
@@ -677,72 +570,6 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 						includePagination: true,
 						paginationData: paginationInfo,
 						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
-					});
-					break;
-				}
-
-				case 'cancelTaskAssignment': {
-					const taskAssignmentId = this.getNodeParameter('taskAssignmentId', i) as string;
-
-					// Validate task assignment ID
-					try {
-						normalizeAndValidateId(taskAssignmentId, 'Task Assignment ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
-					}
-
-					const response = await taskAssignmentsApi.cancelTaskAssignment(this, credentials, taskAssignmentId);
-
-					if (!response.success) {
-						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to cancel task assignment: ${errorMessage}`, {
-							itemIndex: i,
-						});
-					}
-
-					returnData.push({
-						json: {
-							taskAssignmentId,
-							cancelled: true,
-							success: response.success,
-							statusCode: response.statusCode,
-						},
-						pairedItem: i,
-					});
-					break;
-				}
-
-				case 'deleteTaskAssignment': {
-					const taskAssignmentId = this.getNodeParameter('taskAssignmentId', i) as string;
-
-					// Validate task assignment ID
-					try {
-						normalizeAndValidateId(taskAssignmentId, 'Task Assignment ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
-					}
-
-					const response = await taskAssignmentsApi.deleteTaskAssignment(this, credentials, taskAssignmentId);
-
-					if (!response.success) {
-						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to delete task assignment: ${errorMessage}`, {
-							itemIndex: i,
-						});
-					}
-
-					returnData.push({
-						json: {
-							taskAssignmentId,
-							deleted: true,
-							success: response.success,
-							statusCode: response.statusCode,
-						},
-						pairedItem: i,
 					});
 					break;
 				}
