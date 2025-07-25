@@ -46,12 +46,6 @@ import {
 	executeUsers
 } from './resources/users';
 import {
-	AutoAssetTagsOperations,
-	getAutoAssetTags,
-	getAutoAssetTagsOptions,
-	executeAutoAssetTags
-} from './resources/autoassettags';
-import {
 	TriageRulesOperations,
 	getTriageRules,
 	getTriageRulesOptions,
@@ -83,7 +77,7 @@ import {
 
 export class Air implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Binalyze AIR',
+		displayName: 'AIR',
 		name: 'air',
 		icon: {
 			light: 'file:b-logo-dark.svg',
@@ -94,7 +88,7 @@ export class Air implements INodeType {
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
 		description: 'Manage Binalyze AIR resources',
 		defaults: {
-			name: 'Binalyze AIR',
+			name: 'AIR',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
@@ -120,11 +114,6 @@ export class Air implements INodeType {
 						name: 'Asset',
 						value: 'assets',
 						description: 'Manage endpoint assets and their operations',
-					},
-					{
-						name: 'Auto Asset Tag',
-						value: 'autoassettags',
-						description: 'Manage auto asset tags',
 					},
 					{
 						name: 'Baseline',
@@ -177,7 +166,6 @@ export class Air implements INodeType {
 
 			...AcquisitionsOperations,
 			...AssetsOperations,
-			...AutoAssetTagsOperations,
 			...BaselinesOperations,
 			...CasesOperations,
 			...EvidenceOperations,
@@ -199,10 +187,6 @@ export class Air implements INodeType {
 			// Import load options methods from Assets
 			async getAssets(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getAssetsOptions.call(this);
-			},
-			// Import load options methods from Auto Asset Tags
-			async getAutoAssetTags(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getAutoAssetTagsOptions.call(this);
 			},
 			// Import load options methods from Cases
 			async getCases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -241,10 +225,6 @@ export class Air implements INodeType {
 			// Import list search methods from Assets for resource locators
 			async getAssets(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAssets.call(this, filter);
-			},
-			// Import list search methods from Auto Asset Tags for resource locators
-			async getAutoAssetTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getAutoAssetTags.call(this, filter);
 			},
 			// Import list search methods from Cases for resource locators
 			async getCases(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
@@ -288,8 +268,6 @@ export class Air implements INodeType {
 				return executeAcquisitions.call(this);
 			case 'assets':
 				return executeAssets.call(this);
-			case 'autoassettags':
-				return executeAutoAssetTags.call(this);
 			case 'baselines':
 				return executeBaselines.call(this);
 			case 'cases':

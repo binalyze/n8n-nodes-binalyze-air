@@ -44,12 +44,6 @@ export const AssetsOperations: INodeProperties[] = [
 				action: 'Add tags to assets',
 			},
 			{
-				name: 'Assign Task',
-				value: 'assignTask',
-				description: 'Assign task to assets',
-				action: 'Assign task to assets',
-			},
-			{
 				name: 'Get',
 				value: 'get',
 				description: 'Retrieve a specific asset',
@@ -68,22 +62,10 @@ export const AssetsOperations: INodeProperties[] = [
 				action: 'Get many assets',
 			},
 			{
-				name: 'Purge and Uninstall',
-				value: 'purgeAndUninstall',
-				description: 'Purge and uninstall assets by filter',
-				action: 'Purge and uninstall assets',
-			},
-			{
 				name: 'Remove Tags',
 				value: 'removeTags',
 				description: 'Remove tags from assets by filter',
 				action: 'Remove tags from assets',
-			},
-			{
-				name: 'Uninstall',
-				value: 'uninstall',
-				description: 'Uninstall assets without purge by filter',
-				action: 'Uninstall assets',
 			},
 		],
 		default: 'getAll',
@@ -305,67 +287,6 @@ export const AssetsOperations: INodeProperties[] = [
 		],
 	},
 
-	// Case ID for assign task operation
-	{
-		displayName: 'Case',
-		name: 'caseId',
-		type: 'resourceLocator',
-		default: { mode: 'list', value: '' },
-		placeholder: 'Select a case...',
-		displayOptions: {
-			show: {
-				resource: ['assets'],
-				operation: ['assignTask'],
-			},
-		},
-		modes: [
-			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				placeholder: 'Select a case...',
-				typeOptions: {
-					searchListMethod: 'getCases',
-					searchable: true,
-				},
-			},
-			{
-				displayName: 'By ID',
-				name: 'id',
-				type: 'string',
-				validation: [
-					{
-						type: 'regex',
-						properties: {
-							regex: '^[a-zA-Z0-9-_]+$',
-							errorMessage: 'Not a valid case ID (must contain only letters, numbers, hyphens, and underscores)',
-						},
-					},
-				],
-				placeholder: 'Enter case ID',
-			},
-		],
-		required: true,
-		description: 'The case to assign the task to',
-	},
-
-	// Task Choice for assign task operation
-	{
-		displayName: 'Task Choice',
-		name: 'taskChoice',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter task choice',
-		displayOptions: {
-			show: {
-				resource: ['assets'],
-				operation: ['assignTask'],
-			},
-		},
-		required: true,
-		description: 'The task configuration choice',
-	},
-
 	// Tags for add/remove tags operations
 	{
 		displayName: 'Tags',
@@ -380,7 +301,107 @@ export const AssetsOperations: INodeProperties[] = [
 			},
 		},
 		required: true,
-		description: 'Tags to add or remove (comma-separated)',
+		description: 'Tags to add or remove (comma-separated). Tags must contain only lowercase letters, numbers, hyphens, underscores, dots, backslashes, spaces, @, &, and colons.',
+	},
+
+	// Organization for add tags operation (required field)
+	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['addTags'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a number)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization to add tags for assets in (required for Add Tags operation)',
+	},
+
+	// Organization for remove tags operation (required field)
+	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['removeTags'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a number)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization to remove tags from assets in (required for Remove Tags operation)',
 	},
 
 	// Filter options for operations that modify assets by filter
@@ -393,7 +414,7 @@ export const AssetsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['assets'],
-				operation: ['assignTask', 'addTags', 'removeTags', 'uninstall', 'purgeAndUninstall'],
+				operation: ['addTags', 'removeTags'],
 			},
 		},
 		options: [
@@ -436,6 +457,13 @@ export const AssetsOperations: INodeProperties[] = [
 				],
 			},
 			{
+				displayName: 'Filter By Label',
+				name: 'label',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter label',
+			},
+			{
 				displayName: 'Filter By Managed Status',
 				name: 'managedStatus',
 				type: 'multiOptions',
@@ -473,6 +501,11 @@ export const AssetsOperations: INodeProperties[] = [
 				type: 'resourceLocator',
 				default: { mode: 'list', value: '' },
 				placeholder: 'Select an organization...',
+				displayOptions: {
+					show: {
+						'/operation': ['removeTags'],
+					},
+				},
 				modes: [
 					{
 						displayName: 'From List',
@@ -506,6 +539,7 @@ export const AssetsOperations: INodeProperties[] = [
 						placeholder: 'Enter organization name',
 					},
 				],
+				description: 'For Add Tags operation, use the organization field above instead',
 			},
 			{
 				displayName: 'Filter By Platform',
@@ -666,6 +700,10 @@ export function buildAssetFilter(filterOptions: any): any {
 		filter.ipAddress = filterOptions.ipAddress;
 	}
 
+	if (filterOptions.label) {
+		filter.label = filterOptions.label;
+	}
+
 	if (filterOptions.platform && filterOptions.platform.length > 0) {
 		filter.platform = filterOptions.platform;
 	}
@@ -698,7 +736,10 @@ export function buildAssetFilter(filterOptions: any): any {
 	if (filterOptions.organizationId) {
 		const organizationResource = filterOptions.organizationId;
 		if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-			filter.organizationIds = [organizationResource.value];
+			const orgIdNumber = parseInt(organizationResource.value, 10);
+			if (!isNaN(orgIdNumber)) {
+				filter.organizationIds = [orgIdNumber];
+			}
 		} else if (organizationResource.mode === 'name') {
 			// This will need to be resolved in the execution context
 			filter.organizationName = organizationResource.value;
@@ -706,6 +747,18 @@ export function buildAssetFilter(filterOptions: any): any {
 	}
 
 	return filter;
+}
+
+// Helper function to validate tags
+function validateTags(tags: string[]): { valid: boolean; invalidTags: string[] } {
+	// Based on ASSET_TAG_NAME regex: /^[a-z\d\-_.\\\s@&:]+$/i
+	const tagRegex = /^[a-z\d\-_.\\\s@&:]+$/i;
+	const invalidTags = tags.filter(tag => !tagRegex.test(tag));
+
+	return {
+		valid: invalidTags.length === 0,
+		invalidTags
+	};
 }
 
 // ===== LOAD OPTIONS METHODS =====
@@ -886,68 +939,12 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					break;
 				}
 
-				case 'assignTask': {
-					const caseResource = this.getNodeParameter('caseId', i) as any;
-					const taskChoice = this.getNodeParameter('taskChoice', i) as string;
-					const filterOptions = this.getNodeParameter('filterOptions', i) as any;
-
-					let caseId: string;
-
-					if (caseResource.mode === 'list' || caseResource.mode === 'id') {
-						caseId = caseResource.value;
-					} else {
-						throw new NodeOperationError(this.getNode(), 'Invalid case selection mode', {
-							itemIndex: i,
-						});
-					}
-
-					// Validate case ID
-					try {
-						caseId = normalizeAndValidateId(caseId, 'Case ID');
-					} catch (error) {
-						throw new NodeOperationError(this.getNode(), error.message, {
-							itemIndex: i,
-						});
-					}
-
-					// Build filter from filterOptions
-					const filter = buildAssetFilter(filterOptions);
-
-					// Handle organization name resolution if needed
-					if (filter.organizationName) {
-						try {
-							const orgId = await findOrganizationByName(this, credentials, filter.organizationName);
-							filter.organizationIds = [orgId];
-							delete filter.organizationName;
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-						}
-					}
-
-					// Build the request data
-					const requestData = {
-						caseId,
-						taskConfig: {
-							choice: taskChoice,
-						},
-						filter,
-					};
-
-					// Use the API method
-					const responseData = await assetsApi.assignAssetTasks(this, credentials, requestData);
-
-					returnData.push({
-						json: responseData.result as any,
-						pairedItem: i,
-					});
-					break;
-				}
-
 				case 'addTags': {
 					const tagsString = this.getNodeParameter('tags', i) as string;
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const filterOptions = this.getNodeParameter('filterOptions', i) as any;
 
-					// Parse tags
+					// Parse and validate tags
 					const tags = tagsString.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0);
 
 					if (tags.length === 0) {
@@ -956,6 +953,45 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						});
 					}
 
+					// Validate tag format
+					const validation = validateTags(tags);
+					if (!validation.valid) {
+						throw new NodeOperationError(
+							this.getNode(),
+							`Invalid tag format for: ${validation.invalidTags.join(', ')}. Tags must contain only lowercase letters, numbers, hyphens, underscores, dots, backslashes, spaces, @, &, and colons.`,
+							{ itemIndex: i }
+						);
+					}
+
+					// Handle organization ID from resource locator (required field)
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
+							itemIndex: i,
+						});
+					}
+
 					// Build filter from filterOptions
 					const filter = buildAssetFilter(filterOptions);
 
@@ -963,12 +999,18 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					if (filter.organizationName) {
 						try {
 							const orgId = await findOrganizationByName(this, credentials, filter.organizationName);
-							filter.organizationIds = [orgId];
+							const resolvedOrgIdNumber = parseInt(orgId, 10);
+							if (!isNaN(resolvedOrgIdNumber)) {
+								filter.organizationIds = [resolvedOrgIdNumber];
+							}
 							delete filter.organizationName;
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
 						}
 					}
+
+					// Set the required organization ID in the filter (this is required by the API)
+					filter.organizationIds = [orgIdNumber];
 
 					// Build the request data
 					const requestData = {
@@ -980,7 +1022,7 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					const responseData = await assetsApi.addTagsToAssets(this, credentials, requestData);
 
 					returnData.push({
-						json: responseData.result as any,
+						json: responseData as any,
 						pairedItem: i,
 					});
 					break;
@@ -988,13 +1030,53 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 
 				case 'removeTags': {
 					const tagsString = this.getNodeParameter('tags', i) as string;
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const filterOptions = this.getNodeParameter('filterOptions', i) as any;
 
-					// Parse tags
+					// Parse and validate tags
 					const tags = tagsString.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0);
 
 					if (tags.length === 0) {
 						throw new NodeOperationError(this.getNode(), 'At least one tag must be provided', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate tag format
+					const validation = validateTags(tags);
+					if (!validation.valid) {
+						throw new NodeOperationError(
+							this.getNode(),
+							`Invalid tag format for: ${validation.invalidTags.join(', ')}. Tags must contain only lowercase letters, numbers, hyphens, underscores, dots, backslashes, spaces, @, &, and colons.`,
+							{ itemIndex: i }
+						);
+					}
+
+					// Handle organization ID from resource locator (required field)
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
 							itemIndex: i,
 						});
 					}
@@ -1006,12 +1088,18 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					if (filter.organizationName) {
 						try {
 							const orgId = await findOrganizationByName(this, credentials, filter.organizationName);
-							filter.organizationIds = [orgId];
+							const resolvedOrgIdNumber = parseInt(orgId, 10);
+							if (!isNaN(resolvedOrgIdNumber)) {
+								filter.organizationIds = [resolvedOrgIdNumber];
+							}
 							delete filter.organizationName;
 						} catch (error) {
 							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
 						}
 					}
+
+					// Set the required organization ID in the filter (this is required by the API)
+					filter.organizationIds = [orgIdNumber];
 
 					// Build the request data
 					const requestData = {
@@ -1023,71 +1111,7 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					const responseData = await assetsApi.removeTagsFromAssets(this, credentials, requestData);
 
 					returnData.push({
-						json: responseData.result as any,
-						pairedItem: i,
-					});
-					break;
-				}
-
-				case 'uninstall': {
-					const filterOptions = this.getNodeParameter('filterOptions', i) as any;
-
-					// Build filter from filterOptions
-					const filter = buildAssetFilter(filterOptions);
-
-					// Handle organization name resolution if needed
-					if (filter.organizationName) {
-						try {
-							const orgId = await findOrganizationByName(this, credentials, filter.organizationName);
-							filter.organizationIds = [orgId];
-							delete filter.organizationName;
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-						}
-					}
-
-					// Build the request data
-					const requestData = {
-						filter,
-					};
-
-					// Use the API method
-					const responseData = await assetsApi.uninstallAssets(this, credentials, requestData);
-
-					returnData.push({
-						json: responseData.result as any,
-						pairedItem: i,
-					});
-					break;
-				}
-
-				case 'purgeAndUninstall': {
-					const filterOptions = this.getNodeParameter('filterOptions', i) as any;
-
-					// Build filter from filterOptions
-					const filter = buildAssetFilter(filterOptions);
-
-					// Handle organization name resolution if needed
-					if (filter.organizationName) {
-						try {
-							const orgId = await findOrganizationByName(this, credentials, filter.organizationName);
-							filter.organizationIds = [orgId];
-							delete filter.organizationName;
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-						}
-					}
-
-					// Build the request data
-					const requestData = {
-						filter,
-					};
-
-					// Use the API method
-					const responseData = await assetsApi.purgeAndUninstallAssets(this, credentials, requestData);
-
-					returnData.push({
-						json: responseData.result as any,
+						json: responseData as any,
 						pairedItem: i,
 					});
 					break;

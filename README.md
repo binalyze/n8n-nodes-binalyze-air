@@ -11,7 +11,6 @@ This is an n8n community node that integrates with Binalyze AIR (Automated Incid
 - [Supported Resources](#supported-resources)
   - [Acquisitions](#acquisitions)
   - [Assets](#assets)
-  - [Auto Asset Tags](#auto-asset-tags)
   - [Baselines](#baselines)
   - [Cases](#cases)
   - [Evidence](#evidence)
@@ -80,24 +79,10 @@ Manage endpoints and their associated tasks, tags, and status.
 
 **Operations:**
 - `addTags` - Add tags to assets by filter
-- `assignTask` - Assign task to assets
 - `get` - Retrieve a specific asset
 - `getAssetTasks` - Get tasks for a specific asset
 - `getAll` - Retrieve many assets
-- `purgeAndUninstall` - Purge and uninstall assets by filter
 - `removeTags` - Remove tags from assets by filter
-- `uninstall` - Uninstall assets without purge by filter
-
-### Auto Asset Tags
-Create and manage automatic asset tagging rules.
-
-**Operations:**
-- `create` - Create a new auto asset tag
-- `delete` - Delete an auto asset tag
-- `get` - Retrieve a specific auto asset tag
-- `getAll` - Retrieve many auto asset tags
-- `startTagging` - Start the tagging process for an auto asset tag
-- `update` - Update an auto asset tag
 
 ### Baselines
 Acquire and compare system baselines.
@@ -267,17 +252,12 @@ When debug mode is active, you'll see detailed information about:
 
 ## Testing
 
-The project includes an end-to-end testing workflow that can be managed using the e2e.py script.
+The project includes an end-to-end testing workflow that can be managed using the e2e.js script.
 
 ### Prerequisites
 
 1. Create a `.env.local.yml` file in the project root with your credentials:
    ```yaml
-   # Binalyze AIR credentials for creating test credentials in n8n
-   AIR:
-     INSTANCE_URL: https://your-air-instance.binalyze.io
-     API_TOKEN: api_xxxxxxxxxxxxxxxxxxxxxxxxxx
-
    # n8n instance configuration
    N8N:
      INSTANCE_URL: http://127.0.0.1:5678
@@ -290,11 +270,13 @@ The project includes an end-to-end testing workflow that can be managed using th
 
 To download the test workflow from your n8n instance:
 ```bash
+npm run test:download
+# or
 yarn test:download
 ```
-Or using the Python script directly:
+Or using the Node.js script directly:
 ```bash
-python test/e2e.py download
+node test/e2e.js download
 ```
 
 This will download the `n8n-nodes-binalyze-air-e2e` workflow and save it to `test/n8n-nodes-binalyze-air-e2e.json`.
@@ -305,10 +287,13 @@ Both commands support additional options:
 
 ```bash
 # Use a custom n8n instance URL
-python test/e2e.py download --url http://n8n.example.com:5678
+node test/e2e.js download --url http://n8n.example.com:5678
 
 # Use a custom workflow name
-python test/e2e.py download --name my-custom-workflow
+node test/e2e.js download --name my-custom-workflow
+
+# Use a custom output file
+node test/e2e.js download --file my-workflow.json
 ```
 
 ### Error Response Formats Supported

@@ -4,7 +4,7 @@ This directory contains end-to-end testing utilities for the n8n-nodes-binalyze-
 
 ## E2E Testing Script
 
-The `e2e.py` script downloads the latest test suite used for testing node's functionality.
+The `e2e.js` script downloads the latest test suite used for testing node's functionality.
 
 ### Features
 
@@ -12,9 +12,11 @@ The `e2e.py` script downloads the latest test suite used for testing node's func
 
 ### Setup
 
-1. Install Python dependencies:
+1. Install Node.js dependencies:
    ```bash
-   pip install -r requirements.txt
+   npm install
+   # or
+   yarn install
    ```
 
 2. The script will automatically prompt for your n8n API token on first use, or you can manually create `.env.local.yml` in the root directory:
@@ -32,20 +34,32 @@ The `e2e.py` script downloads the latest test suite used for testing node's func
 
 #### Download a workflow from n8n:
 ```bash
-python test/e2e.py download
+node test/e2e.js download
 ```
 
 #### Using npm scripts:
 ```bash
 # Download workflow
+npm run test:download
+# or
 yarn test:download
 ```
 
 #### Advanced options:
 
+```bash
+# Use custom n8n URL
+node test/e2e.js download --url http://n8n.example.com:5678
+
+# Use custom workflow name
+node test/e2e.js download --name my-custom-workflow
+
+# Use custom output file
+node test/e2e.js download --file my-workflow.json
+```
+
 ### Files
 
-- `e2e.py` - Main script for downloading and uploading workflows
-- `requirements.txt` - Python dependencies (requests, PyYAML)
+- `e2e.js` - Main script for downloading workflows
 - `env.example` - Example YAML environment file showing required variables
 - `n8n-nodes-binalyze-air-e2e.json` - Test workflow for running a quick e2e test

@@ -59,20 +59,6 @@ export interface TaskAssignmentsResponse {
   errors: string[];
 }
 
-export interface CancelTaskAssignmentResponse {
-  success: boolean;
-  result: null;
-  statusCode: number;
-  errors: string[];
-}
-
-export interface DeleteTaskAssignmentResponse {
-  success: boolean;
-  result: null;
-  statusCode: number;
-  errors: string[];
-}
-
 export const api = {
   async getTaskAssignments(
     context: IExecuteFunctions | ILoadOptionsFunctions,
@@ -86,37 +72,6 @@ export const api = {
     );
 
     const response = await makeApiRequestWithErrorHandling<TaskAssignmentsResponse>(context, requestOptions, `fetch task assignments for task ${taskId}`);
-    return response;
-  },
-
-  async cancelTaskAssignment(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    assignmentId: string
-  ): Promise<CancelTaskAssignmentResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
-      credentials,
-      'POST',
-      `/api/public/tasks/assignments/${assignmentId}/cancel`
-    );
-    requestOptions.body = {};
-
-    const response = await makeApiRequestWithErrorHandling<CancelTaskAssignmentResponse>(context, requestOptions, `cancel task assignment ${assignmentId}`);
-    return response;
-  },
-
-  async deleteTaskAssignment(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    assignmentId: string
-  ): Promise<DeleteTaskAssignmentResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
-      credentials,
-      'DELETE',
-      `/api/public/tasks/assignments/${assignmentId}`
-    );
-
-    const response = await makeApiRequestWithErrorHandling<DeleteTaskAssignmentResponse>(context, requestOptions, `delete task assignment ${assignmentId}`);
     return response;
   },
 };

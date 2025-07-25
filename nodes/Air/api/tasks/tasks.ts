@@ -121,20 +121,6 @@ export interface TaskResponse {
   errors: string[];
 }
 
-export interface CancelTaskResponse {
-  success: boolean;
-  result: null;
-  statusCode: number;
-  errors: string[];
-}
-
-export interface DeleteTaskResponse {
-  success: boolean;
-  result: null;
-  statusCode: number;
-  errors: string[];
-}
-
 export const api = {
   async getTasks(
     context: IExecuteFunctions | ILoadOptionsFunctions,
@@ -246,39 +232,6 @@ export const api = {
     );
 
     const response = await makeApiRequestWithErrorHandling<TaskResponse>(context, requestOptions, `fetch task with ID ${id}`);
-    return response;
-  },
-
-  async cancelTaskById(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    id: string
-  ): Promise<CancelTaskResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
-      credentials,
-      'POST',
-      `/api/public/tasks/${id}/cancel`
-    );
-
-    // Add empty body for POST request
-    requestOptions.body = {};
-
-    const response = await makeApiRequestWithErrorHandling<CancelTaskResponse>(context, requestOptions, `cancel task with ID ${id}`);
-    return response;
-  },
-
-  async deleteTaskById(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    id: string
-  ): Promise<DeleteTaskResponse> {
-    const requestOptions = buildRequestOptionsWithErrorHandling(
-      credentials,
-      'DELETE',
-      `/api/public/tasks/${id}`
-    );
-
-    const response = await makeApiRequestWithErrorHandling<DeleteTaskResponse>(context, requestOptions, `delete task with ID ${id}`);
     return response;
   },
 };

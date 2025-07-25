@@ -12,7 +12,7 @@ export interface AirCredentials {
 
 export class AirApi implements ICredentialType {
 	name = 'airApi';
-	displayName = 'Binalyze AIR API';
+	displayName = 'AIR API';
 	documentationUrl = 'https://github.com/binalyze/n8n-nodes-binalyze-air?tab=readme-ov-file#configuration';
 	icon = {
 		light: 'file:b-logo-dark.svg',

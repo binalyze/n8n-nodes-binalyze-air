@@ -41,7 +41,7 @@
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint -- -c .eslintrc.prepublish.js nodes credentials package.json",
     "release": "npm version patch && npm publish",
-    "test:download": "cd test && python e2e.py download"
+    "test:download": "node test/e2e.js download"
   },
   "files": [
     "dist"
@@ -61,6 +61,7 @@
     "@typescript-eslint/parser": "~8.32.0",
     "axios": "^1.10.0",
     "chokidar-cli": "^3.0.0",
+    "commander": "^12.1.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
