@@ -867,17 +867,19 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 					// Use the API method
 					const responseData = await assetsApi.getAssetTasks(this, credentials, assetId);
 
-					// Return tasks as array of individual items
-					if (responseData.result && Array.isArray(responseData.result)) {
-						responseData.result.forEach((task: any, index: number) => {
+					// Return tasks as array of individual items from entities
+					const entities = responseData.result?.entities || [];
+					if (entities.length > 0) {
+						entities.forEach((task: any) => {
 							returnData.push({
-								json: task as any,
+								json: task,
 								pairedItem: i,
 							});
 						});
 					} else {
+						// Return empty result if no tasks found
 						returnData.push({
-							json: { tasks: responseData.result || [] },
+							json: {},
 							pairedItem: i,
 						});
 					}

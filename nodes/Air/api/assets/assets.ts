@@ -66,18 +66,55 @@ export interface GetAssetResponse {
 
 export interface AssetTask {
   _id: string;
+  taskId: string;
   name: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  assetId: string;
-  caseId?: string;
   type: string;
+  endpointId: string;
+  endpointName: string;
+  organizationId: number;
+  status: string;
+  recurrence: string | null;
+  progress: number;
+  durations: {
+    processing?: number;
+  } | null;
+  duration: number | null;
+  caseIds: string[];
+  metadata: {
+    purged: boolean;
+    hasCaseDb: boolean;
+    hasCasePpc: boolean;
+    hasDroneData: boolean;
+  };
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  response: {
+    errorMessage: string | null;
+    caseDirectory: string | null;
+    matchCount: string | null;
+    result: any;
+  } | null;
 }
 
 export interface AssetTasksResponse {
   success: boolean;
-  result: AssetTask[];
+  result: {
+    entities: AssetTask[];
+    filters: Array<{
+      name: string;
+      type: string;
+      options: string[];
+      filterUrl: string | null;
+    }>;
+    sortables: string[];
+    totalEntityCount: number;
+    currentPage: number;
+    pageSize: number;
+    previousPage: number;
+    totalPageCount: number;
+    nextPage: number;
+  };
   statusCode: number;
   errors: string[];
 }

@@ -162,6 +162,13 @@ export const RepositoriesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'All Organizations',
+				name: 'allOrganizations',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to include all organizations in the search',
+			},
+			{
 				displayName: 'Filter By Host',
 				name: 'host',
 				type: 'string',
@@ -169,11 +176,47 @@ export const RepositoriesOperations: INodeProperties[] = [
 				description: 'Filter repositories by host',
 			},
 			{
+				displayName: 'Filter By Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				description: 'Filter repositories by name (exact match)',
+			},
+			{
 				displayName: 'Filter By Path',
 				name: 'path',
 				type: 'string',
 				default: '',
 				description: 'Filter repositories by path',
+			},
+			{
+				displayName: 'Filter By Type',
+				name: 'type',
+				type: 'multiOptions',
+				default: [],
+				description: 'Filter repositories by type (multiple selection supported)',
+				options: [
+					{
+						name: 'Amazon S3',
+						value: 'amazon-s3',
+					},
+					{
+						name: 'Azure Storage',
+						value: 'azure-storage',
+					},
+					{
+						name: 'FTPS',
+						value: 'ftps',
+					},
+					{
+						name: 'SFTP',
+						value: 'sftp',
+					},
+					{
+						name: 'SMB',
+						value: 'smb',
+					},
+				],
 			},
 			{
 				displayName: 'Filter By Username',
@@ -209,35 +252,6 @@ export const RepositoriesOperations: INodeProperties[] = [
 				default: '',
 				description: 'Search repositories by name (supports partial matches)',
 			},
-			{
-				displayName: 'Type',
-				name: 'type',
-				type: 'options',
-				default: 'smb',
-				description: 'Filter repositories by type',
-				options: [
-					{
-						name: 'Amazon S3',
-						value: 'amazon-s3',
-					},
-					{
-						name: 'Azure Storage',
-						value: 'azure-storage',
-					},
-					{
-						name: 'FTPS',
-						value: 'ftps',
-					},
-					{
-						name: 'SFTP',
-						value: 'sftp',
-					},
-					{
-						name: 'SMB',
-						value: 'smb',
-					},
-				],
-			},
 		],
 	},
 ];
@@ -259,7 +273,7 @@ export function buildRepositoryQueryParams(organizationId: string, additionalFie
 	}
 
 	// Add filter parameters
-	if (additionalFields.type) {
+	if (additionalFields.type && additionalFields.type.length > 0) {
 		queryParams['filter[type]'] = additionalFields.type;
 	}
 	if (additionalFields.searchTerm) {
@@ -273,6 +287,12 @@ export function buildRepositoryQueryParams(organizationId: string, additionalFie
 	}
 	if (additionalFields.host) {
 		queryParams['filter[host]'] = additionalFields.host;
+	}
+	if (additionalFields.name) {
+		queryParams['filter[name]'] = additionalFields.name;
+	}
+	if (additionalFields.allOrganizations) {
+		queryParams['filter[allOrganizations]'] = 'true';
 	}
 
 	return queryParams;

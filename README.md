@@ -165,11 +165,16 @@ Manage organizations and their users.
 - `updateShareableDeployment` - Update organization shareable deployment status
 
 ### Repositories
-Manage evidence repositories.
+Manage evidence repositories with comprehensive filtering and search capabilities.
 
 **Operations:**
-- `get` - Get a repository by name
-- `getAll` - Get many repositories
+- `get` - Get a repository by name, ID, or from list selection
+- `getAll` - Get many repositories with advanced filtering options
+  - **Enhanced Filtering:** Filter by host, path, username, name, repository type (multiple selection)
+  - **Organization Support:** Filter by organization with support for all organizations option
+  - **Search Capabilities:** Full-text search with partial name matching
+  - **Repository Types:** Support for SMB, SFTP, FTPS, Amazon S3, and Azure Storage repositories
+  - **Pagination Support:** Configurable page size and page number for large result sets
 
 ### Tasks
 Manage and monitor tasks and assignments.
