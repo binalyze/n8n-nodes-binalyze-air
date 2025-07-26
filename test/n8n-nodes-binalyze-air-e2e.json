@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-25T16:25:11.284Z",
-  "updatedAt": "2025-07-25T18:25:57.000Z",
+  "updatedAt": "2025-07-26T15:24:38.000Z",
   "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
@@ -12,7 +12,7 @@
       "typeVersion": 1,
       "position": [
         -400,
-        -96
+        96
       ],
       "id": "94fd90e3-840d-42dd-b049-ee058ea47035",
       "name": "When clicking ‘Execute workflow’"
@@ -20,6 +20,12 @@
     {
       "parameters": {
         "resource": "acquisitions",
+        "organizationIdForGet": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
         "acquisitionProfileId": {
           "__rl": true,
           "value": "baseline-acquisition-for-comparison",
@@ -50,8 +56,7 @@
           "__rl": true,
           "value": "0",
           "mode": "list",
-          "cachedResultName": "Binalyze",
-          "cachedResultUrl": "b28890fcb2744fad"
+          "cachedResultName": "Binalyze (Default)"
         },
         "caseId": {
           "__rl": true,
@@ -61,19 +66,14 @@
         },
         "acquisitionProfileIdForTask": {
           "__rl": true,
-          "value": "={{ $json._id }}",
-          "mode": "id"
-        },
-        "taskName": "n8n Acquisition Task",
-        "saveToLocation": "repository",
-        "repositoryId": {
-          "__rl": true,
-          "value": "702f651c-b3e3-46c4-9061-33811a5a90be",
+          "value": "baseline-acquisition-for-comparison",
           "mode": "list",
-          "cachedResultName": "Azure Blob (azure-storage)"
+          "cachedResultName": "Baseline Acquisition for Comparison"
         },
+        "taskName": "n8n Test Task",
+        "enableDrone": false,
         "endpointFilters": {
-          "assetName": "WORKSTATION"
+          "assetName": "WORKSTATION-4"
         }
       },
       "type": "n8n-nodes-binalyze-air.air",
@@ -94,7 +94,17 @@
     {
       "parameters": {
         "resource": "assets",
-        "additionalFields": {}
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "additionalFields": {
+          "platform": [
+            "linux"
+          ]
+        }
       },
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
@@ -234,8 +244,7 @@
           "__rl": true,
           "value": "0",
           "mode": "list",
-          "cachedResultName": "Binalyze",
-          "cachedResultUrl": "b28890fcb2744fad"
+          "cachedResultName": "Binalyze (Default)"
         },
         "additionalFields": {}
       },
@@ -243,7 +252,7 @@
       "typeVersion": 1,
       "position": [
         -176,
-        -96
+        192
       ],
       "id": "6868f25a-3e00-4eb9-8b95-8f379164a063",
       "name": "Get many repositories",
@@ -267,7 +276,7 @@
       "typeVersion": 1,
       "position": [
         48,
-        -96
+        192
       ],
       "id": "b1d431d0-43da-4cf9-a2d3-9a2c0985b147",
       "name": "Get a repository",
@@ -295,7 +304,7 @@
       "typeVersion": 1,
       "position": [
         -176,
-        288
+        576
       ],
       "id": "d5925c74-f54e-4be5-898b-0c41dc73f566",
       "name": "Get many users",
@@ -320,7 +329,7 @@
       "typeVersion": 1,
       "position": [
         48,
-        288
+        576
       ],
       "id": "e9ec5228-05c9-4646-8fd2-b8def3fa5aa8",
       "name": "Get a user",
@@ -339,7 +348,7 @@
           "__rl": true,
           "value": "0",
           "mode": "list",
-          "cachedResultName": "Binalyze"
+          "cachedResultName": "Binalyze (Default)"
         },
         "additionalFields": {
           "name": "n8n"
@@ -349,7 +358,7 @@
       "typeVersion": 1,
       "position": [
         -176,
-        96
+        384
       ],
       "id": "7e91601b-751c-4516-b07b-5f9614bcf0b5",
       "name": "Get many tasks",
@@ -370,7 +379,7 @@
       "typeVersion": 1,
       "position": [
         48,
-        96
+        384
       ],
       "id": "3051574e-d629-4e57-a877-943136d11b27",
       "name": "Get a task",
@@ -392,11 +401,128 @@
       "typeVersion": 1,
       "position": [
         272,
-        96
+        384
       ],
       "id": "69a6f6eb-2728-47d3-88fb-b976179f3691",
       "name": "Get task assignments",
       "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "baselines",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "C-2025-0016",
+          "mode": "list",
+          "cachedResultName": "DRONE Test"
+        },
+        "endpointFilters": {
+          "searchTerm": "WORKSTATION-4"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "cd855917-ff89-4a7d-bad9-b68d3dba3cdc",
+      "name": "Acquire a baseline",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "baselines",
+        "operation": "compareBaseline",
+        "taskName": "Test",
+        "organizationIdForCompare": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "assetIdForCompare": {
+          "__rl": true,
+          "value": "44e93561-7558-499d-ae32-d191a057ab4f",
+          "mode": "list",
+          "cachedResultName": "WORKSTATION-4 (20.162.22.194)"
+        },
+        "baseline1TaskId": {
+          "__rl": true,
+          "value": "dc75002d-f465-4ae1-81fb-35d2433d46c5",
+          "mode": "list",
+          "cachedResultName": "DRONE Test Baseline Acquisition 002 (baseline-acquisition)"
+        },
+        "baseline2TaskId": {
+          "__rl": true,
+          "value": "a486898f-1d72-41cb-9eb2-80d6e676d78a",
+          "mode": "list",
+          "cachedResultName": "DRONE Test Baseline Acquisition 003 (baseline-acquisition)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        48,
+        0
+      ],
+      "id": "987ee17b-7d5e-4d6c-ba83-a4718d5afac5",
+      "name": "Compare baselines",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "baselines",
+        "operation": "getComparisonReport",
+        "organizationIdForReport": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "assetIdForReport": {
+          "__rl": true,
+          "value": "44e93561-7558-499d-ae32-d191a057ab4f",
+          "mode": "list",
+          "cachedResultName": "WORKSTATION-4 (20.162.22.194)"
+        },
+        "comparisonTaskId": {
+          "__rl": true,
+          "value": "f008e17d-95fc-4d46-b792-29235b50ef40",
+          "mode": "list",
+          "cachedResultName": "Baseline Comparison 002 (baseline-comparison)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        272,
+        0
+      ],
+      "id": "94feb7ea-5af3-4d83-87ac-055025aa2d74",
+      "name": "Get comparison report",
       "credentials": {
         "airApi": {
           "id": "zkdMrFV62yPoc4KE",
@@ -431,6 +557,11 @@
           },
           {
             "node": "Get many tasks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Acquire a baseline",
             "type": "main",
             "index": 0
           }
@@ -534,6 +665,28 @@
           }
         ]
       ]
+    },
+    "Acquire a baseline": {
+      "main": [
+        [
+          {
+            "node": "Compare baselines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare baselines": {
+      "main": [
+        [
+          {
+            "node": "Get comparison report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -544,7 +697,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "b2d8f44a-c268-4862-ab29-697c9c88ceed",
+  "versionId": "81ad9e84-310d-4f36-8d4c-10658476cdaf",
   "triggerCount": 0,
   "shared": [
     {
@@ -570,7 +723,7 @@
             "projectId": "llHxnpzVncfHqefW",
             "user": {
               "createdAt": "2025-05-26T10:21:01.143Z",
-              "updatedAt": "2025-07-25T18:46:55.000Z",
+              "updatedAt": "2025-07-26T15:22:52.000Z",
               "id": "5f63a800-7f35-4ceb-b857-df8cc34579ab",
               "email": "emre@binalyze.com",
               "firstName": "Emre",
@@ -592,7 +745,7 @@
               "role": "global:owner",
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2025-07-25",
+              "lastActiveAt": "2025-07-26",
               "isPending": false
             }
           }

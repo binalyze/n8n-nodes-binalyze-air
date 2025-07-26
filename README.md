@@ -135,6 +135,12 @@ Acquire and compare system baselines.
       - Only shows baseline comparison tasks (not baseline acquisition tasks)
       - Tasks are filtered to show only those assigned to the selected endpoint
       - Task list displays task name and current status for easy identification
+    - **Response Data:**
+      - `success`: Boolean indicating if the operation was successful
+      - `message`: Status message with endpoint and task IDs
+      - `reportJson`: Decoded JSON object containing the comparison report data
+        - Automatically extracted from the HTML response
+        - Contains detailed comparison data between the two baseline acquisitions
     - **Important Notes:**
       - Only baseline comparison tasks can have comparison reports
       - The selected task must be associated with the selected endpoint

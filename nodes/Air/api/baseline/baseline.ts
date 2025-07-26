@@ -98,18 +98,52 @@ export const api = {
     credentials: AirCredentials,
     endpointId: string,
     taskId: string
-  ): Promise<void> {
+  ): Promise<{ success: boolean; message: string; reportJson?: any }> {
     const requestOptions = buildRequestOptionsWithErrorHandling(
       credentials,
       'GET',
       `/api/public/baseline/comparison/report/${endpointId}/${taskId}`
     );
 
-    const response = await makeApiRequestWithErrorHandling(context, requestOptions, 'get comparison report');
+    // Override to handle HTML response
+    requestOptions.json = false;
+    requestOptions.headers!['Accept'] = 'text/html';
 
-    // The endpoint doesn't return a response body, but we can check the status
-    if (!response || typeof response !== 'object') {
-      return;
+    try {
+      const response = await context.helpers.httpRequest(requestOptions);
+
+      // Check if we got an HTML response
+      if (typeof response === 'string' && response.includes('<html')) {
+        // Extract the base64 encoded JSON from the script tag
+        const scriptMatch = response.match(/<script\s+id="dronejson"\s+type="text\/plain">\s*([^<]+)\s*<\/script>/);
+
+        if (scriptMatch && scriptMatch[1]) {
+          try {
+            // Decode the base64 string
+            const base64String = scriptMatch[1].trim();
+            const decodedString = Buffer.from(base64String, 'base64').toString('utf-8');
+            const reportJson = JSON.parse(decodedString);
+
+            return {
+              success: true,
+              message: `Comparison report retrieved successfully for endpoint ${endpointId} and task ${taskId}`,
+              reportJson
+            };
+          } catch (decodeError) {
+            throw new Error(`Failed to decode comparison report: ${decodeError.message}`);
+          }
+        } else {
+          throw new Error('Could not find comparison report data in the HTML response');
+        }
+      } else {
+        throw new Error('Expected HTML response but received different format');
+      }
+    } catch (error) {
+      // Re-throw with context
+      if (error.response?.status === 404) {
+        throw new Error(`Comparison report not found for endpoint ${endpointId} and task ${taskId}`);
+      }
+      throw error;
     }
   }
 };
