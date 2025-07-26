@@ -156,6 +156,7 @@ Manage incident response cases, notes, and activities.
 - `closeCase` - Close a specific case
 - `create` - Create a new case
 - `get` - Retrieve a specific case
+  - **Simplified:** Only requires the case ID - no organization selection needed
 - `getActivities` - Get activities for a specific case
 - `getEndpoints` - Get endpoints for a specific case
 - `getAll` - Retrieve many cases
@@ -168,8 +169,8 @@ Manage incident response cases, notes, and activities.
 - `update` - Update a specific case
 
 **Enhanced Features:**
-- **Organization-First Selection:** For operations working with existing cases, organization must be selected first
-  - Organization selection appears before case selection
+- **Organization-First Selection:** For most operations working with existing cases, organization must be selected first
+  - Organization selection appears before case selection (except for the `get` operation)
   - Cases are automatically filtered based on the selected organization
 - **Organization Selection:** All case operations now support organization selection using resource locator
   - Select from a searchable list of organizations

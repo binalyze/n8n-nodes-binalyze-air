@@ -147,42 +147,20 @@ export const CasesOperations: INodeProperties[] = [
 		default: 'getAll',
 	},
 	{
-		displayName: 'Organization',
-		name: 'organizationId',
+		displayName: 'Case',
+		name: 'caseId',
 		type: 'resourceLocator',
-		default: { mode: 'id', value: '0' },
-		placeholder: 'Select organization...',
+		default: { mode: 'id', value: '' },
+		placeholder: 'Select a case...',
 		displayOptions: {
 			show: {
 				resource: ['cases'],
 				operation: [
 					'get',
-					'update',
-					'archiveCase',
-					'closeCase',
-					'openCase',
-					'changeOwner',
-					'getActivities',
-					'getEndpoints',
-					'getTasks',
-					'getUsers',
-					'removeEndpoints',
-					'removeTaskAssignment',
-					'importTaskAssignments'
 				],
 			},
 		},
 		modes: [
-			{
-				displayName: 'From List',
-				name: 'list',
-				type: 'list',
-				placeholder: 'Select an organization...',
-				typeOptions: {
-					searchListMethod: 'getOrganizations',
-					searchable: true,
-				},
-			},
 			{
 				displayName: 'By ID',
 				name: 'id',
@@ -191,22 +169,16 @@ export const CasesOperations: INodeProperties[] = [
 					{
 						type: 'regex',
 						properties: {
-							regex: '^[0-9,\\s]+$',
-							errorMessage: 'Organization IDs must be comma-separated numbers. Use "0" for all organizations.',
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid case ID (must contain only letters, numbers, hyphens, and underscores)',
 						},
 					},
 				],
-				placeholder: 'Enter organization IDs (comma-separated) or "0" for all',
-			},
-			{
-				displayName: 'By Name',
-				name: 'name',
-				type: 'string',
-				placeholder: 'Enter organization name',
+				placeholder: 'Enter case ID',
 			},
 		],
 		required: true,
-		description: 'Organization to filter cases. Use "0" for all organizations.',
+		description: 'The ID of the case to retrieve',
 	},
 	{
 		displayName: 'Case',
@@ -218,7 +190,6 @@ export const CasesOperations: INodeProperties[] = [
 			show: {
 				resource: ['cases'],
 				operation: [
-					'get',
 					'update',
 					'archiveCase',
 					'closeCase',
@@ -1036,12 +1007,24 @@ export async function getCases(this: ILoadOptionsFunctions, filter?: string): Pr
 		// Try to get the currently selected organization ID
 		let organizationIds = '0'; // Default to all organizations
 		try {
-			const organizationId = this.getNodeParameter('organizationId') as any;
-			if (organizationId) {
+			// Get the current node parameters to access the organizationId
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.organizationId) {
+				const organizationId = currentParams.organizationId as any;
 				if (typeof organizationId === 'string') {
 					organizationIds = organizationId;
-				} else if (organizationId.value !== undefined) {
-					organizationIds = organizationId.value;
+				} else if (organizationId && typeof organizationId === 'object') {
+					if (organizationId.mode === 'id' || organizationId.mode === 'list') {
+						organizationIds = organizationId.value || '0';
+					} else if (organizationId.mode === 'name' && organizationId.value) {
+						// For name mode, we need to resolve the organization name to ID
+						try {
+							organizationIds = await findOrganizationByName(this as unknown as IExecuteFunctions, credentials, organizationId.value);
+						} catch (error) {
+							// If we can't resolve the name, fall back to default
+							organizationIds = '0';
+						}
+					}
 				}
 			}
 		} catch (error) {
@@ -1083,12 +1066,24 @@ export async function getCasesOptions(this: ILoadOptionsFunctions): Promise<INod
 		// Try to get the currently selected organization ID
 		let organizationIds = '0'; // Default to all organizations
 		try {
-			const organizationId = this.getNodeParameter('organizationId') as any;
-			if (organizationId) {
+			// Get the current node parameters to access the organizationId
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.organizationId) {
+				const organizationId = currentParams.organizationId as any;
 				if (typeof organizationId === 'string') {
 					organizationIds = organizationId;
-				} else if (organizationId.value !== undefined) {
-					organizationIds = organizationId.value;
+				} else if (organizationId && typeof organizationId === 'object') {
+					if (organizationId.mode === 'id' || organizationId.mode === 'list') {
+						organizationIds = organizationId.value || '0';
+					} else if (organizationId.mode === 'name' && organizationId.value) {
+						// For name mode, we need to resolve the organization name to ID
+						try {
+							organizationIds = await findOrganizationByName(this as unknown as IExecuteFunctions, credentials, organizationId.value);
+						} catch (error) {
+							// If we can't resolve the name, fall back to default
+							organizationIds = '0';
+						}
+					}
 				}
 			}
 		} catch (error) {
@@ -1268,6 +1263,8 @@ async function executeGetCase(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
+	// Organization is selected in the UI to filter the case dropdown, but not needed for the API call
+	// The API retrieves the case by its ID regardless of organization
 	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
 	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
