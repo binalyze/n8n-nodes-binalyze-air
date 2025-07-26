@@ -13,7 +13,9 @@ import { NodeConnectionType } from 'n8n-workflow';
 // Import operations and functions from resources
 import {
 	BaselinesOperations,
-	executeBaselines
+	executeBaselines,
+	getAssetsByOrganization,
+	getTasksByAsset
 } from './resources/baselines';
 import {
 	CasesOperations,
@@ -225,6 +227,13 @@ export class Air implements INodeType {
 			// Import list search methods from Assets for resource locators
 			async getAssets(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAssets.call(this, filter);
+			},
+			// Import context-aware list search methods from Baselines for resource locators
+			async getAssetsByOrganization(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getAssetsByOrganization.call(this, filter);
+			},
+			async getTasksByAsset(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getTasksByAsset.call(this, filter);
 			},
 			// Import list search methods from Cases for resource locators
 			async getCases(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {

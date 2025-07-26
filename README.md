@@ -22,6 +22,7 @@ This is an n8n community node that integrates with Binalyze AIR (Automated Incid
   - [Users](#users)
 - [Development](#development)
 - [Testing](#testing)
+- [TODO](#todo)
 
 ## Installation
 
@@ -105,7 +106,21 @@ Acquire and compare system baselines.
       - Filter by endpoint name, IP address, management status, online status, platform
       - Filter by search term, tags, group path/ID, isolation status, issue, policy, version
       - Filter by organization IDs, include/exclude specific endpoint IDs
-- `compareBaseline` - Compare baseline with task results
+- `compareBaseline` - Compare two baseline acquisition results from the same endpoint
+  - **Enhanced Features:**
+    - **Organization Selection:** Select an organization using resource locator (by list or ID)
+      - Filters available assets based on the selected organization
+    - **Asset Selection:** Select an asset using resource locator (by list or ID)
+      - Automatically filters available baseline acquisition tasks based on the selected asset
+    - **Baseline 1:** Select the first baseline acquisition task using resource locator (by list or ID)
+      - Must be a completed baseline acquisition task from the selected asset
+    - **Baseline 2:** Select the second baseline acquisition task using resource locator (by list or ID)
+      - Must be a completed baseline acquisition task from the selected asset
+    - **Important Notes:**
+      - Both tasks must be baseline acquisition tasks (not regular acquisition tasks)
+      - Both tasks must have been executed on the same endpoint/asset
+      - Both tasks must have completed successfully
+      - The two tasks must be different (cannot compare a task with itself)
 - `getComparisonReport` - Get baseline comparison report
 
 ### Cases

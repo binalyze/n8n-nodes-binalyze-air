@@ -3,6 +3,8 @@ import {
 	INodeExecutionData,
 	INodeProperties,
 	NodeOperationError,
+	ILoadOptionsFunctions,
+	INodeListSearchResult,
 } from 'n8n-workflow';
 
 import {
@@ -13,6 +15,7 @@ import {
 	handleExecuteError,
 	normalizeAndValidateId,
 	catchAndFormatError,
+	createListSearchResults,
 } from '../utils/helpers';
 
 import { AirCredentials } from '../../../credentials/AirApi.credentials';
@@ -22,6 +25,12 @@ import {
 	BaselineComparisonRequest,
 	BaselineResponse
 } from '../api/baseline/baseline';
+
+// Import necessary methods from other resources
+import { findOrganizationByName } from './organizations';
+import { fetchAllAssets, isValidAsset, extractAssetId } from './assets';
+import { api as assetsApi } from '../api/assets/assets';
+import { isValidTask, extractTaskId } from './tasks';
 
 export const BaselinesOperations: INodeProperties[] = [
 	{
@@ -42,10 +51,10 @@ export const BaselinesOperations: INodeProperties[] = [
 				action: 'Acquire a baseline',
 			},
 			{
-				name: 'Compare Baseline',
+				name: 'Compare Baselines',
 				value: 'compareBaseline',
-				description: 'Compare baseline with task results',
-				action: 'Compare a baseline',
+				description: 'Compare two baseline acquisition results from the same endpoint',
+				action: 'Compare baselines',
 			},
 			{
 				name: 'Get Comparison Report',
@@ -141,6 +150,174 @@ export const BaselinesOperations: INodeProperties[] = [
 		description: 'The case for baseline acquisition',
 	},
 	{
+		displayName: 'Organization',
+		name: 'organizationIdForCompare',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['baselines'],
+				operation: ['compareBaseline'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Organization ID must be a number',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+		],
+		required: true,
+		description: 'The organization that owns the asset',
+	},
+	{
+		displayName: 'Asset',
+		name: 'assetIdForCompare',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an asset...',
+		displayOptions: {
+			show: {
+				resource: ['baselines'],
+				operation: ['compareBaseline'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an asset...',
+				typeOptions: {
+					searchListMethod: 'getAssetsByOrganization',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid asset ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter asset ID',
+			},
+		],
+		required: true,
+		description: 'The asset to compare baselines for',
+	},
+	{
+		displayName: 'Baseline 1',
+		name: 'baseline1TaskId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select first baseline task...',
+		displayOptions: {
+			show: {
+				resource: ['baselines'],
+				operation: ['compareBaseline'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a task...',
+				typeOptions: {
+					searchListMethod: 'getTasksByAsset',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid task ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter task ID',
+			},
+		],
+		required: true,
+		description: 'The first baseline acquisition task to compare. Must be a completed baseline acquisition task from the selected asset.',
+	},
+	{
+		displayName: 'Baseline 2',
+		name: 'baseline2TaskId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select second baseline task...',
+		displayOptions: {
+			show: {
+				resource: ['baselines'],
+				operation: ['compareBaseline'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a task...',
+				typeOptions: {
+					searchListMethod: 'getTasksByAsset',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid task ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter task ID',
+			},
+		],
+		required: true,
+		description: 'The second baseline acquisition task to compare. Must be a completed baseline acquisition task from the selected asset.',
+	},
+	{
 		displayName: 'Endpoint ID',
 		name: 'endpointId',
 		type: 'string',
@@ -149,26 +326,11 @@ export const BaselinesOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['baselines'],
-				operation: ['compareBaseline', 'getComparisonReport'],
+				operation: ['getComparisonReport'],
 			},
 		},
 		required: true,
 		description: 'The ID of the endpoint',
-	},
-	{
-		displayName: 'Task IDs',
-		name: 'taskIds',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter task IDs (comma-separated)',
-		displayOptions: {
-			show: {
-				resource: ['baselines'],
-				operation: ['compareBaseline'],
-			},
-		},
-		required: true,
-		description: 'Comma-separated list of task IDs to compare against baseline',
 	},
 	{
 		displayName: 'Task ID',
@@ -544,36 +706,63 @@ async function executeCompareBaseline(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<BaselineResponse> {
-	const endpointId = this.getNodeParameter('endpointId', itemIndex) as string;
-	const taskIdsString = this.getNodeParameter('taskIds', itemIndex) as string;
+	const organizationResource = this.getNodeParameter('organizationIdForCompare', itemIndex) as any;
+	const assetResource = this.getNodeParameter('assetIdForCompare', itemIndex) as any;
+	const baseline1Resource = this.getNodeParameter('baseline1TaskId', itemIndex) as any;
+	const baseline2Resource = this.getNodeParameter('baseline2TaskId', itemIndex) as any;
 
-	// Validate required parameters
-	normalizeAndValidateId(endpointId, 'Endpoint ID');
-
-	if (!taskIdsString || taskIdsString.trim() === '') {
-		throw new Error('Task IDs cannot be empty');
+	// Resolve organization ID if needed (for validation purposes only)
+	if (organizationResource.mode === 'name') {
+		try {
+			await findOrganizationByName(this, credentials, organizationResource.value);
+		} catch (error) {
+			throw new NodeOperationError(this.getNode(), error.message, { itemIndex });
+		}
+	} else if (organizationResource.mode !== 'list' && organizationResource.mode !== 'id') {
+		throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex });
 	}
 
-	// Parse task IDs
-	const taskIds = taskIdsString.split(',').map((id: string) => id.trim()).filter(id => id !== '');
+	// Extract the asset ID (which is the endpoint ID in this context)
+	const endpointId = normalizeAndValidateId(assetResource.value || assetResource, 'Asset ID');
 
-	if (taskIds.length === 0) {
-		throw new Error('At least one valid task ID must be provided');
+	// Extract task IDs
+	const task1Id = normalizeAndValidateId(baseline1Resource.value || baseline1Resource, 'Baseline 1 Task ID');
+	const task2Id = normalizeAndValidateId(baseline2Resource.value || baseline2Resource, 'Baseline 2 Task ID');
+
+	// Validate that the two task IDs are different
+	if (task1Id === task2Id) {
+		throw new NodeOperationError(this.getNode(), 'The two baseline tasks must be different', { itemIndex });
 	}
 
-	// Build request
+	// Build request with the two task IDs
 	const request: BaselineComparisonRequest = {
 		endpointId,
-		taskIds,
+		taskIds: [task1Id, task2Id],
 	};
 
-	// Make API call
-	const response = await baselinesApi.compareBaseline(this, credentials, request);
+	try {
+		// Make API call
+		const response = await baselinesApi.compareBaseline(this, credentials, request);
 
-	// Validate response
-	validateApiResponse(response, 'Compare baseline');
+		// Validate response
+		validateApiResponse(response, 'Compare baseline');
 
-	return response;
+		return response;
+	} catch (error: any) {
+		// Provide more helpful error messages
+		if (error.message?.includes('No task(s) found by provided id(s)')) {
+			throw new NodeOperationError(
+				this.getNode(),
+				`No baseline tasks found for the specified endpoint. Please ensure:
+1. Both tasks are baseline acquisition tasks
+2. Both tasks were executed on the selected endpoint (Asset ID: ${endpointId})
+3. Both tasks have completed successfully
+4. The task IDs are correct: ${task1Id}, ${task2Id}`,
+				{ itemIndex }
+			);
+		}
+		throw error;
+	}
 }
 
 /**
@@ -598,4 +787,108 @@ async function executeGetComparisonReport(
 		success: true,
 		message: `Comparison report retrieved successfully for endpoint ${endpointId} and task ${taskId}`,
 	};
+}
+
+// Add context-aware methods for loading assets and tasks
+
+/**
+ * Get assets for a specific organization (context-aware for resource locator)
+ */
+export async function getAssetsByOrganization(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+
+		// Try to get the organization from the current node parameters
+		let organizationId = '0'; // Default to all organizations
+		try {
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.organizationIdForCompare) {
+				const orgResource = currentParams.organizationIdForCompare as any;
+				if (typeof orgResource === 'object') {
+					if (orgResource.mode === 'id' || orgResource.mode === 'list') {
+						organizationId = orgResource.value || '0';
+					}
+				} else if (typeof orgResource === 'string') {
+					organizationId = orgResource;
+				}
+			}
+		} catch (error) {
+			// If we can't get the current parameters, fall back to default
+		}
+
+		const assets = await fetchAllAssets(this, credentials, organizationId, searchTerm);
+
+		return createListSearchResults(
+			assets,
+			isValidAsset,
+			(asset) => ({
+				name: `${asset.name} (${asset.ipAddress})`,
+				value: extractAssetId(asset),
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		throw catchAndFormatError(error, 'loading assets');
+	}
+}
+
+/**
+ * Get tasks for a specific asset (context-aware for resource locator)
+ */
+export async function getTasksByAsset(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+
+		// Try to get the asset from the current node parameters
+		let assetId: string | undefined;
+		try {
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.assetIdForCompare) {
+				const assetResource = currentParams.assetIdForCompare as any;
+				if (typeof assetResource === 'object') {
+					if (assetResource.mode === 'id' || assetResource.mode === 'list') {
+						assetId = assetResource.value;
+					}
+				} else if (typeof assetResource === 'string') {
+					assetId = assetResource;
+				}
+			}
+		} catch (error) {
+			// If we can't get the current parameters, return empty results
+		}
+
+		if (!assetId) {
+			return { results: [] };
+		}
+
+		// Get tasks for the specific asset
+		const response = await assetsApi.getAssetTasks(this, credentials, assetId);
+		const tasks = response.result?.entities || [];
+
+		// Filter for baseline acquisition tasks only
+		let baselineTasks = tasks.filter((task: any) => task.type === 'baseline-acquisition');
+
+		// Filter by search term if provided
+		let filteredTasks = baselineTasks;
+		if (searchTerm) {
+			const searchLower = searchTerm.toLowerCase();
+			filteredTasks = baselineTasks.filter((task: any) =>
+				(task.name && task.name.toLowerCase().includes(searchLower)) ||
+				(task._id && task._id.toLowerCase().includes(searchLower)) ||
+				(task.type && task.type.toLowerCase().includes(searchLower))
+			);
+		}
+
+		return createListSearchResults(
+			filteredTasks,
+			isValidTask,
+			(task: any) => ({
+				name: `${task.name || `Task ${task._id}`} (${task.type || 'Baseline Acquisition'})`,
+				value: extractTaskId(task),
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		throw catchAndFormatError(error, 'loading tasks');
+	}
 }
