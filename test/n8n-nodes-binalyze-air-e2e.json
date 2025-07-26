@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-25T16:25:11.284Z",
-  "updatedAt": "2025-07-26T15:24:38.000Z",
+  "updatedAt": "2025-07-26T16:39:48.000Z",
   "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
@@ -12,7 +12,7 @@
       "typeVersion": 1,
       "position": [
         -400,
-        96
+        672
       ],
       "id": "94fd90e3-840d-42dd-b049-ee058ea47035",
       "name": "When clicking ‘Execute workflow’"
@@ -252,7 +252,7 @@
       "typeVersion": 1,
       "position": [
         -176,
-        192
+        1152
       ],
       "id": "6868f25a-3e00-4eb9-8b95-8f379164a063",
       "name": "Get many repositories",
@@ -276,7 +276,7 @@
       "typeVersion": 1,
       "position": [
         48,
-        192
+        1152
       ],
       "id": "b1d431d0-43da-4cf9-a2d3-9a2c0985b147",
       "name": "Get a repository",
@@ -304,7 +304,7 @@
       "typeVersion": 1,
       "position": [
         -176,
-        576
+        1536
       ],
       "id": "d5925c74-f54e-4be5-898b-0c41dc73f566",
       "name": "Get many users",
@@ -329,7 +329,7 @@
       "typeVersion": 1,
       "position": [
         48,
-        576
+        1536
       ],
       "id": "e9ec5228-05c9-4646-8fd2-b8def3fa5aa8",
       "name": "Get a user",
@@ -358,7 +358,7 @@
       "typeVersion": 1,
       "position": [
         -176,
-        384
+        1344
       ],
       "id": "7e91601b-751c-4516-b07b-5f9614bcf0b5",
       "name": "Get many tasks",
@@ -379,7 +379,7 @@
       "typeVersion": 1,
       "position": [
         48,
-        384
+        1344
       ],
       "id": "3051574e-d629-4e57-a877-943136d11b27",
       "name": "Get a task",
@@ -401,7 +401,7 @@
       "typeVersion": 1,
       "position": [
         272,
-        384
+        1344
       ],
       "id": "69a6f6eb-2728-47d3-88fb-b976179f3691",
       "name": "Get task assignments",
@@ -529,6 +529,266 @@
           "name": "Binalyze AIR account"
         }
       }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        672
+      ],
+      "id": "85b96f26-3162-41f8-b31e-b63a1b5b38b0",
+      "name": "Get many cases",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "get",
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        48,
+        672
+      ],
+      "id": "8d9a528e-3a61-46c4-b167-adf68ca67ff7",
+      "name": "Get a case",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "checkName",
+        "caseName": "={{ $json.name }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        272,
+        192
+      ],
+      "id": "33139a76-eb5a-4b31-8613-d7deeb08b23b",
+      "name": "Check case name availability",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getActivities",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        272,
+        384
+      ],
+      "id": "b4332d2e-8ef8-452d-8784-89ef6bbb7fab",
+      "name": "Get case activities",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getEndpoints",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        272,
+        768
+      ],
+      "id": "75a44ef3-54f6-4553-9a32-1f589c26bcb8",
+      "name": "Get case endpoints",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getUsers",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        272,
+        960
+      ],
+      "id": "b16ef5d7-522e-427b-9fe4-889e4e3a7f3b",
+      "name": "Get case users",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getTasks",
+        "organizationId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "0"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        272,
+        1152
+      ],
+      "id": "dace831f-955a-468b-9fc9-2c1345972068",
+      "name": "Get case tasks",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "create",
+        "caseName": "=n8n Test Case {{ $now.format('yyyyMMdd hhmmss') }}",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "ownerUserId": {
+          "__rl": true,
+          "value": "78cf7ecd-2273-4001-9e20-7e281dd66403",
+          "mode": "list",
+          "cachedResultName": "admin@binalyze.com"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        272,
+        576
+      ],
+      "id": "f1a7f819-29e9-4f1d-bf28-cf39191b2cf7",
+      "name": "Create a case",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "closeCase",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        496,
+        576
+      ],
+      "id": "68f86358-0b1e-423f-9b80-33be6164a140",
+      "name": "Close a case",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
     }
   ],
   "connections": {
@@ -562,6 +822,11 @@
           },
           {
             "node": "Acquire a baseline",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many cases",
             "type": "main",
             "index": 0
           }
@@ -687,6 +952,74 @@
           }
         ]
       ]
+    },
+    "Get task assignments": {
+      "main": [
+        []
+      ]
+    },
+    "Get many cases": {
+      "main": [
+        [
+          {
+            "node": "Get a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a case": {
+      "main": [
+        [
+          {
+            "node": "Check case name availability",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case activities",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case endpoints",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case users",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case tasks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get case endpoints": {
+      "main": [
+        []
+      ]
+    },
+    "Create a case": {
+      "main": [
+        [
+          {
+            "node": "Close a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -697,7 +1030,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "81ad9e84-310d-4f36-8d4c-10658476cdaf",
+  "versionId": "a872e35d-a176-4aea-a077-b410b02aa826",
   "triggerCount": 0,
   "shared": [
     {
@@ -723,7 +1056,7 @@
             "projectId": "llHxnpzVncfHqefW",
             "user": {
               "createdAt": "2025-05-26T10:21:01.143Z",
-              "updatedAt": "2025-07-26T15:22:52.000Z",
+              "updatedAt": "2025-07-26T16:37:12.000Z",
               "id": "5f63a800-7f35-4ceb-b857-df8cc34579ab",
               "email": "emre@binalyze.com",
               "firstName": "Emre",
