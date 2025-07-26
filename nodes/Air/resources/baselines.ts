@@ -30,7 +30,7 @@ import {
 import { findOrganizationByName } from './organizations';
 import { fetchAllAssets, isValidAsset, extractAssetId } from './assets';
 import { api as assetsApi } from '../api/assets/assets';
-import { isValidTask, extractTaskId } from './tasks';
+import { isValidTask } from './tasks';
 
 export const BaselinesOperations: INodeProperties[] = [
 	{
@@ -750,14 +750,24 @@ async function executeCompareBaseline(
 		return response;
 	} catch (error: any) {
 		// Provide more helpful error messages
-		if (error.message?.includes('No task(s) found by provided id(s)')) {
+		if (error.message?.includes('No task assignment found by id') || error.message?.includes('No task(s) found by provided id(s)')) {
 			throw new NodeOperationError(
 				this.getNode(),
-				`No baseline tasks found for the specified endpoint. Please ensure:
-1. Both tasks are baseline acquisition tasks
-2. Both tasks were executed on the selected endpoint (Asset ID: ${endpointId})
-3. Both tasks have completed successfully
-4. The task IDs are correct: ${task1Id}, ${task2Id}`,
+				`No baseline task assignments found for the specified endpoint. Please ensure:
+1. Both tasks are baseline acquisition tasks (not regular acquisitions)
+2. Both tasks were assigned to and completed on the selected endpoint (Asset ID: ${endpointId})
+3. The baseline acquisitions have finished processing
+4. Task IDs: ${task1Id}, ${task2Id}
+
+Note: A baseline acquisition task may be assigned to multiple endpoints. You can only compare baselines that were both executed on the same endpoint.`,
+				{ itemIndex }
+			);
+		}
+		if (error.message?.includes('Status must be completed for baseline')) {
+			throw new NodeOperationError(
+				this.getNode(),
+				`One or both baseline tasks have not completed yet. Please ensure both baseline acquisitions have finished processing before comparing them.
+Task IDs: ${task1Id}, ${task2Id}`,
 				{ itemIndex }
 			);
 		}
@@ -884,7 +894,7 @@ export async function getTasksByAsset(this: ILoadOptionsFunctions, searchTerm?: 
 			isValidTask,
 			(task: any) => ({
 				name: `${task.name || `Task ${task._id}`} (${task.type || 'Baseline Acquisition'})`,
-				value: extractTaskId(task),
+				value: task.taskId || task._id, // Use taskId for AssetTask objects, fallback to _id
 			}),
 			searchTerm
 		);

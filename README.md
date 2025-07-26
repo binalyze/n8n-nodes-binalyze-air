@@ -121,6 +121,7 @@ Acquire and compare system baselines.
       - Both tasks must have been executed on the same endpoint/asset
       - Both tasks must have completed successfully
       - The two tasks must be different (cannot compare a task with itself)
+      - The task list shows only baseline acquisition tasks that were executed on the selected asset
 - `getComparisonReport` - Get baseline comparison report
 
 ### Cases
