@@ -19,6 +19,10 @@ This is an n8n community node that integrates with Binalyze AIR (Automated Incid
   - [Tasks](#tasks)
   - [Triage Rules](#triage-rules)
   - [Users](#users)
+- [Trigger Node](#trigger-node)
+  - [How to Use](#how-to-use)
+  - [Supported Event Types](#supported-event-types)
+  - [Event Data Structure](#event-data-structure)
 - [Development](#development)
 - [Testing](#testing)
 - [TODO](#todo)
@@ -159,6 +163,52 @@ Manage user accounts and permissions.
 - `getAll` - Retrieve many users
 - `get` - Retrieve a specific user
 
+## Trigger Node
+
+The AIR Trigger node allows you to trigger workflows based on AIR events.
+
+### How to Use
+
+1. Add the AIR Trigger node to your workflow
+2. Configure your AIR API credentials
+3. Select the event types you want to listen for from the dynamically loaded list
+4. Copy the webhook URL from the node
+5. Create an event subscription in AIR:
+   - Go to AIR > Integrations > Event Subscriptions
+   - Add a new subscription with the webhook URL
+   - Select the same event types
+   - Provide an authorization token (Bearer token)
+6. Configure the same authorization token in the trigger node options
+
+### Supported Event Types
+
+The trigger node dynamically loads available event types from your AIR instance, which may include:
+- TaskProcessingCompletedEvent
+- TaskProcessingFailedEvent
+- TaskCompletedEvent
+- TaskFailedEvent
+- CaseClosedEvent
+- EndpointRegisteredEvent
+- And many more...
+
+### Event Data Structure
+
+When an event is triggered, the node outputs data in the following format:
+```json
+{
+  "eventName": "TaskCompletedEvent",
+  "organizationId": 0,
+  "data": {
+    "id": "task-id",
+    "name": "Task Name",
+    "type": "Task Type",
+    "organizationId": "org-id",
+    "totalAssignedEndpoints": 5,
+    "totalCompletedEndpoints": 4
+  }
+}
+```
+
 ## Development
 
 To set up the development environment:
@@ -264,5 +314,4 @@ node test/e2e.js download --file my-workflow.json
 
 ## TODO
 - Add Asset isolation, shutdown, and reboot
-- Add Triggers / Event Subscriptions
 - Add interACT Library related operations

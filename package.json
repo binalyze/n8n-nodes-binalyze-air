@@ -52,7 +52,8 @@
       "dist/credentials/AirApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Air/Air.node.js"
+      "dist/nodes/Air/Air.node.js",
+      "dist/nodes/Air/AirTrigger.node.js"
     ]
   },
   "devDependencies": {
