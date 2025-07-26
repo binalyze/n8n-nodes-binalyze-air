@@ -108,6 +108,9 @@ Acquire and compare system baselines.
       - Filter by organization IDs, include/exclude specific endpoint IDs
 - `compareBaseline` - Compare two baseline acquisition results from the same endpoint
   - **Enhanced Features:**
+    - **Task Name (Optional):** Provide a custom name for the comparison task
+      - Must contain only alphanumeric characters (letters and numbers)
+      - If not provided, a default name will be generated
     - **Organization Selection:** Select an organization using resource locator (by list or ID)
       - Filters available assets based on the selected organization
     - **Asset Selection:** Select an asset using resource locator (by list or ID)

@@ -150,6 +150,20 @@ export const BaselinesOperations: INodeProperties[] = [
 		description: 'The case for baseline acquisition',
 	},
 	{
+		displayName: 'Task Name',
+		name: 'taskName',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter task name',
+		displayOptions: {
+			show: {
+				resource: ['baselines'],
+				operation: ['compareBaseline'],
+			},
+		},
+		description: 'Optional custom name for the comparison task (alphanumeric characters only)',
+	},
+	{
 		displayName: 'Organization',
 		name: 'organizationIdForCompare',
 		type: 'resourceLocator',
@@ -710,6 +724,12 @@ async function executeCompareBaseline(
 	const assetResource = this.getNodeParameter('assetIdForCompare', itemIndex) as any;
 	const baseline1Resource = this.getNodeParameter('baseline1TaskId', itemIndex) as any;
 	const baseline2Resource = this.getNodeParameter('baseline2TaskId', itemIndex) as any;
+	const taskName = this.getNodeParameter('taskName', itemIndex) as string;
+
+	// Validate task name if provided
+	if (taskName && !/^[a-zA-Z0-9]*$/.test(taskName)) {
+		throw new NodeOperationError(this.getNode(), 'Task name must contain only letters and numbers', { itemIndex });
+	}
 
 	// Resolve organization ID if needed (for validation purposes only)
 	if (organizationResource.mode === 'name') {
@@ -739,6 +759,11 @@ async function executeCompareBaseline(
 		endpointId,
 		taskIds: [task1Id, task2Id],
 	};
+
+	// Add taskName if provided
+	if (taskName) {
+		request.taskName = taskName;
+	}
 
 	try {
 		// Make API call

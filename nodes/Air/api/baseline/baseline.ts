@@ -44,6 +44,7 @@ export interface BaselineAcquisitionRequest {
 export interface BaselineComparisonRequest {
   endpointId: string;
   taskIds: string[];
+  taskName?: string;
 }
 
 export interface BaselineResult {
