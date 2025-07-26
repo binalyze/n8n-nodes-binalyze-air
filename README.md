@@ -52,30 +52,12 @@ Before using this node, you need to configure your Binalyze AIR credentials:
 This node provides comprehensive coverage of Binalyze AIR's features listed below:
 
 ### Acquisitions
-Manage evidence acquisition profiles and tasks with comprehensive configuration options.
+Manage evidence acquisition profiles and tasks.
 
 **Operations:**
 - `get` - Retrieve a specific acquisition profile
-  - **Enhanced Features:**
-    - **Organization Selection:** Select the organization that owns the acquisition profile
-    - **Filtered Profile Selection:** Acquisition profiles are automatically filtered based on the selected organization
-- `assignEvidenceTask` - Assign an evidence acquisition task by filter with advanced configuration
-  - **Enhanced Features:**
-    - **Enable DRONE:** Toggle DRONE analysis with AutoPilot and MITRE ATT&CK detection (required)
-    - **Save To Configuration:** Choose between local storage or evidence repositories
-      - **Local Storage:** Configure platform-specific paths for Windows, Linux, and macOS (when custom paths are needed)
-      - **Repository Storage:** Select evidence repositories with resource locator support
-      - **Volume Management:** Automatically use the most free volume (default) or configure custom paths per platform
-    - **Task Configuration:** Comprehensive task customization with policy or custom options
-    - **Evidence Repository Selection:** Choose evidence repositories for automatic evidence storage
-    - **Platform Configuration:** Automatic repository configuration for Windows, Linux, macOS, and AIX
-    - **Resource Management:** CPU limits, bandwidth limits, disk space reservation
-    - **Compression & Encryption:** Enable compression and optional encryption with password protection
-    - **Advanced Endpoint Filtering:** Filter by platform, status, tags, organization, IP address, etc.
-- `assignImageTask` - Assign an image acquisition task by filter with advanced configuration
-  - **Enhanced Features:**
-    - Same comprehensive configuration options as evidence tasks
-    - Disk imaging specific settings and parameters
+- `assignEvidenceTask` - Assign an evidence acquisition task by filter
+- `assignImageTask` - Assign an image acquisition task by filter
 - `createOffNetworkTask` - Create an off-network acquisition task
 
 ### Assets
@@ -86,8 +68,6 @@ Manage endpoints and their associated tasks, tags, and status.
 - `get` - Retrieve a specific asset
 - `getAssetTasks` - Get tasks for a specific asset
 - `getAll` - Retrieve many assets
-  - **Enhanced Features:**
-    - **Organization Selection:** Required organization selection to filter assets by organization
 - `removeTags` - Remove tags from assets by filter
 
 ### Baselines
@@ -95,124 +75,33 @@ Acquire and compare system baselines.
 
 **Operations:**
 - `acquireBaseline` - Acquire baseline for endpoints
-  - **Enhanced Features:**
-    - **Organization Selection:** Select an organization using resource locator (by list or ID)
-      - Automatically filters available cases based on the selected organization
-      - Organization ID is included in the endpoint filters for baseline acquisition
-      - When "All Organizations" (ID: 0) is selected, all organizations are included in the baseline acquisition
-    - **Case Selection:** Select a case using resource locator (by list or ID)
-    - **Endpoint Filters (Required):** At least one filter must be defined to target specific endpoints
-      - Filter by endpoint name, IP address, management status, online status, platform
-      - Filter by search term, tags, group path/ID, isolation status, issue, policy, version
-      - Filter by organization IDs, include/exclude specific endpoint IDs
 - `compareBaseline` - Compare two baseline acquisition results from the same endpoint
-  - **Enhanced Features:**
-    - **Task Name (Optional):** Provide a custom name for the comparison task
-      - Must contain only alphanumeric characters (letters and numbers)
-      - If not provided, a default name will be generated
-    - **Organization Selection:** Select an organization using resource locator (by list or ID)
-      - Filters available assets based on the selected organization
-    - **Asset Selection:** Select an asset using resource locator (by list or ID)
-      - Automatically filters available baseline acquisition tasks based on the selected asset
-    - **Baseline 1:** Select the first baseline acquisition task using resource locator (by list or ID)
-      - Must be a completed baseline acquisition task from the selected asset
-    - **Baseline 2:** Select the second baseline acquisition task using resource locator (by list or ID)
-      - Must be a completed baseline acquisition task from the selected asset
-    - **Important Notes:**
-      - Both tasks must be baseline acquisition tasks (not regular acquisition tasks)
-      - Both tasks must have been executed on the same endpoint/asset
-      - Both tasks must have completed successfully
-      - The two tasks must be different (cannot compare a task with itself)
-      - The task list shows only baseline acquisition tasks that were executed on the selected asset
 - `getComparisonReport` - Get baseline comparison report
-  - **Enhanced Features:**
-    - **Organization Selection:** Select an organization using resource locator (by list or ID)
-      - Filters available endpoints based on the selected organization
-    - **Endpoint Selection:** Select an endpoint using resource locator (by list or ID)
-      - Automatically filters available baseline comparison tasks based on the selected endpoint
-    - **Task Selection:** Select a baseline comparison task using resource locator (by list or ID)
-      - Only shows baseline comparison tasks (not baseline acquisition tasks)
-      - Tasks are filtered to show only those assigned to the selected endpoint
-      - Task list displays task name and current status for easy identification
-    - **Response Data:**
-      - `success`: Boolean indicating if the operation was successful
-      - `message`: Status message with endpoint and task IDs
-      - `reportJson`: Decoded JSON object containing the comparison report data
-        - Automatically extracted from the HTML response
-        - Contains detailed comparison data between the two baseline acquisitions
-    - **Important Notes:**
-      - Only baseline comparison tasks can have comparison reports
-      - The selected task must be associated with the selected endpoint
-      - The comparison report will be retrieved for the specific endpoint and task combination
 
 ### Cases
 Manage incident response cases, notes, and activities.
 
 **Operations:**
 - `changeOwner` - Change the owner of a case
-  - **Organization-First:** Select organization first, then case is filtered by organization
 - `checkName` - Check if a case name is available
 - `closeCase` - Close a specific case
-  - **Organization-First:** Select organization first, then case is filtered by organization
 - `create` - Create a new case
 - `get` - Retrieve a specific case
-  - **Simplified:** Only requires the case ID - no organization selection needed
 - `getActivities` - Get activities for a specific case
-  - **Organization-First:** Select organization first, then case is filtered by organization
 - `getEndpoints` - Get endpoints for a specific case
-  - **Organization-First:** Select organization first, then case is filtered by organization
 - `getAll` - Retrieve many cases
 - `getTasks` - Get tasks for a specific case
-  - **Organization-First:** Select organization first, then case is filtered by organization
 - `getUsers` - Get users for a specific case
-  - **Organization-First:** Select organization first, then case is filtered by organization
-
-**Enhanced Features:**
-- **Organization-First Selection:** For most operations working with existing cases, organization must be selected first
-  - Organization selection appears before case selection (except for the `get` operation)
-  - Cases are automatically filtered based on the selected organization
-  - Operations requiring organization-first selection: `changeOwner`, `closeCase`, `getActivities`, `getEndpoints`, `getTasks`, `getUsers`
-- **Organization Selection:** All case operations now support organization selection using resource locator
-  - Select from a searchable list of organizations
-  - Enter organization ID(s) directly (comma-separated for multiple)
-  - Enter organization name
-  - Use "0" to include all organizations
-- **Case Selection:** Operations that work with existing cases support case selection using resource locator
-  - Select from a searchable list of cases (filtered by selected organization)
-  - Enter the case ID directly
 
 ### InterACT
 Execute commands and interact with endpoints remotely.
 
 **Operations:**
 - `createSession` - Create a new InterACT shell session for an asset
-  - **Enhanced Features:**
-    - **Organization Selection:** Select the organization that the asset belongs to
-    - **Case Selection (Optional):** Optionally associate the session with a case
-      - Cases are automatically filtered based on the selected organization
-    - **Asset Selection:** Select the asset to create the session for
-      - Assets are automatically filtered based on the selected organization
-      - Only online, managed assets are shown
-    - **Automatic Configuration:** Uses policy-based task configuration automatically
-    - **Response Data:** Returns session ID, asset ID, organization ID, and task ID
 - `waitForSession` - Wait for an InterACT session to become live
-  - **Enhanced Features:**
-    - **Session Polling:** Automatically polls the session by executing `pwd` command every 10 seconds
-    - **Configurable Timeout:** Set custom timeout (10-600 seconds, default 60 seconds)
-    - **Session Validation:** Ensures the session is ready before proceeding
-    - **Pass-through Output:** Returns the session ID for chaining with other InterACT operations
-    - **Working Directory Info:** Returns the current working directory when session becomes live
 - `closeSession` - Close an InterACT session
 - `executeCommand` - Execute a command in an InterACT session
-  - **Additional Fields:**
-    - Timeout (seconds)
-    - Working directory
-    - Environment variables (JSON format)
 - `executeAsyncCommand` - Execute an asynchronous command in an InterACT session
-  - **Additional Fields:**
-    - Timeout (seconds)
-    - Working directory
-    - Environment variables (JSON format)
 - `getCommandMessage` - Get the result of a command execution
 - `interruptCommand` - Interrupt a running command
 
@@ -233,16 +122,11 @@ Manage organizations and their users.
 - `updateShareableDeployment` - Update organization shareable deployment status
 
 ### Repositories
-Manage evidence repositories with comprehensive filtering and search capabilities.
+Manage evidence repositories.
 
 **Operations:**
 - `get` - Get a repository by name, ID, or from list selection
-- `getAll` - Get many repositories with advanced filtering options
-  - **Enhanced Filtering:** Filter by host, path, username, name, repository type (multiple selection)
-  - **Organization Support:** Filter by organization with support for all organizations option
-  - **Search Capabilities:** Full-text search with partial name matching
-  - **Repository Types:** Support for SMB, SFTP, FTPS, Amazon S3, and Azure Storage repositories
-  - **Pagination Support:** Configurable page size and page number for large result sets
+- `getAll` - Get many repositories with filtering options
 
 ### Tasks
 Manage and monitor tasks and assignments.
@@ -377,28 +261,6 @@ node test/e2e.js download --name my-custom-workflow
 node test/e2e.js download --file my-workflow.json
 ```
 
-### Error Response Formats Supported
-
-1. **Standard HTTP Error Format**:
-   ```json
-   {
-     "message": [
-       "name is required",
-       "name should not be empty"
-     ],
-     "error": "Bad Request",
-     "statusCode": 400
-   }
-   ```
-
-2. **AIR API Error Format**:
-   ```json
-   {
-     "success": false,
-     "errors": ["Invalid parameter", "Missing required field"],
-     "statusCode": 400
-   }
-   ```
 
 ## TODO
 - Add Asset isolation, shutdown, and reboot
