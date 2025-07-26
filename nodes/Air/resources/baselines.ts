@@ -332,34 +332,130 @@ export const BaselinesOperations: INodeProperties[] = [
 		description: 'The second baseline acquisition task to compare. Must be a completed baseline acquisition task from the selected asset.',
 	},
 	{
-		displayName: 'Endpoint ID',
-		name: 'endpointId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter endpoint ID',
+		displayName: 'Organization',
+		name: 'organizationIdForReport',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
 		displayOptions: {
 			show: {
 				resource: ['baselines'],
 				operation: ['getComparisonReport'],
 			},
 		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Organization ID must be a number',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+		],
 		required: true,
-		description: 'The ID of the endpoint',
+		description: 'The organization that owns the endpoint',
 	},
 	{
-		displayName: 'Task ID',
-		name: 'taskId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter task ID',
+		displayName: 'Endpoint',
+		name: 'endpointId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an endpoint...',
 		displayOptions: {
 			show: {
 				resource: ['baselines'],
 				operation: ['getComparisonReport'],
 			},
 		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an endpoint...',
+				typeOptions: {
+					searchListMethod: 'getEndpointsByOrganizationForReport',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid endpoint ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter endpoint ID',
+			},
+		],
 		required: true,
-		description: 'The ID of the task for the comparison report',
+		description: 'The endpoint for which to get the comparison report',
+	},
+	{
+		displayName: 'Task',
+		name: 'taskId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select a baseline comparison task...',
+		displayOptions: {
+			show: {
+				resource: ['baselines'],
+				operation: ['getComparisonReport'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a task...',
+				typeOptions: {
+					searchListMethod: 'getBaselineComparisonTasksByEndpoint',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid task ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter task ID',
+			},
+		],
+		required: true,
+		description: 'The baseline comparison task for the report. Only baseline comparison tasks can have comparison reports.',
 	},
 	{
 		displayName: 'Endpoint Filters (Required)',
@@ -808,12 +904,12 @@ async function executeGetComparisonReport(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; message: string }> {
-	const endpointId = this.getNodeParameter('endpointId', itemIndex) as string;
-	const taskId = this.getNodeParameter('taskId', itemIndex) as string;
+	const endpointResource = this.getNodeParameter('endpointId', itemIndex) as any;
+	const taskResource = this.getNodeParameter('taskId', itemIndex) as any;
 
-	// Validate required parameters
-	normalizeAndValidateId(endpointId, 'Endpoint ID');
-	normalizeAndValidateId(taskId, 'Task ID');
+	// Extract endpoint and task IDs
+	const endpointId = normalizeAndValidateId(endpointResource.value || endpointResource, 'Endpoint ID');
+	const taskId = normalizeAndValidateId(taskResource.value || taskResource, 'Task ID');
 
 	// Make API call
 	await baselinesApi.getComparisonReport(this, credentials, endpointId, taskId);
@@ -925,5 +1021,108 @@ export async function getTasksByAsset(this: ILoadOptionsFunctions, searchTerm?: 
 		);
 	} catch (error) {
 		throw catchAndFormatError(error, 'loading tasks');
+	}
+}
+
+/**
+ * Get endpoints for a specific organization (context-aware for resource locator)
+ */
+export async function getEndpointsByOrganizationForReport(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+
+		// Try to get the organization from the current node parameters
+		let organizationId = '0'; // Default to all organizations
+		try {
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.organizationIdForReport) {
+				const orgResource = currentParams.organizationIdForReport as any;
+				if (typeof orgResource === 'object') {
+					if (orgResource.mode === 'id' || orgResource.mode === 'list') {
+						organizationId = orgResource.value || '0';
+					}
+				} else if (typeof orgResource === 'string') {
+					organizationId = orgResource;
+				}
+			}
+		} catch (error) {
+			// If we can't get the current parameters, fall back to default
+		}
+
+		// Fetch assets/endpoints for the organization
+		const assets = await fetchAllAssets(this, credentials, organizationId, searchTerm);
+
+		return createListSearchResults(
+			assets,
+			isValidAsset,
+			(asset) => ({
+				name: `${asset.name} (${asset.ipAddress})`,
+				value: extractAssetId(asset),
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		throw catchAndFormatError(error, 'loading endpoints');
+	}
+}
+
+/**
+ * Get baseline comparison tasks for a specific endpoint (context-aware for resource locator)
+ */
+export async function getBaselineComparisonTasksByEndpoint(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+
+		// Try to get the endpoint from the current node parameters
+		let endpointId: string | undefined;
+		try {
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.endpointId) {
+				const endpointResource = currentParams.endpointId as any;
+				if (typeof endpointResource === 'object') {
+					if (endpointResource.mode === 'id' || endpointResource.mode === 'list') {
+						endpointId = endpointResource.value;
+					}
+				} else if (typeof endpointResource === 'string') {
+					endpointId = endpointResource;
+				}
+			}
+		} catch (error) {
+			// If we can't get the current parameters, return empty results
+		}
+
+		if (!endpointId) {
+			return { results: [] };
+		}
+
+		// Get tasks for the specific endpoint
+		const response = await assetsApi.getAssetTasks(this, credentials, endpointId);
+		const tasks = response.result?.entities || [];
+
+		// Filter for baseline comparison tasks only
+		let baselineComparisonTasks = tasks.filter((task: any) => task.type === 'baseline-comparison');
+
+		// Filter by search term if provided
+		let filteredTasks = baselineComparisonTasks;
+		if (searchTerm) {
+			const searchLower = searchTerm.toLowerCase();
+			filteredTasks = baselineComparisonTasks.filter((task: any) =>
+				(task.name && task.name.toLowerCase().includes(searchLower)) ||
+				(task._id && task._id.toLowerCase().includes(searchLower)) ||
+				(task.status && task.status.toLowerCase().includes(searchLower))
+			);
+		}
+
+		return createListSearchResults(
+			filteredTasks,
+			isValidTask,
+			(task: any) => ({
+				name: `${task.name || `Baseline Comparison ${task._id}`} (Status: ${task.status || 'Unknown'})`,
+				value: task.taskId || task._id, // Use taskId for AssetTask objects, fallback to _id
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		throw catchAndFormatError(error, 'loading baseline comparison tasks');
 	}
 }

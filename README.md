@@ -126,6 +126,19 @@ Acquire and compare system baselines.
       - The two tasks must be different (cannot compare a task with itself)
       - The task list shows only baseline acquisition tasks that were executed on the selected asset
 - `getComparisonReport` - Get baseline comparison report
+  - **Enhanced Features:**
+    - **Organization Selection:** Select an organization using resource locator (by list or ID)
+      - Filters available endpoints based on the selected organization
+    - **Endpoint Selection:** Select an endpoint using resource locator (by list or ID)
+      - Automatically filters available baseline comparison tasks based on the selected endpoint
+    - **Task Selection:** Select a baseline comparison task using resource locator (by list or ID)
+      - Only shows baseline comparison tasks (not baseline acquisition tasks)
+      - Tasks are filtered to show only those assigned to the selected endpoint
+      - Task list displays task name and current status for easy identification
+    - **Important Notes:**
+      - Only baseline comparison tasks can have comparison reports
+      - The selected task must be associated with the selected endpoint
+      - The comparison report will be retrieved for the specific endpoint and task combination
 
 ### Cases
 Manage incident response cases, notes, and activities.

@@ -15,7 +15,9 @@ import {
 	BaselinesOperations,
 	executeBaselines,
 	getAssetsByOrganization,
-	getTasksByAsset
+	getTasksByAsset,
+	getEndpointsByOrganizationForReport,
+	getBaselineComparisonTasksByEndpoint
 } from './resources/baselines';
 import {
 	CasesOperations,
@@ -234,6 +236,12 @@ export class Air implements INodeType {
 			},
 			async getTasksByAsset(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getTasksByAsset.call(this, filter);
+			},
+			async getEndpointsByOrganizationForReport(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getEndpointsByOrganizationForReport.call(this, filter);
+			},
+			async getBaselineComparisonTasksByEndpoint(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getBaselineComparisonTasksByEndpoint.call(this, filter);
 			},
 			// Import list search methods from Cases for resource locators
 			async getCases(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
