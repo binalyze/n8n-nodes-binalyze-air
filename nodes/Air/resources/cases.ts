@@ -147,11 +147,11 @@ export const CasesOperations: INodeProperties[] = [
 		default: 'getAll',
 	},
 	{
-		displayName: 'Case ID',
-		name: 'caseId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter case ID',
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'id', value: '0' },
+		placeholder: 'Select organization...',
 		displayOptions: {
 			show: {
 				resource: ['cases'],
@@ -172,8 +172,97 @@ export const CasesOperations: INodeProperties[] = [
 				],
 			},
 		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9,\\s]+$',
+							errorMessage: 'Organization IDs must be comma-separated numbers. Use "0" for all organizations.',
+						},
+					},
+				],
+				placeholder: 'Enter organization IDs (comma-separated) or "0" for all',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
 		required: true,
-		description: 'The ID of the case',
+		description: 'Organization to filter cases. Use "0" for all organizations.',
+	},
+	{
+		displayName: 'Case',
+		name: 'caseId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select a case...',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: [
+					'get',
+					'update',
+					'archiveCase',
+					'closeCase',
+					'openCase',
+					'changeOwner',
+					'getActivities',
+					'getEndpoints',
+					'getTasks',
+					'getUsers',
+					'removeEndpoints',
+					'removeTaskAssignment',
+					'importTaskAssignments'
+				],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a case...',
+				typeOptions: {
+					searchListMethod: 'getCases',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid case ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter case ID',
+			},
+		],
+		required: true,
+		description: 'The case to operate on',
 	},
 	{
 		displayName: 'Case Name',
@@ -858,6 +947,26 @@ export async function resolveUserResourceLocator(
 	return normalizeAndValidateId(userId, 'User ID');
 }
 
+export async function resolveCaseResourceLocator(
+	context: IExecuteFunctions,
+	caseResource: any,
+	itemIndex: number
+): Promise<string> {
+	if (!caseResource || typeof caseResource !== 'object') {
+		throw new Error('Invalid case resource locator');
+	}
+
+	let caseId: string;
+
+	if (caseResource.mode === 'list' || caseResource.mode === 'id') {
+		caseId = caseResource.value;
+	} else {
+		throw new Error('Invalid case selection mode');
+	}
+
+	return normalizeAndValidateId(caseId, 'Case ID');
+}
+
 /**
  * Helper function to get organization ID from the current node context
  * This attempts to access the organization parameter from the current node configuration
@@ -928,8 +1037,12 @@ export async function getCases(this: ILoadOptionsFunctions, filter?: string): Pr
 		let organizationIds = '0'; // Default to all organizations
 		try {
 			const organizationId = this.getNodeParameter('organizationId') as any;
-			if (organizationId && organizationId.value) {
-				organizationIds = organizationId.value;
+			if (organizationId) {
+				if (typeof organizationId === 'string') {
+					organizationIds = organizationId;
+				} else if (organizationId.value !== undefined) {
+					organizationIds = organizationId.value;
+				}
 			}
 		} catch (error) {
 			// If organizationId parameter doesn't exist or can't be accessed, use default
@@ -971,8 +1084,12 @@ export async function getCasesOptions(this: ILoadOptionsFunctions): Promise<INod
 		let organizationIds = '0'; // Default to all organizations
 		try {
 			const organizationId = this.getNodeParameter('organizationId') as any;
-			if (organizationId && organizationId.value) {
-				organizationIds = organizationId.value;
+			if (organizationId) {
+				if (typeof organizationId === 'string') {
+					organizationIds = organizationId;
+				} else if (organizationId.value !== undefined) {
+					organizationIds = organizationId.value;
+				}
 			}
 		} catch (error) {
 			// If organizationId parameter doesn't exist or can't be accessed, use default
@@ -1151,7 +1268,8 @@ async function executeGetCase(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.getCase(this, credentials, caseId);
 
@@ -1227,7 +1345,8 @@ async function executeUpdateCase(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 	const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as any;
 
 	const updateData: any = {};
@@ -1274,7 +1393,8 @@ async function executeArchiveCase(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.archiveCase(this, credentials, caseId);
 
@@ -1291,7 +1411,8 @@ async function executeCloseCase(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.closeCase(this, credentials, caseId);
 
@@ -1308,7 +1429,8 @@ async function executeOpenCase(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.openCase(this, credentials, caseId);
 
@@ -1325,7 +1447,8 @@ async function executeChangeOwner(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 	const newOwnerUserResource = this.getNodeParameter('newOwnerUserId', itemIndex) as any;
 
 	// Resolve new owner user ID using Resource Locator
@@ -1363,7 +1486,8 @@ async function executeGetActivities(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<CaseActivitiesResponse> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.getCaseActivities(this, credentials, caseId);
 	validateApiResponse(response, 'Failed to fetch case activities');
@@ -1375,7 +1499,8 @@ async function executeGetEndpoints(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<CaseEndpointsResponse> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.getCaseEndpoints(this, credentials, caseId, '0');
 	validateApiResponse(response, 'Failed to fetch case endpoints');
@@ -1387,7 +1512,8 @@ async function executeGetTasks(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<CaseTasksResponse> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.getCaseTasksById(this, credentials, caseId, '0');
 	validateApiResponse(response, 'Failed to fetch case tasks');
@@ -1399,7 +1525,8 @@ async function executeGetUsers(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<CaseUsersResponse> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	const response = await casesApi.getCaseUsers(this, credentials, caseId, '0');
 	validateApiResponse(response, 'Failed to fetch case users');
@@ -1411,7 +1538,8 @@ async function executeRemoveEndpoints(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
 	// Build filter object from individual parameters
 	const filter: any = {};
@@ -1481,7 +1609,8 @@ async function executeRemoveTaskAssignment(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 	const taskAssignmentId = normalizeAndValidateId(this.getNodeParameter('taskAssignmentId', itemIndex) as string, 'Task Assignment ID');
 
 	const response = await casesApi.removeTaskAssignmentFromCase(this, credentials, caseId, taskAssignmentId);
@@ -1499,7 +1628,8 @@ async function executeImportTaskAssignments(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
-	const caseId = normalizeAndValidateId(this.getNodeParameter('caseId', itemIndex) as string, 'Case ID');
+	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
+	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 	const taskAssignmentIdsParam = this.getNodeParameter('taskAssignmentIds', itemIndex) as string;
 
 	const taskAssignmentIds = taskAssignmentIdsParam.split(',').map(id => id.trim());
@@ -1517,3 +1647,4 @@ async function executeImportTaskAssignments(
 
 	return response;
 }
+

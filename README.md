@@ -167,6 +167,19 @@ Manage incident response cases, notes, and activities.
 - `removeTaskAssignment` - Remove a task assignment from a case
 - `update` - Update a specific case
 
+**Enhanced Features:**
+- **Organization-First Selection:** For operations working with existing cases, organization must be selected first
+  - Organization selection appears before case selection
+  - Cases are automatically filtered based on the selected organization
+- **Organization Selection:** All case operations now support organization selection using resource locator
+  - Select from a searchable list of organizations
+  - Enter organization ID(s) directly (comma-separated for multiple)
+  - Enter organization name
+  - Use "0" to include all organizations
+- **Case Selection:** Operations that work with existing cases support case selection using resource locator
+  - Select from a searchable list of cases (filtered by selected organization)
+  - Enter the case ID directly
+
 ### Evidence
 Download and manage evidence files and reports.
 
