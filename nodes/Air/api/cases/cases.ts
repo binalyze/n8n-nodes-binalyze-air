@@ -420,10 +420,10 @@ export const api = {
     try {
       const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
-        'PATCH',
+        'POST',
         `/api/public/cases/${id}/change-owner`
       );
-      requestOptions.body = { ownerUserId: newOwnerId };
+      requestOptions.body = { newOwnerId: newOwnerId };
 
       return await makeApiRequestWithErrorHandling<any>(context, requestOptions, `change owner for case with ID ${id}`);
     } catch (error) {

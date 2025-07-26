@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-25T16:25:11.284Z",
-  "updatedAt": "2025-07-26T16:39:48.000Z",
+  "updatedAt": "2025-07-26T16:45:29.000Z",
   "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
@@ -778,11 +778,47 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        496,
+        720,
         576
       ],
       "id": "68f86358-0b1e-423f-9b80-33be6164a140",
       "name": "Close a case",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "changeOwner",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "newOwnerUserId": {
+          "__rl": true,
+          "value": "6f04ba7b-c253-4d8d-847c-607370f8be11",
+          "mode": "list",
+          "cachedResultName": "n8n.test@binalyze.com"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        496,
+        576
+      ],
+      "id": "b1248ff6-54dd-42a5-8758-36a9a0d6d19b",
+      "name": "Change case owner",
       "credentials": {
         "airApi": {
           "id": "zkdMrFV62yPoc4KE",
@@ -1014,6 +1050,22 @@
       "main": [
         [
           {
+            "node": "Change case owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Close a case": {
+      "main": [
+        []
+      ]
+    },
+    "Change case owner": {
+      "main": [
+        [
+          {
             "node": "Close a case",
             "type": "main",
             "index": 0
@@ -1030,7 +1082,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "a872e35d-a176-4aea-a077-b410b02aa826",
+  "versionId": "70b49415-4944-4ba3-acd9-8377b1a4c648",
   "triggerCount": 0,
   "shared": [
     {
@@ -1056,7 +1108,7 @@
             "projectId": "llHxnpzVncfHqefW",
             "user": {
               "createdAt": "2025-05-26T10:21:01.143Z",
-              "updatedAt": "2025-07-26T16:37:12.000Z",
+              "updatedAt": "2025-07-26T16:44:54.000Z",
               "id": "5f63a800-7f35-4ceb-b857-df8cc34579ab",
               "email": "emre@binalyze.com",
               "firstName": "Emre",
