@@ -150,10 +150,11 @@ Acquire and compare system baselines.
 Manage incident response cases, notes, and activities.
 
 **Operations:**
-- `archiveCase` - Archive a specific case
 - `changeOwner` - Change the owner of a case
+  - **Organization-First:** Select organization first, then case is filtered by organization
 - `checkName` - Check if a case name is available
 - `closeCase` - Close a specific case
+  - **Organization-First:** Select organization first, then case is filtered by organization
 - `create` - Create a new case
 - `get` - Retrieve a specific case
   - **Simplified:** Only requires the case ID - no organization selection needed
@@ -166,17 +167,12 @@ Manage incident response cases, notes, and activities.
   - **Organization-First:** Select organization first, then case is filtered by organization
 - `getUsers` - Get users for a specific case
   - **Organization-First:** Select organization first, then case is filtered by organization
-- `importTaskAssignments` - Import task assignments to a case
-- `openCase` - Open a specific case
-- `removeEndpoints` - Remove endpoints from a case
-- `removeTaskAssignment` - Remove a task assignment from a case
-- `update` - Update a specific case
 
 **Enhanced Features:**
 - **Organization-First Selection:** For most operations working with existing cases, organization must be selected first
   - Organization selection appears before case selection (except for the `get` operation)
   - Cases are automatically filtered based on the selected organization
-  - Operations requiring organization-first selection: `getActivities`, `getEndpoints`, `getTasks`, `getUsers`
+  - Operations requiring organization-first selection: `changeOwner`, `closeCase`, `getActivities`, `getEndpoints`, `getTasks`, `getUsers`
 - **Organization Selection:** All case operations now support organization selection using resource locator
   - Select from a searchable list of organizations
   - Enter organization ID(s) directly (comma-separated for multiple)

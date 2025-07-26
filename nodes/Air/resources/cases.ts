@@ -48,12 +48,6 @@ export const CasesOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Archive Case',
-				value: 'archiveCase',
-				description: 'Archive a specific case',
-				action: 'Archive a case',
-			},
-			{
 				name: 'Change Owner',
 				value: 'changeOwner',
 				description: 'Change the owner of a case',
@@ -113,36 +107,6 @@ export const CasesOperations: INodeProperties[] = [
 				description: 'Get users for a specific case',
 				action: 'Get case users',
 			},
-			{
-				name: 'Import Task Assignments',
-				value: 'importTaskAssignments',
-				description: 'Import task assignments to a case',
-				action: 'Import task assignments to case',
-			},
-			{
-				name: 'Open Case',
-				value: 'openCase',
-				description: 'Open a specific case',
-				action: 'Open a case',
-			},
-			{
-				name: 'Remove Endpoints',
-				value: 'removeEndpoints',
-				description: 'Remove endpoints from a case',
-				action: 'Remove endpoints from case',
-			},
-			{
-				name: 'Remove Task Assignment',
-				value: 'removeTaskAssignment',
-				description: 'Remove a task assignment from a case',
-				action: 'Remove task assignment from case',
-			},
-			{
-				name: 'Update',
-				value: 'update',
-				description: 'Update a specific case',
-				action: 'Update a case',
-			},
 		],
 		default: 'getAll',
 	},
@@ -194,6 +158,8 @@ export const CasesOperations: INodeProperties[] = [
 					'getEndpoints',
 					'getTasks',
 					'getUsers',
+					'changeOwner',
+					'closeCase',
 				],
 			},
 		},
@@ -243,18 +209,12 @@ export const CasesOperations: INodeProperties[] = [
 			show: {
 				resource: ['cases'],
 				operation: [
-					'update',
-					'archiveCase',
-					'closeCase',
-					'openCase',
-					'changeOwner',
 					'getActivities',
 					'getEndpoints',
 					'getTasks',
 					'getUsers',
-					'removeEndpoints',
-					'removeTaskAssignment',
-					'importTaskAssignments'
+					'changeOwner',
+					'closeCase'
 				],
 			},
 		},
@@ -447,36 +407,7 @@ export const CasesOperations: INodeProperties[] = [
 		required: true,
 		description: 'The new owner user for the case',
 	},
-	{
-		displayName: 'Task Assignment ID',
-		name: 'taskAssignmentId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter task assignment ID',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeTaskAssignment'],
-			},
-		},
-		required: true,
-		description: 'The ID of the task assignment to remove',
-	},
-	{
-		displayName: 'Task Assignment IDs',
-		name: 'taskAssignmentIds',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter task assignment IDs (comma-separated)',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['importTaskAssignments'],
-			},
-		},
-		required: true,
-		description: 'Comma-separated list of task assignment IDs to import',
-	},
+
 	{
 		displayName: 'Visibility',
 		name: 'visibility',
@@ -516,114 +447,7 @@ export const CasesOperations: INodeProperties[] = [
 		},
 		description: 'Comma-separated list of user IDs to assign to the case (required for private cases)',
 	},
-	{
-		displayName: 'Update Fields',
-		name: 'updateFields',
-		type: 'collection',
-		placeholder: 'Add Field',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['update'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Name',
-				name: 'name',
-				type: 'string',
-				default: '',
-				description: 'The new name for the case',
-			},
-			{
-				displayName: 'Notes',
-				name: 'notes',
-				type: 'json',
-				default: '[]',
-				description: 'JSON array of notes for the case',
-			},
-			{
-				displayName: 'Owner User',
-				name: 'ownerUserId',
-				type: 'resourceLocator',
-				default: { mode: 'list', value: '' },
-				placeholder: 'Select a user...',
-				modes: [
-					{
-						displayName: 'From List',
-						name: 'list',
-						type: 'list',
-						placeholder: 'Select a user...',
-						typeOptions: {
-							searchListMethod: 'getUsers',
-							searchable: true,
-						},
-					},
-					{
-						displayName: 'By ID',
-						name: 'id',
-						type: 'string',
-						validation: [
-							{
-								type: 'regex',
-								properties: {
-									regex: '^[a-zA-Z0-9-_]+$',
-									errorMessage: 'Not a valid user ID (must contain only letters, numbers, hyphens, and underscores)',
-								},
-							},
-						],
-						placeholder: 'Enter user ID (alphanumeric or GUID)',
-					},
-					{
-						displayName: 'By Username',
-						name: 'username',
-						type: 'string',
-						placeholder: 'Enter username or email',
-					},
-				],
-				description: 'The new owner user for the case',
-			},
-			{
-				displayName: 'Status',
-				name: 'status',
-				type: 'options',
-				default: 'open',
-				options: [
-					{
-						name: 'Open',
-						value: 'open',
-					},
-					{
-						name: 'Closed',
-						value: 'closed',
-					},
-					{
-						name: 'Archived',
-						value: 'archived',
-					},
-				],
-				description: 'The status of the case',
-			},
-			{
-				displayName: 'Visibility',
-				name: 'visibility',
-				type: 'options',
-				default: 'public-to-organization',
-				options: [
-					{
-						name: 'Public to Organization',
-						value: 'public-to-organization',
-					},
-					{
-						name: 'Private to Users',
-						value: 'private-to-users',
-					},
-				],
-				description: 'The visibility of the case',
-			},
-		],
-	},
+
 	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
@@ -685,251 +509,7 @@ export const CasesOperations: INodeProperties[] = [
 			},
 		],
 	},
-	{
-		displayName: 'Excluded Endpoint IDs',
-		name: 'excludedEndpointIds',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter endpoint IDs (comma-separated)',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		description: 'Endpoint IDs to exclude',
-	},
-	{
-		displayName: 'Filter By Group Full Path',
-		name: 'groupFullPath',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-	},
-	{
-		displayName: 'Filter By Group ID',
-		name: 'groupId',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-	},
-	{
-		displayName: 'Included Endpoint IDs',
-		name: 'includedEndpointIds',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter endpoint IDs (comma-separated)',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		description: 'Endpoint IDs to include',
-	},
-	{
-		displayName: 'Filter By IP Address',
-		name: 'ipAddress',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-	},
-	{
-		displayName: 'Filter By Isolation Status',
-		name: 'isolationStatus',
-		type: 'multiOptions',
-		default: [],
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		options: [
-			{
-				name: 'Isolated',
-				value: 'isolated',
-			},
-			{
-				name: 'Not Isolated',
-				value: 'not_isolated',
-			},
-		],
-	},
-	{
-		displayName: 'Filter By Issue',
-		name: 'issue',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-	},
-	{
-		displayName: 'Filter By Managed Status',
-		name: 'managedStatus',
-		type: 'multiOptions',
-		default: [],
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		options: [
-			{
-				name: 'Managed',
-				value: 'managed',
-			},
-			{
-				name: 'Unmanaged',
-				value: 'unmanaged',
-			},
-		],
-	},
-	{
-		displayName: 'Filter By Name',
-		name: 'name',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		description: 'Filter by endpoint name',
-	},
-	{
-		displayName: 'Filter By Online Status',
-		name: 'onlineStatus',
-		type: 'multiOptions',
-		default: [],
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		options: [
-			{
-				name: 'Online',
-				value: 'online',
-			},
-			{
-				name: 'Offline',
-				value: 'offline',
-			},
-		],
-	},
-	{
-		displayName: 'Filter By Organization IDs',
-		name: 'organizationIds',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter organization IDs (comma-separated)',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		description: 'Organization IDs to filter by',
-	},
-	{
-		displayName: 'Filter By Platform',
-		name: 'platform',
-		type: 'multiOptions',
-		default: [],
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		options: [
-			{
-				name: 'Windows',
-				value: 'windows',
-			},
-			{
-				name: 'Linux',
-				value: 'linux',
-			},
-			{
-				name: 'macOS',
-				value: 'darwin',
-			},
-		],
-	},
-	{
-		displayName: 'Filter By Policy',
-		name: 'policy',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-	},
-	{
-		displayName: 'Search Term',
-		name: 'searchTerm',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-		description: 'Search term for endpoints',
-	},
-	{
-		displayName: 'Filter By Tags',
-		name: 'tags',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter tags (comma-separated)',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-	},
-	{
-		displayName: 'Filter By Version',
-		name: 'version',
-		type: 'string',
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['cases'],
-				operation: ['removeEndpoints'],
-			},
-		},
-	},
+
 ];
 
 // Helper functions
@@ -1216,17 +796,8 @@ export async function executeCases(this: IExecuteFunctions): Promise<INodeExecut
 				case 'create':
 					responseData = await executeCreateCase.call(this, credentials, itemIndex);
 					break;
-				case 'update':
-					responseData = await executeUpdateCase.call(this, credentials, itemIndex);
-					break;
-				case 'archiveCase':
-					responseData = await executeArchiveCase.call(this, credentials, itemIndex);
-					break;
 				case 'closeCase':
 					responseData = await executeCloseCase.call(this, credentials, itemIndex);
-					break;
-				case 'openCase':
-					responseData = await executeOpenCase.call(this, credentials, itemIndex);
 					break;
 				case 'changeOwner':
 					responseData = await executeChangeOwner.call(this, credentials, itemIndex);
@@ -1245,15 +816,6 @@ export async function executeCases(this: IExecuteFunctions): Promise<INodeExecut
 					break;
 				case 'getUsers':
 					responseData = await executeGetUsers.call(this, credentials, itemIndex);
-					break;
-				case 'removeEndpoints':
-					responseData = await executeRemoveEndpoints.call(this, credentials, itemIndex);
-					break;
-				case 'removeTaskAssignment':
-					responseData = await executeRemoveTaskAssignment.call(this, credentials, itemIndex);
-					break;
-				case 'importTaskAssignments':
-					responseData = await executeImportTaskAssignments.call(this, credentials, itemIndex);
 					break;
 				default:
 					throw new Error(`Unknown operation: ${operation}`);
@@ -1396,71 +958,8 @@ async function executeCreateCase(
 	return response;
 }
 
-async function executeUpdateCase(
-	this: IExecuteFunctions,
-	credentials: AirCredentials,
-	itemIndex: number
-): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
-	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
-	const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as any;
 
-	const updateData: any = {};
 
-	if (updateFields.name) {
-		updateData.name = updateFields.name;
-	}
-	if (updateFields.ownerUserId) {
-		// For update operations, we don't have direct access to organization context,
-		// so we use default organization scope for user resolution
-		updateData.ownerUserId = await resolveUserResourceLocator(this, credentials, updateFields.ownerUserId, itemIndex, '0');
-	}
-	if (updateFields.visibility) {
-		updateData.visibility = updateFields.visibility;
-	}
-	if (updateFields.status) {
-		updateData.status = updateFields.status;
-	}
-
-	if (updateFields.notes) {
-		try {
-			updateData.notes = JSON.parse(updateFields.notes);
-		} catch (error) {
-			throw new Error('Invalid JSON format for notes');
-		}
-	}
-
-	if (Object.keys(updateData).length === 0) {
-		throw new Error('At least one field must be provided for update');
-	}
-
-	const response = await casesApi.updateCase(this, credentials, caseId, updateData);
-
-	if (!response.success) {
-		const errorMessage = response.errors?.join(', ') || 'API request failed';
-		throw new Error(`Failed to update case: ${errorMessage}`);
-	}
-
-	return response;
-}
-
-async function executeArchiveCase(
-	this: IExecuteFunctions,
-	credentials: AirCredentials,
-	itemIndex: number
-): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
-	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
-
-	const response = await casesApi.archiveCase(this, credentials, caseId);
-
-	if (!response.success) {
-		const errorMessage = response.errors?.join(', ') || 'API request failed';
-		throw new Error(`Failed to archive case: ${errorMessage}`);
-	}
-
-	return response;
-}
 
 async function executeCloseCase(
 	this: IExecuteFunctions,
@@ -1480,23 +979,7 @@ async function executeCloseCase(
 	return response;
 }
 
-async function executeOpenCase(
-	this: IExecuteFunctions,
-	credentials: AirCredentials,
-	itemIndex: number
-): Promise<{ success: boolean; result: Case; statusCode: number; errors: string[] }> {
-	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
-	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
-	const response = await casesApi.openCase(this, credentials, caseId);
-
-	if (!response.success) {
-		const errorMessage = response.errors?.join(', ') || 'API request failed';
-		throw new Error(`Failed to open case: ${errorMessage}`);
-	}
-
-	return response;
-}
 
 async function executeChangeOwner(
 	this: IExecuteFunctions,
@@ -1589,117 +1072,4 @@ async function executeGetUsers(
 	return response;
 }
 
-async function executeRemoveEndpoints(
-	this: IExecuteFunctions,
-	credentials: AirCredentials,
-	itemIndex: number
-): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
-	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
-	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
 
-	// Build filter object from individual parameters
-	const filter: any = {};
-
-	const searchTerm = this.getNodeParameter('searchTerm', itemIndex, '') as string;
-	const name = this.getNodeParameter('name', itemIndex, '') as string;
-	const ipAddress = this.getNodeParameter('ipAddress', itemIndex, '') as string;
-	const groupId = this.getNodeParameter('groupId', itemIndex, '') as string;
-	const groupFullPath = this.getNodeParameter('groupFullPath', itemIndex, '') as string;
-	const managedStatus = this.getNodeParameter('managedStatus', itemIndex, []) as string[];
-	const isolationStatus = this.getNodeParameter('isolationStatus', itemIndex, []) as string[];
-	const platform = this.getNodeParameter('platform', itemIndex, []) as string[];
-	const issue = this.getNodeParameter('issue', itemIndex, '') as string;
-	const onlineStatus = this.getNodeParameter('onlineStatus', itemIndex, []) as string[];
-	const tags = this.getNodeParameter('tags', itemIndex, '') as string;
-	const version = this.getNodeParameter('version', itemIndex, '') as string;
-	const policy = this.getNodeParameter('policy', itemIndex, '') as string;
-	const includedEndpointIds = this.getNodeParameter('includedEndpointIds', itemIndex, '') as string;
-	const excludedEndpointIds = this.getNodeParameter('excludedEndpointIds', itemIndex, '') as string;
-	const organizationIds = this.getNodeParameter('organizationIds', itemIndex, '') as string;
-
-	if (searchTerm) filter.searchTerm = searchTerm;
-	if (name) filter.name = name;
-	if (ipAddress) filter.ipAddress = ipAddress;
-	if (groupId) filter.groupId = groupId;
-	if (groupFullPath) filter.groupFullPath = groupFullPath;
-	if (managedStatus && managedStatus.length > 0) {
-		filter.managedStatus = managedStatus;
-	}
-	if (isolationStatus && isolationStatus.length > 0) {
-		filter.isolationStatus = isolationStatus;
-	}
-	if (platform && platform.length > 0) {
-		filter.platform = platform;
-	}
-	if (issue) filter.issue = issue;
-	if (onlineStatus && onlineStatus.length > 0) {
-		filter.onlineStatus = onlineStatus;
-	}
-	if (tags) {
-		filter.tags = tags.split(',').map((tag: string) => tag.trim());
-	}
-	if (version) filter.version = version;
-	if (policy) filter.policy = policy;
-	if (includedEndpointIds) {
-		filter.includedEndpointIds = includedEndpointIds.split(',').map((id: string) => id.trim());
-	}
-	if (excludedEndpointIds) {
-		filter.excludedEndpointIds = excludedEndpointIds.split(',').map((id: string) => id.trim());
-	}
-	if (organizationIds) {
-		filter.organizationIds = organizationIds.split(',').map((id: string) => parseInt(id.trim()));
-	}
-
-	const response = await casesApi.removeEndpointsFromCase(this, credentials, caseId, filter);
-
-	if (!response.success) {
-		const errorMessage = response.errors?.join(', ') || 'API request failed';
-		throw new Error(`Failed to remove endpoints from case: ${errorMessage}`);
-	}
-
-	return response;
-}
-
-async function executeRemoveTaskAssignment(
-	this: IExecuteFunctions,
-	credentials: AirCredentials,
-	itemIndex: number
-): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
-	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
-	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
-	const taskAssignmentId = normalizeAndValidateId(this.getNodeParameter('taskAssignmentId', itemIndex) as string, 'Task Assignment ID');
-
-	const response = await casesApi.removeTaskAssignmentFromCase(this, credentials, caseId, taskAssignmentId);
-
-	if (!response.success) {
-		const errorMessage = response.errors?.join(', ') || 'API request failed';
-		throw new Error(`Failed to remove task assignment from case: ${errorMessage}`);
-	}
-
-	return response;
-}
-
-async function executeImportTaskAssignments(
-	this: IExecuteFunctions,
-	credentials: AirCredentials,
-	itemIndex: number
-): Promise<{ success: boolean; result: null; statusCode: number; errors: string[] }> {
-	const caseResource = this.getNodeParameter('caseId', itemIndex) as any;
-	const caseId = await resolveCaseResourceLocator(this, caseResource, itemIndex);
-	const taskAssignmentIdsParam = this.getNodeParameter('taskAssignmentIds', itemIndex) as string;
-
-	const taskAssignmentIds = taskAssignmentIdsParam.split(',').map(id => id.trim());
-
-	if (taskAssignmentIds.length === 0) {
-		throw new Error('At least one task assignment ID must be provided');
-	}
-
-	const response = await casesApi.importTaskAssignmentsToCase(this, credentials, caseId, taskAssignmentIds);
-
-	if (!response.success) {
-		const errorMessage = response.errors?.join(', ') || 'API request failed';
-		throw new Error(`Failed to import task assignments to case: ${errorMessage}`);
-	}
-
-	return response;
-}

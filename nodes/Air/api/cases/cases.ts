@@ -365,7 +365,7 @@ export const api = {
     try {
       const requestOptions = buildRequestOptionsWithErrorHandling(
         credentials,
-        'PATCH',
+        'POST',
         `/api/public/cases/${id}/close`
       );
 
