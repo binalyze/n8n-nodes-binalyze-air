@@ -763,7 +763,7 @@ export const CasesOperations: INodeProperties[] = [
 			},
 			{
 				name: 'macOS',
-				value: 'macos',
+				value: 'darwin',
 			},
 		],
 	},

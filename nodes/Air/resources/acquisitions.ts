@@ -43,13 +43,63 @@ export const AcquisitionsOperations: INodeProperties[] = [
 				action: 'Assign an evidence acquisition task',
 			},
 			{
-				name: 'Get Profile',
+				name: 'Get Acquisition Profile',
 				value: 'get',
 				description: 'Retrieve a specific acquisition profile',
 				action: 'Get an acquisition profile',
 			},
 		],
 		default: 'get',
+	},
+
+	// Organization for get operation
+	{
+		displayName: 'Organization',
+		name: 'organizationIdForGet',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['get'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be numeric)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID (e.g., 123)',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization that owns the acquisition profile',
 	},
 
 	// Organization for evidence tasks
@@ -392,12 +442,28 @@ export const AcquisitionsOperations: INodeProperties[] = [
 		description: 'Local path on macOS systems where evidence will be saved',
 	},
 
+	// Enable DRONE switch
+	{
+		displayName: 'Enable DRONE',
+		name: 'enableDrone',
+		type: 'boolean',
+		default: true,
+		displayOptions: {
+			show: {
+				resource: ['acquisitions'],
+				operation: ['assignEvidenceTask'],
+			},
+		},
+		required: true,
+		description: 'Whether to enable DRONE analysis with AutoPilot and MITRE ATT&CK detection',
+	},
+
 	// Endpoint Filters (required for evidence tasks)
 	{
 		displayName: 'Endpoint Filters (Required)',
 		name: 'endpointFilters',
 		type: 'collection',
-		placeholder: 'Add Filter - At least one filter is required',
+		placeholder: 'Add Filter',
 		default: {},
 		displayOptions: {
 			show: {
@@ -477,7 +543,7 @@ export const AcquisitionsOperations: INodeProperties[] = [
 					},
 					{
 						name: 'macOS',
-						value: 'macos',
+						value: 'darwin',
 					},
 					{
 						name: 'AIX',
@@ -543,10 +609,39 @@ export async function fetchAllAcquisitionProfiles(
 // Load options methods
 export { getRepositories };
 
+/**
+ * Helper function to get organization ID from the current node context
+ * This attempts to access the organization parameter from the current node configuration
+ * Falls back to '0' (all organizations) if the organization cannot be determined
+ */
+function getOrganizationIdFromContext(context: ILoadOptionsFunctions): string {
+	try {
+		// Try to get the current node parameters which includes the organization selection
+		const currentParams = context.getCurrentNodeParameters();
+		if (currentParams && currentParams.organizationIdForGet) {
+			const orgResource = currentParams.organizationIdForGet as any;
+
+			// Handle different organization resource locator modes
+			if (typeof orgResource === 'object') {
+				if (orgResource.mode === 'id' || orgResource.mode === 'list') {
+					return orgResource.value || '0';
+				}
+				// For 'name' mode, we can't resolve it here without credentials, so fall back to default
+				return '0';
+			} else if (typeof orgResource === 'string') {
+				return orgResource;
+			}
+		}
+	} catch (error) {
+		// If there's any error accessing the parameters, fall back to default
+	}
+	return '0'; // Default to all organizations
+}
+
 export async function getAcquisitionProfiles(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const organizationIds = '0'; // Use default or get from context
+		const organizationIds = getOrganizationIdFromContext(this);
 
 		const acquisitionProfiles = await fetchAllAcquisitionProfiles(
 			this,
@@ -574,7 +669,7 @@ export async function getAcquisitionProfiles(this: ILoadOptionsFunctions, search
 export async function getAcquisitionProfilesOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	try {
 		const credentials = await getAirCredentials(this);
-		const organizationIds = '0'; // Use default or get from context
+		const organizationIds = getOrganizationIdFromContext(this);
 
 		const acquisitionProfiles = await fetchAllAcquisitionProfiles(
 			this,
@@ -631,6 +726,9 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 				const windowsPath = saveToLocation === 'local' && !useMostFreeVolume ? this.getNodeParameter('windowsPath', i) as string : undefined;
 				const linuxPath = saveToLocation === 'local' && !useMostFreeVolume ? this.getNodeParameter('linuxPath', i) as string : undefined;
 				const macosPath = saveToLocation === 'local' && !useMostFreeVolume ? this.getNodeParameter('macosPath', i) as string : undefined;
+
+				// Get DRONE configuration
+				const enableDrone = this.getNodeParameter('enableDrone', i) as boolean;
 
 				// Validate that at least one endpoint filter is provided
 				const hasFilter = Boolean(
@@ -696,6 +794,23 @@ export async function executeAcquisitions(this: IExecuteFunctions): Promise<INod
 							tmp: 'opt/binalyze/air/tmp',
 						},
 					},
+				};
+
+				// Add required droneConfig based on enableDrone setting
+				taskData.droneConfig = {
+					autoPilot: enableDrone,
+					enabled: enableDrone,
+					mitreEnabled: enableDrone,
+					analyzers: [],
+					keywords: [],
+					minScore: 0,
+				};
+
+				// Add required eventLogRecordsConfig
+				taskData.eventLogRecordsConfig = {
+					startDate: null,
+					endDate: null,
+					maxEventCount: 0,
 				};
 
 				// Set platform-specific paths or repository ID

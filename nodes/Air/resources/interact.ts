@@ -350,7 +350,7 @@ export const InterACTOperations: INodeProperties[] = [
 					},
 					{
 						name: 'macOS',
-						value: 'macos',
+						value: 'darwin',
 					},
 					{
 						name: 'Windows',

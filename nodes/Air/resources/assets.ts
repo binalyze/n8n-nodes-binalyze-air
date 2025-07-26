@@ -71,6 +71,54 @@ export const AssetsOperations: INodeProperties[] = [
 		default: 'getAll',
 	},
 	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['getAll'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a number)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization to get assets from',
+	},
+	{
 		displayName: 'Asset',
 		name: 'assetId',
 		type: 'resourceLocator',
@@ -190,46 +238,6 @@ export const AssetsOperations: INodeProperties[] = [
 				],
 			},
 			{
-				displayName: 'Filter By Organization',
-				name: 'organizationId',
-				type: 'resourceLocator',
-				default: { mode: 'list', value: '' },
-				placeholder: 'Select an organization...',
-				modes: [
-					{
-						displayName: 'From List',
-						name: 'list',
-						type: 'list',
-						placeholder: 'Select an organization...',
-						typeOptions: {
-							searchListMethod: 'getOrganizations',
-							searchable: true,
-						},
-					},
-					{
-						displayName: 'By ID',
-						name: 'id',
-						type: 'string',
-						validation: [
-							{
-								type: 'regex',
-								properties: {
-									regex: '^[0-9]+$',
-									errorMessage: 'Not a valid organization ID (must be a number)',
-								},
-							},
-						],
-						placeholder: 'Enter organization ID',
-					},
-					{
-						displayName: 'By Name',
-						name: 'name',
-						type: 'string',
-						placeholder: 'Enter organization name',
-					},
-				],
-			},
-			{
 				displayName: 'Filter By Platform',
 				name: 'platform',
 				type: 'multiOptions',
@@ -241,7 +249,7 @@ export const AssetsOperations: INodeProperties[] = [
 					},
 					{
 						name: 'macOS',
-						value: 'macos',
+						value: 'darwin',
 					},
 					{
 						name: 'Linux',
@@ -553,7 +561,7 @@ export const AssetsOperations: INodeProperties[] = [
 					},
 					{
 						name: 'macOS',
-						value: 'macos',
+						value: 'darwin',
 					},
 					{
 						name: 'Linux',
@@ -815,36 +823,32 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 			switch (operation) {
 				case 'getAll': {
 					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 
-					// Handle organization resource locator from additional fields
-					let organizationId: string = '0'; // Default to all organizations
+					// Handle organization resource locator (now mandatory)
+					let organizationId: string;
 
-					if (additionalFields.organizationId) {
-						const organizationResource = additionalFields.organizationId;
-						let orgIdString: string;
-
-						if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-							orgIdString = organizationResource.value;
-						} else if (organizationResource.mode === 'name') {
-							try {
-								orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
-							} catch (error) {
-								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-							}
-						} else {
-							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-								itemIndex: i,
-							});
-						}
-
-						// Validate and use organization ID
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
 						try {
-							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
 						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, {
-								itemIndex: i,
-							});
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
 						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
 					}
 
 					// Build query parameters from additionalFields

@@ -675,7 +675,9 @@ export async function getOrganizations(this: ILoadOptionsFunctions, filter?: str
 			isValidOrganization,
 			(organization: Organization) => {
 				const orgId = extractOrganizationId(organization);
-				const name = organization.name || `Organization ${orgId}`;
+				const name = orgId === '0'
+					? `${organization.name || 'Organization'} (Default)`
+					: (organization.name || `Organization ${orgId}`);
 
 				// Ensure ID 0 is properly handled in resource locator
 				const resourceValue = orgId === '0' ? '0' : orgId;

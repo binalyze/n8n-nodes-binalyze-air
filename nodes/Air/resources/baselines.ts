@@ -2,6 +2,7 @@ import {
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeProperties,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -56,19 +57,88 @@ export const BaselinesOperations: INodeProperties[] = [
 		default: 'acquireBaseline',
 	},
 	{
-		displayName: 'Case ID',
-		name: 'caseId',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter case ID',
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'id', value: '0' },
+		placeholder: 'Select organization...',
 		displayOptions: {
 			show: {
 				resource: ['baselines'],
 				operation: ['acquireBaseline'],
 			},
 		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Organization ID must be a number',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+		],
 		required: true,
-		description: 'The ID of the case for baseline acquisition',
+		description: 'The organization to use for baseline acquisition',
+	},
+	{
+		displayName: 'Case',
+		name: 'caseId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select a case...',
+		displayOptions: {
+			show: {
+				resource: ['baselines'],
+				operation: ['acquireBaseline'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a case...',
+				typeOptions: {
+					searchListMethod: 'getCases',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid case ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter case ID',
+			},
+		],
+		required: true,
+		description: 'The case for baseline acquisition',
 	},
 	{
 		displayName: 'Endpoint ID',
@@ -116,8 +186,8 @@ export const BaselinesOperations: INodeProperties[] = [
 		description: 'The ID of the task for the comparison report',
 	},
 	{
-		displayName: 'Filter Options',
-		name: 'filter',
+		displayName: 'Endpoint Filters (Required)',
+		name: 'endpointFilters',
 		type: 'collection',
 		placeholder: 'Add Filter',
 		default: {},
@@ -127,48 +197,55 @@ export const BaselinesOperations: INodeProperties[] = [
 				operation: ['acquireBaseline'],
 			},
 		},
+		required: true,
+		description: 'At least one filter must be defined to target specific endpoints',
 		options: [
 			{
-				displayName: 'Excluded Endpoint IDs',
+				displayName: 'Exclude Specific Endpoint IDs',
 				name: 'excludedEndpointIds',
 				type: 'string',
 				default: '',
-				description: 'Comma-separated list of endpoint IDs to exclude',
+				placeholder: 'Enter comma-separated endpoint IDs',
+				description: 'Exclude specific endpoint IDs (comma-separated)',
 			},
 			{
-				displayName: 'Group Full Path',
+				displayName: 'Filter By Endpoint Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter endpoint name',
+				description: 'Filter endpoints by name',
+			},
+			{
+				displayName: 'Filter By Group Full Path',
 				name: 'groupFullPath',
 				type: 'string',
 				default: '',
-				description: 'Filter by group full path',
+				placeholder: 'Enter group full path',
+				description: 'Filter endpoints by group full path',
 			},
 			{
-				displayName: 'Group ID',
+				displayName: 'Filter By Group ID',
 				name: 'groupId',
 				type: 'string',
 				default: '',
-				description: 'Filter by group ID',
+				placeholder: 'Enter group ID',
+				description: 'Filter endpoints by group ID',
 			},
 			{
-				displayName: 'Included Endpoint IDs',
-				name: 'includedEndpointIds',
-				type: 'string',
-				default: '',
-				description: 'Comma-separated list of endpoint IDs to include',
-			},
-			{
-				displayName: 'IP Address',
+				displayName: 'Filter By IP Address',
 				name: 'ipAddress',
 				type: 'string',
 				default: '',
-				description: 'Filter by IP address',
+				placeholder: 'Enter IP address',
+				description: 'Filter endpoints by IP address',
 			},
 			{
-				displayName: 'Isolation Status',
+				displayName: 'Filter By Isolation Status',
 				name: 'isolationStatus',
 				type: 'multiOptions',
 				default: [],
-				description: 'Filter by isolation status',
+				placeholder: 'Select isolation status',
 				options: [
 					{
 						name: 'Isolated',
@@ -179,20 +256,22 @@ export const BaselinesOperations: INodeProperties[] = [
 						value: 'not_isolated',
 					},
 				],
+				description: 'Filter endpoints by isolation status',
 			},
 			{
-				displayName: 'Issue',
+				displayName: 'Filter By Issue',
 				name: 'issue',
 				type: 'string',
 				default: '',
-				description: 'Filter by issue',
+				placeholder: 'Enter issue',
+				description: 'Filter endpoints by issue',
 			},
 			{
-				displayName: 'Managed Status',
+				displayName: 'Filter By Management Status',
 				name: 'managedStatus',
 				type: 'multiOptions',
 				default: [],
-				description: 'Filter by managed status',
+				placeholder: 'Select management status',
 				options: [
 					{
 						name: 'Managed',
@@ -203,20 +282,14 @@ export const BaselinesOperations: INodeProperties[] = [
 						value: 'unmanaged',
 					},
 				],
+				description: 'Filter endpoints by management status',
 			},
 			{
-				displayName: 'Name',
-				name: 'name',
-				type: 'string',
-				default: '',
-				description: 'Filter by endpoint name',
-			},
-			{
-				displayName: 'Online Status',
+				displayName: 'Filter By Online Status',
 				name: 'onlineStatus',
 				type: 'multiOptions',
 				default: [],
-				description: 'Filter by online status',
+				placeholder: 'Select online status',
 				options: [
 					{
 						name: 'Online',
@@ -227,20 +300,22 @@ export const BaselinesOperations: INodeProperties[] = [
 						value: 'offline',
 					},
 				],
+				description: 'Filter endpoints by online status',
 			},
 			{
-				displayName: 'Organization IDs',
+				displayName: 'Filter By Organization IDs',
 				name: 'organizationIds',
 				type: 'string',
 				default: '',
-				description: 'Comma-separated list of organization IDs',
+				placeholder: 'Enter comma-separated organization IDs',
+				description: 'Filter endpoints by organization IDs (comma-separated)',
 			},
 			{
-				displayName: 'Platform',
+				displayName: 'Filter By Platform',
 				name: 'platform',
 				type: 'multiOptions',
 				default: [],
-				description: 'Filter by platform',
+				placeholder: 'Select platforms',
 				options: [
 					{
 						name: 'Windows',
@@ -255,34 +330,47 @@ export const BaselinesOperations: INodeProperties[] = [
 						value: 'darwin',
 					},
 				],
+				description: 'Filter endpoints by platform',
 			},
 			{
-				displayName: 'Policy',
+				displayName: 'Filter By Policy',
 				name: 'policy',
 				type: 'string',
 				default: '',
-				description: 'Filter by policy',
+				placeholder: 'Enter policy',
+				description: 'Filter endpoints by policy',
 			},
 			{
-				displayName: 'Search Term',
+				displayName: 'Filter By Search Term',
 				name: 'searchTerm',
 				type: 'string',
 				default: '',
-				description: 'Search term to filter endpoints',
+				placeholder: 'Enter search term',
+				description: 'Filter endpoints by search term',
 			},
 			{
-				displayName: 'Tags',
+				displayName: 'Filter By Tags',
 				name: 'tags',
 				type: 'string',
 				default: '',
-				description: 'Filter by tags (comma-separated)',
+				placeholder: 'Enter comma-separated tags',
+				description: 'Filter endpoints by tags (comma-separated)',
 			},
 			{
-				displayName: 'Version',
+				displayName: 'Filter By Version',
 				name: 'version',
 				type: 'string',
 				default: '',
-				description: 'Filter by version',
+				placeholder: 'Enter version',
+				description: 'Filter endpoints by version',
+			},
+			{
+				displayName: 'Include Specific Endpoint IDs',
+				name: 'includedEndpointIds',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter comma-separated endpoint IDs',
+				description: 'Include specific endpoint IDs (comma-separated)',
 			},
 		],
 	},
@@ -363,51 +451,79 @@ async function executeAcquireBaseline(
 	credentials: AirCredentials,
 	itemIndex: number
 ): Promise<BaselineResponse> {
-	const caseId = this.getNodeParameter('caseId', itemIndex) as string;
-	const filterOptions = this.getNodeParameter('filter', itemIndex, {}) as any;
+	const organizationId = this.getNodeParameter('organizationId', itemIndex) as any;
+	const caseId = this.getNodeParameter('caseId', itemIndex) as any;
+	const endpointFilters = this.getNodeParameter('endpointFilters', itemIndex, {}) as any;
 
 	// Validate required parameters
-	normalizeAndValidateId(caseId, 'Case ID');
+	const organizationIdValue = normalizeAndValidateId(organizationId.value || organizationId, 'Organization ID');
+	const caseIdValue = normalizeAndValidateId(caseId.value || caseId, 'Case ID');
+
+	// Validate that at least one endpoint filter is provided
+	const hasFilter = Boolean(
+		endpointFilters.searchTerm ||
+		endpointFilters.name ||
+		endpointFilters.ipAddress ||
+		(endpointFilters.platform && endpointFilters.platform.length > 0) ||
+		(endpointFilters.onlineStatus && endpointFilters.onlineStatus.length > 0) ||
+		(endpointFilters.managedStatus && endpointFilters.managedStatus.length > 0) ||
+		endpointFilters.tags ||
+		endpointFilters.groupId ||
+		endpointFilters.groupFullPath ||
+		(endpointFilters.isolationStatus && endpointFilters.isolationStatus.length > 0) ||
+		endpointFilters.issue ||
+		endpointFilters.policy ||
+		endpointFilters.version ||
+		endpointFilters.organizationIds ||
+		endpointFilters.includedEndpointIds ||
+		endpointFilters.excludedEndpointIds ||
+		organizationIdValue !== '0' // Organization selection counts as a filter
+	);
+
+	if (!hasFilter) {
+		throw new NodeOperationError(this.getNode(), 'At least one endpoint filter must be provided for baseline acquisition', { itemIndex });
+	}
 
 	// Build filter object
 	const filter: any = {};
 
-	if (filterOptions.searchTerm) filter.searchTerm = filterOptions.searchTerm;
-	if (filterOptions.name) filter.name = filterOptions.name;
-	if (filterOptions.ipAddress) filter.ipAddress = filterOptions.ipAddress;
-	if (filterOptions.groupId) filter.groupId = filterOptions.groupId;
-	if (filterOptions.groupFullPath) filter.groupFullPath = filterOptions.groupFullPath;
-	if (filterOptions.managedStatus && filterOptions.managedStatus.length > 0) {
-		filter.managedStatus = filterOptions.managedStatus;
+	if (endpointFilters.searchTerm) filter.searchTerm = endpointFilters.searchTerm;
+	if (endpointFilters.name) filter.name = endpointFilters.name;
+	if (endpointFilters.ipAddress) filter.ipAddress = endpointFilters.ipAddress;
+	if (endpointFilters.groupId) filter.groupId = endpointFilters.groupId;
+	if (endpointFilters.groupFullPath) filter.groupFullPath = endpointFilters.groupFullPath;
+	if (endpointFilters.managedStatus && endpointFilters.managedStatus.length > 0) {
+		filter.managedStatus = endpointFilters.managedStatus;
 	}
-	if (filterOptions.isolationStatus && filterOptions.isolationStatus.length > 0) {
-		filter.isolationStatus = filterOptions.isolationStatus;
+	if (endpointFilters.isolationStatus && endpointFilters.isolationStatus.length > 0) {
+		filter.isolationStatus = endpointFilters.isolationStatus;
 	}
-	if (filterOptions.platform && filterOptions.platform.length > 0) {
-		filter.platform = filterOptions.platform;
+	if (endpointFilters.platform && endpointFilters.platform.length > 0) {
+		filter.platform = endpointFilters.platform;
 	}
-	if (filterOptions.issue) filter.issue = filterOptions.issue;
-	if (filterOptions.onlineStatus && filterOptions.onlineStatus.length > 0) {
-		filter.onlineStatus = filterOptions.onlineStatus;
+	if (endpointFilters.issue) filter.issue = endpointFilters.issue;
+	if (endpointFilters.onlineStatus && endpointFilters.onlineStatus.length > 0) {
+		filter.onlineStatus = endpointFilters.onlineStatus;
 	}
-	if (filterOptions.tags) {
-		filter.tags = filterOptions.tags.split(',').map((tag: string) => tag.trim());
+	if (endpointFilters.tags) {
+		filter.tags = endpointFilters.tags.split(',').map((tag: string) => tag.trim());
 	}
-	if (filterOptions.version) filter.version = filterOptions.version;
-	if (filterOptions.policy) filter.policy = filterOptions.policy;
-	if (filterOptions.includedEndpointIds) {
-		filter.includedEndpointIds = filterOptions.includedEndpointIds.split(',').map((id: string) => id.trim());
+	if (endpointFilters.version) filter.version = endpointFilters.version;
+	if (endpointFilters.policy) filter.policy = endpointFilters.policy;
+	if (endpointFilters.includedEndpointIds) {
+		filter.includedEndpointIds = endpointFilters.includedEndpointIds.split(',').map((id: string) => id.trim());
 	}
-	if (filterOptions.excludedEndpointIds) {
-		filter.excludedEndpointIds = filterOptions.excludedEndpointIds.split(',').map((id: string) => id.trim());
+	if (endpointFilters.excludedEndpointIds) {
+		filter.excludedEndpointIds = endpointFilters.excludedEndpointIds.split(',').map((id: string) => id.trim());
 	}
-	if (filterOptions.organizationIds) {
-		filter.organizationIds = filterOptions.organizationIds.split(',').map((id: string) => Number(id.trim()));
-	}
+
+	// Set organizationIds from the selected organization
+	// Always use the selected organization's ID as the only item in the array
+	filter.organizationIds = [Number(organizationIdValue)];
 
 	// Build request
 	const request: BaselineAcquisitionRequest = {
-		caseId,
+		caseId: caseIdValue,
 		filter,
 	};
 

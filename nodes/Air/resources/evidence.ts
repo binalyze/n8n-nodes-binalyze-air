@@ -243,7 +243,7 @@ export const EvidenceOperations: INodeProperties[] = [
 					},
 					{
 						name: 'macOS',
-						value: 'macos',
+						value: 'darwin',
 					},
 				],
 			},

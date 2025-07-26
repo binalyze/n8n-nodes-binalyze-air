@@ -55,8 +55,13 @@ This node provides comprehensive coverage of Binalyze AIR's features listed belo
 Manage evidence acquisition profiles and tasks with comprehensive configuration options.
 
 **Operations:**
+- `get` - Retrieve a specific acquisition profile
+  - **Enhanced Features:**
+    - **Organization Selection:** Select the organization that owns the acquisition profile
+    - **Filtered Profile Selection:** Acquisition profiles are automatically filtered based on the selected organization
 - `assignEvidenceTask` - Assign an evidence acquisition task by filter with advanced configuration
   - **Enhanced Features:**
+    - **Enable DRONE:** Toggle DRONE analysis with AutoPilot and MITRE ATT&CK detection (required)
     - **Save To Configuration:** Choose between local storage or evidence repositories
       - **Local Storage:** Configure platform-specific paths for Windows, Linux, and macOS (when custom paths are needed)
       - **Repository Storage:** Select evidence repositories with resource locator support
@@ -72,7 +77,6 @@ Manage evidence acquisition profiles and tasks with comprehensive configuration 
     - Same comprehensive configuration options as evidence tasks
     - Disk imaging specific settings and parameters
 - `createOffNetworkTask` - Create an off-network acquisition task
-- `get` - Retrieve a specific acquisition profile
 
 ### Assets
 Manage endpoints and their associated tasks, tags, and status.
@@ -82,6 +86,8 @@ Manage endpoints and their associated tasks, tags, and status.
 - `get` - Retrieve a specific asset
 - `getAssetTasks` - Get tasks for a specific asset
 - `getAll` - Retrieve many assets
+  - **Enhanced Features:**
+    - **Organization Selection:** Required organization selection to filter assets by organization
 - `removeTags` - Remove tags from assets by filter
 
 ### Baselines
@@ -89,6 +95,16 @@ Acquire and compare system baselines.
 
 **Operations:**
 - `acquireBaseline` - Acquire baseline for endpoints
+  - **Enhanced Features:**
+    - **Organization Selection:** Select an organization using resource locator (by list or ID)
+      - Automatically filters available cases based on the selected organization
+      - Organization ID is included in the endpoint filters for baseline acquisition
+      - When "All Organizations" (ID: 0) is selected, all organizations are included in the baseline acquisition
+    - **Case Selection:** Select a case using resource locator (by list or ID)
+    - **Endpoint Filters (Required):** At least one filter must be defined to target specific endpoints
+      - Filter by endpoint name, IP address, management status, online status, platform
+      - Filter by search term, tags, group path/ID, isolation status, issue, policy, version
+      - Filter by organization IDs, include/exclude specific endpoint IDs
 - `compareBaseline` - Compare baseline with task results
 - `getComparisonReport` - Get baseline comparison report
 
@@ -202,8 +218,8 @@ To set up the development environment:
 2. Install dependencies: `yarn install`
 3. Build the project: `yarn build`
 4. Link the project using: 
-   - `npm link` 
-   - `npm link n8n-nodes-binalyze-air` 
+   - `npm link`
+   - `npm link n8n-nodes-binalyze-air`
 5. Start the development environment:
    - `yarn dev` - Start n8n in watch mode with automatic rebuilds
    - `yarn debug` - Start n8n in debug mode with verbose logging
@@ -321,3 +337,4 @@ node test/e2e.js download --file my-workflow.json
 
 ## TODO
 - Add Asset isolation, shutdown, and reboot
+- Add Triggers / Event Subscriptions
