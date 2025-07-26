@@ -1218,6 +1218,12 @@ export async function executeCases(this: IExecuteFunctions): Promise<INodeExecut
 					paginationData: paginationInfo,
 					excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
 				});
+			} else if (operation === 'checkName') {
+				// For checkName operation, return the full response structure consistently
+				returnData.push({
+					json: responseData,
+					pairedItem: { item: itemIndex },
+				});
 			} else {
 				// For single entity operations
 				const jsonData = responseData.result || responseData;
