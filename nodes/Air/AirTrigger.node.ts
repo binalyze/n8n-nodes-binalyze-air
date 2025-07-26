@@ -54,35 +54,15 @@ export class AirTrigger implements INodeType {
 				description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 			},
 			{
-				displayName: 'Options',
-				name: 'options',
-				type: 'collection',
-				placeholder: 'Add Option',
-				default: {},
-				options: [
-					{
-						displayName: 'Verify Authorization Token',
-						name: 'verifyToken',
-						type: 'boolean',
-						default: true,
-						description: 'Whether to verify the authorization token sent by AIR',
-					},
-					{
-						displayName: 'Expected Token',
-						name: 'expectedToken',
-						type: 'string',
-						typeOptions: {
-							password: true,
-						},
-						default: '',
-						description: 'The expected Bearer token that AIR will send in the Authorization header',
-						displayOptions: {
-							show: {
-								verifyToken: [true],
-							},
-						},
-					},
-				],
+				displayName: 'Bearer Token',
+				name: 'bearerToken',
+				type: 'string',
+				required: true,
+				typeOptions: {
+					password: true,
+				},
+				default: '',
+				description: 'The Bearer token that AIR will send in the Authorization header for webhook authentication',
 			},
 		],
 	};
@@ -132,27 +112,31 @@ export class AirTrigger implements INodeType {
 		const req = this.getRequestObject();
 		const resp = this.getResponseObject();
 		const selectedEventTypes = this.getNodeParameter('eventTypes', []) as string[];
-		const options = this.getNodeParameter('options', {}) as IDataObject;
+		const bearerToken = this.getNodeParameter('bearerToken', '') as string;
 
-		// Verify authorization token if enabled
-		if (options.verifyToken === true) {
-			const authHeader = req.headers.authorization as string;
-			const expectedToken = options.expectedToken as string;
+		// Verify authorization token
+		const authHeader = req.headers.authorization as string;
 
-			if (!authHeader) {
-				resp.status(401).json({ error: 'Missing authorization header' });
-				return {
-					noWebhookResponse: true,
-				};
-			}
+		if (!authHeader) {
+			resp.status(401).json({
+				success: false,
+				error: 'Missing authorization header'
+			});
+			return {
+				noWebhookResponse: true,
+			};
+		}
 
-			const providedToken = authHeader.replace('Bearer ', '');
-			if (providedToken !== expectedToken) {
-				resp.status(401).json({ error: 'Invalid authorization token' });
-				return {
-					noWebhookResponse: true,
-				};
-			}
+		const providedToken = authHeader.replace('Bearer ', '');
+
+		if (providedToken !== bearerToken) {
+			resp.status(401).json({
+				success: false,
+				error: 'Invalid Bearer token'
+			});
+			return {
+				noWebhookResponse: true,
+			};
 		}
 
 		// Get the webhook data
@@ -160,21 +144,41 @@ export class AirTrigger implements INodeType {
 
 		// Check if the event has the required structure
 		if (!body.eventName || typeof body.eventName !== 'string') {
-			resp.status(400).json({ error: 'Invalid event structure: missing eventName' });
+			resp.status(400).json({
+				success: false,
+				error: 'Invalid event structure: missing eventName'
+			});
 			return {
 				noWebhookResponse: true,
 			};
 		}
 
+		// Get workflow information
+		const workflowId = this.getWorkflow().id;
+		const workflowName = this.getWorkflow().name;
+
 		// Filter events based on selected event types
 		const eventName = body.eventName as string;
 		if (selectedEventTypes.length > 0 && !selectedEventTypes.includes(eventName)) {
 			// Event type not selected, ignore it
-			resp.status(200).json({ message: 'Event ignored' });
+			resp.status(200).json({
+				success: true,
+				message: 'Event ignored - not in selected event types',
+				workflowId: workflowId,
+				workflowName: workflowName
+			});
 			return {
 				noWebhookResponse: true,
 			};
 		}
+
+		// Send success response
+		resp.status(200).json({
+			success: true,
+			message: 'Event received and processed',
+			workflowId: workflowId,
+			workflowName: workflowName
+		});
 
 		// Return the event data to the workflow
 		return {

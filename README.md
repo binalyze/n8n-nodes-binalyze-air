@@ -165,20 +165,20 @@ Manage user accounts and permissions.
 
 ## Trigger Node
 
-The AIR Trigger node allows you to trigger workflows based on AIR events.
+The On AIR Event-Trigger node allows you to trigger workflows based on AIR events.
 
 ### How to Use
 
-1. Add the AIR Trigger node to your workflow
+1. Add the On AIR Event-Trigger node to your workflow
 2. Configure your AIR API credentials
 3. Select the event types you want to listen for from the dynamically loaded list
-4. Copy the webhook URL from the node
-5. Create an event subscription in AIR:
+4. Configure the Bearer token that AIR will use for webhook authentication
+5. Copy the webhook URL from the node
+6. Create an event subscription in AIR:
    - Go to AIR > Integrations > Event Subscriptions
    - Add a new subscription with the webhook URL
    - Select the same event types
-   - Provide an authorization token (Bearer token)
-6. Configure the same authorization token in the trigger node options
+   - Provide the same Bearer token you configured in the trigger node
 
 ### Supported Event Types
 
