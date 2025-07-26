@@ -53,9 +53,7 @@ import {
 	TriageRulesOperations,
 	getTriageRules,
 	getTriageRulesOptions,
-	getTriageTags,
-	executeTriageRules,
-	getTriageTagsOptions
+	executeTriageRules
 } from './resources/triagerules';
 import {
 	AssetsOperations,
@@ -69,14 +67,12 @@ import {
 	getAcquisitionProfilesOptions,
 	executeAcquisitions
 } from './resources/acquisitions';
-import {
-	EvidenceOperations,
-	executeEvidence
-} from './resources/evidence';
 
 import {
 	InterACTOperations,
-	executeInterACT
+	executeInterACT,
+	getCasesByOrganization,
+	getAssetsByOrganizationForInteract
 } from './resources/interact';
 
 export class Air implements INodeType {
@@ -130,11 +126,6 @@ export class Air implements INodeType {
 						description: 'Manage cases and case operations',
 					},
 					{
-						name: 'Evidence',
-						value: 'evidence',
-						description: 'Evidence management and downloads',
-					},
-					{
 						name: 'InterACT',
 						value: 'interact',
 						description: 'Interactive shell sessions and command execution on devices',
@@ -172,7 +163,6 @@ export class Air implements INodeType {
 			...AssetsOperations,
 			...BaselinesOperations,
 			...CasesOperations,
-			...EvidenceOperations,
 			...InterACTOperations,
 			...OrganizationsOperations,
 			...RepositoriesOperations,
@@ -212,10 +202,6 @@ export class Air implements INodeType {
 			async getTriageRules(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getTriageRulesOptions.call(this);
 			},
-			// Import load options methods from Triage Tags
-			async getTriageTags(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				return getTriageTagsOptions.call(this);
-			},
 			// Import load options methods from Users
 			async getUsers(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				return getUsersOptions.call(this);
@@ -247,6 +233,13 @@ export class Air implements INodeType {
 			async getCases(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getCases.call(this, filter);
 			},
+			// Import context-aware list search methods from InterACT for resource locators
+			async getCasesByOrganization(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getCasesByOrganization.call(this, filter);
+			},
+			async getAssetsByOrganizationForInteract(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getAssetsByOrganizationForInteract.call(this, filter);
+			},
 			// Import list search methods from Organizations for resource locators
 			async getOrganizations(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getOrganizations.call(this, filter);
@@ -262,10 +255,6 @@ export class Air implements INodeType {
 			// Import list search methods from Triage Rules for resource locators
 			async getTriageRules(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getTriageRules.call(this, filter);
-			},
-			// Import list search methods from Triage Tags for resource locators
-			async getTriageTags(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
-				return getTriageTags.call(this, filter);
 			},
 			// Import list search methods from Users for resource locators
 			async getUsers(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
@@ -289,8 +278,6 @@ export class Air implements INodeType {
 				return executeBaselines.call(this);
 			case 'cases':
 				return executeCases.call(this);
-			case 'evidence':
-				return executeEvidence.call(this);
 			case 'interact':
 				return executeInterACT.call(this);
 			case 'organizations':

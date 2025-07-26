@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-25T16:25:11.284Z",
-  "updatedAt": "2025-07-26T16:45:29.000Z",
+  "updatedAt": "2025-07-26T21:23:30.000Z",
   "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
@@ -11,8 +11,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -400,
-        672
+        -3600,
+        2016
       ],
       "id": "94fd90e3-840d-42dd-b049-ee058ea47035",
       "name": "When clicking ‘Execute workflow’"
@@ -36,7 +36,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -176,
+        -3376,
         -480
       ],
       "id": "87c1b533-62c4-405c-8c65-a24a592d89f5",
@@ -79,7 +79,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        48,
+        -3152,
         -480
       ],
       "id": "5b9122b7-0200-4118-b0cd-db7d60c1b8cc",
@@ -109,7 +109,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -176,
+        -3376,
         -288
       ],
       "id": "98f78da9-968a-4c99-b93e-a03e846198a6",
@@ -134,7 +134,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        48,
+        -3152,
         -288
       ],
       "id": "a74f640a-ac70-4154-9adc-79f3b5b82dc8",
@@ -160,7 +160,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         -384
       ],
       "id": "bdc05928-26ae-434f-9997-69503fcdcc21",
@@ -192,7 +192,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         -192
       ],
       "id": "95b83112-96b7-42f5-abe4-0ad22fa0f8e3",
@@ -224,7 +224,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        496,
+        -2704,
         -192
       ],
       "id": "01521ad0-30e2-4fd3-baf5-5609dfdfb953",
@@ -251,8 +251,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -176,
-        1152
+        -3376,
+        3360
       ],
       "id": "6868f25a-3e00-4eb9-8b95-8f379164a063",
       "name": "Get many repositories",
@@ -275,8 +275,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        48,
-        1152
+        -3152,
+        3360
       ],
       "id": "b1d431d0-43da-4cf9-a2d3-9a2c0985b147",
       "name": "Get a repository",
@@ -293,18 +293,17 @@
         "resource": "users",
         "organizationId": {
           "__rl": true,
-          "value": "0",
+          "value": "23",
           "mode": "list",
-          "cachedResultName": "Binalyze",
-          "cachedResultUrl": "b28890fcb2744fad"
+          "cachedResultName": "Some other organization"
         },
         "additionalFields": {}
       },
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -176,
-        1536
+        -3376,
+        4704
       ],
       "id": "d5925c74-f54e-4be5-898b-0c41dc73f566",
       "name": "Get many users",
@@ -328,8 +327,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        48,
-        1536
+        -3152,
+        4704
       ],
       "id": "e9ec5228-05c9-4646-8fd2-b8def3fa5aa8",
       "name": "Get a user",
@@ -357,8 +356,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -176,
-        1344
+        -3376,
+        3552
       ],
       "id": "7e91601b-751c-4516-b07b-5f9614bcf0b5",
       "name": "Get many tasks",
@@ -378,8 +377,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        48,
-        1344
+        -3152,
+        3552
       ],
       "id": "3051574e-d629-4e57-a877-943136d11b27",
       "name": "Get a task",
@@ -400,8 +399,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
-        1344
+        -2928,
+        3552
       ],
       "id": "69a6f6eb-2728-47d3-88fb-b976179f3691",
       "name": "Get task assignments",
@@ -435,7 +434,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -176,
+        -3376,
         0
       ],
       "id": "cd855917-ff89-4a7d-bad9-b68d3dba3cdc",
@@ -480,7 +479,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        48,
+        -3152,
         0
       ],
       "id": "987ee17b-7d5e-4d6c-ba83-a4718d5afac5",
@@ -518,7 +517,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         0
       ],
       "id": "94feb7ea-5af3-4d83-87ac-055025aa2d74",
@@ -544,7 +543,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -176,
+        -3376,
         672
       ],
       "id": "85b96f26-3162-41f8-b31e-b63a1b5b38b0",
@@ -569,7 +568,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        48,
+        -3152,
         672
       ],
       "id": "8d9a528e-3a61-46c4-b167-adf68ca67ff7",
@@ -591,7 +590,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         192
       ],
       "id": "33139a76-eb5a-4b31-8613-d7deeb08b23b",
@@ -622,7 +621,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         384
       ],
       "id": "b4332d2e-8ef8-452d-8784-89ef6bbb7fab",
@@ -653,7 +652,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         768
       ],
       "id": "75a44ef3-54f6-4553-9a32-1f589c26bcb8",
@@ -684,7 +683,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         960
       ],
       "id": "b16ef5d7-522e-427b-9fe4-889e4e3a7f3b",
@@ -715,7 +714,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         1152
       ],
       "id": "dace831f-955a-468b-9fc9-2c1345972068",
@@ -748,7 +747,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        272,
+        -2928,
         576
       ],
       "id": "f1a7f819-29e9-4f1d-bf28-cf39191b2cf7",
@@ -778,7 +777,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        720,
+        -2480,
         576
       ],
       "id": "68f86358-0b1e-423f-9b80-33be6164a140",
@@ -814,11 +813,781 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        496,
+        -2704,
         576
       ],
       "id": "b1248ff6-54dd-42a5-8758-36a9a0d6d19b",
       "name": "Change case owner",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "additionalFields": {
+          "name": "binalyze"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3376,
+        2496
+      ],
+      "id": "a2d7a2c2-8b07-4e43-b76f-b66561a616fb",
+      "name": "Get many organizations",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        2496
+      ],
+      "id": "9b3e0c06-e523-49ca-b855-4c87aab52c4e",
+      "name": "Get an organization",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "checkNameExists",
+        "nameToCheck": "={{ $json.name }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        2016
+      ],
+      "id": "848965ff-b824-42e5-a9a4-e0fefd588828",
+      "name": "Check if organization name exists",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addTags",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "tags": "org-tag-1, org-tag-2"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        2304
+      ],
+      "id": "8d2dc302-a8f0-4e5f-a03a-0e2370e6e411",
+      "name": "Add tags to an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeTags",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "tags": "org-tag-1, org-tag-2"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2704,
+        2304
+      ],
+      "id": "f66bd649-f891-4559-9a45-cd0db80246f7",
+      "name": "Remove tags from an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeUser",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "userId": "5757aae0-9cca-4ff0-9775-fbcd69ede735"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        2112
+      ],
+      "id": "900bc857-2bf6-43d0-9b1f-86e0dc887305",
+      "name": "Remove user from an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "assignUser",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "userId": "5757aae0-9cca-4ff0-9775-fbcd69ede735"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        2496
+      ],
+      "id": "0a82a076-db4b-478b-9dc7-7c981c1d2e6d",
+      "name": "Assign a user to an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getUsers",
+        "organizationId": {
+          "__rl": true,
+          "value": "23",
+          "mode": "list",
+          "cachedResultName": "Some other organization"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        2880
+      ],
+      "id": "055ada48-88f2-48f5-b3ad-3c5d1b846ebd",
+      "name": "Get users of an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "updateFields": {
+          "contactEmail": "contact@email.com",
+          "contactMobile": "+1234567890",
+          "contactName": "John Doe",
+          "contactPhone": "+9876543210",
+          "contactTitle": "CEO",
+          "note": "Investigation completed and report shared with the customer"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        2688
+      ],
+      "id": "38950997-f76d-41ce-8b7f-0f98d7d4d015",
+      "name": "Update an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "updateShareableDeployment",
+        "organizationId": {
+          "__rl": true,
+          "value": "22",
+          "mode": "list",
+          "cachedResultName": "Test Organization"
+        },
+        "shareableDeploymentStatus": true
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        3264
+      ],
+      "id": "35d6c052-2360-4ce7-a5fd-e073f90793fc",
+      "name": "Enable shareable deployment status",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "updateShareableDeployment",
+        "organizationId": {
+          "__rl": true,
+          "value": "22",
+          "mode": "list",
+          "cachedResultName": "Test Organization"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        3072
+      ],
+      "id": "fdc3048c-cef7-4e05-887c-1d619f9bdab7",
+      "name": "Disable shareable deployment status",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "organizationId": {
+          "__rl": true,
+          "value": "22",
+          "mode": "list",
+          "cachedResultName": "Test Organization"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        3168
+      ],
+      "id": "74d81cd1-502c-4801-9bfc-36edc8bc8e7f",
+      "name": "Get test organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "additionalFields": {
+          "organizationId": {
+            "__rl": true,
+            "value": "0",
+            "mode": "list",
+            "cachedResultName": "Binalyze (Default)"
+          }
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3376,
+        4128
+      ],
+      "id": "ef1b96c2-a290-4ecf-8f4a-6a41d4ab87ca",
+      "name": "Get many triage rules",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "get",
+        "triageRuleId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        3744
+      ],
+      "id": "27231cd3-42ea-481e-a428-653187156175",
+      "name": "Get a triage rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "create",
+        "engine": "osquery",
+        "description": "Auto Generated Rule",
+        "rule": "SELECT * FROM users;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        3936
+      ],
+      "id": "445c3798-2202-48bf-bd87-517d1adfa02a",
+      "name": "Create a triage rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "delete",
+        "triageRuleId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2704,
+        3936
+      ],
+      "id": "3e7b3350-6e05-4b06-b776-2a47eeca89d9",
+      "name": "Delete a triage rule",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "osquery",
+        "rule": "SELECT * FROM users;"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        4128
+      ],
+      "id": "851e2295-dd53-42bf-be34-14ead0ba4647",
+      "name": "Validate a osquery rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "rule": "rule ExampleRule\n{\n    strings:\n        $my_text_string = \"text here\"\n        $my_hex_string = { E2 34 A1 C8 23 FB }\n\n    condition:\n        $my_text_string or $my_hex_string\n}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        4320
+      ],
+      "id": "2549499c-b306-4704-afc2-bd15b2012c7b",
+      "name": "Validate a YARA rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "rule": "bad rule here"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        4320
+      ],
+      "id": "7b0a9f6c-b569-49f3-8da5-4fc77407ccfc",
+      "name": "Bad YARA rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "osquery",
+        "rule": "bad rule here"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        4128
+      ],
+      "id": "3f200559-9ad2-46eb-8926-1d05fcaf5ff9",
+      "name": "Bad osquery rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "sigma",
+        "rule": "title: LSASS Dump Detection\ndescription: LSASS memory dump creation using operating systems utilities.\nauthor: Binalyze\ndate: 2020/11/25\nmodified: 2021/06/13\ntags:\n    - attack.credential_access\nlogsource:\n    category: file_event\n    product: windows\ndetection:\n    selection:\n        TargetFilename|contains: 'lsass'\n        TargetFilename|endswith: 'dmp'\n    condition: selection\nfields:\n    - ComputerName\n    - TargetFilename\nfalsepositives:\n    - Admin activity\nlevel: high"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        4512
+      ],
+      "id": "886a7c4a-b87d-4630-b0a0-1a184e556fde",
+      "name": "Validate a Sigma rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "sigma",
+        "rule": "bad rule here"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        4512
+      ],
+      "id": "2f0705a7-e365-4d8e-ac91-1d6d5dda9c99",
+      "name": "Bad Sigma rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "update",
+        "triageRuleId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "engine": "osquery",
+        "description": "={{ $json.description }} Updated",
+        "rule": "SELECT * FROM processes;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        3936
+      ],
+      "id": "03f9534f-fbe5-4650-80be-e2d8391f5744",
+      "name": "Update a triage rule",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "executeCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "command": "osquery \"SELECT * FROM users;\"",
+        "responseType": "text"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2848,
+        1328
+      ],
+      "id": "1c3a3fad-854e-4d3d-8726-6b7d3abdce2f",
+      "name": "Execute a command",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "executeAsyncCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "command": "volumes"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2864,
+        1536
+      ],
+      "id": "1ab82866-c700-49c0-bbc9-6d784844d2ca",
+      "name": "Execute an async command",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "getCommandMessage",
+        "sessionId": "={{ $json.sessionId }}",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2544,
+        1536
+      ],
+      "id": "8f377116-a2af-438b-a5b9-6d2745076f68",
+      "name": "Get a command message",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "C-2025-0016",
+          "mode": "list",
+          "cachedResultName": "DRONE Test"
+        },
+        "assetId": {
+          "__rl": true,
+          "value": "44e93561-7558-499d-ae32-d191a057ab4f",
+          "mode": "list",
+          "cachedResultName": "WORKSTATION-4 (20.162.22.194)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3376,
+        1632
+      ],
+      "id": "9de7bdbe-b4cf-4bbf-96a9-09808216c2b3",
+      "name": "Open interACT Session",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "closeSession",
+        "sessionId": "={{ $json.sessionId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        1920
+      ],
+      "id": "5333ec43-a272-43ee-9449-60d0aa69420e",
+      "name": "Close a session",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "executeAsyncCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "command": "exec sleep 30"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        1728
+      ],
+      "id": "eed46d30-5072-4fff-aee6-40c1f90af416",
+      "name": "Execute an async command1",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "interruptCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2704,
+        1728
+      ],
+      "id": "c09d207f-d3dc-4510-96bf-d005c09e3186",
+      "name": "Interrupt a command",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "Binalyze AIR account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "waitForSession",
+        "sessionId": "={{ $json.sessionId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -3168,
+        1632
+      ],
+      "id": "190961f5-5f38-4684-8bbe-a17c571eb624",
+      "name": "Wait for session to be live",
       "credentials": {
         "airApi": {
           "id": "zkdMrFV62yPoc4KE",
@@ -863,6 +1632,21 @@
           },
           {
             "node": "Get many cases",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many organizations",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many triage rules",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Open interACT Session",
             "type": "main",
             "index": 0
           }
@@ -1072,6 +1856,250 @@
           }
         ]
       ]
+    },
+    "Get asset tasks": {
+      "main": [
+        []
+      ]
+    },
+    "Get many organizations": {
+      "main": [
+        [
+          {
+            "node": "Get an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check if organization name exists",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get test organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get an organization": {
+      "main": [
+        [
+          {
+            "node": "Add tags to an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Remove user from an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Assign a user to an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get users of an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update an organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add tags to an organization": {
+      "main": [
+        [
+          {
+            "node": "Remove tags from an organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove user from an organization": {
+      "main": [
+        []
+      ]
+    },
+    "Disable shareable deployment status": {
+      "main": [
+        []
+      ]
+    },
+    "Get test organization": {
+      "main": [
+        [
+          {
+            "node": "Disable shareable deployment status",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enable shareable deployment status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many triage rules": {
+      "main": [
+        [
+          {
+            "node": "Get a triage rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a triage rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validate a osquery rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validate a YARA rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validate a Sigma rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a triage rule": {
+      "main": [
+        [
+          {
+            "node": "Update a triage rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate a YARA rule": {
+      "main": [
+        [
+          {
+            "node": "Bad YARA rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate a osquery rule": {
+      "main": [
+        [
+          {
+            "node": "Bad osquery rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate a Sigma rule": {
+      "main": [
+        [
+          {
+            "node": "Bad Sigma rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bad Sigma rule": {
+      "main": [
+        []
+      ]
+    },
+    "Update a triage rule": {
+      "main": [
+        [
+          {
+            "node": "Delete a triage rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute an async command": {
+      "main": [
+        [
+          {
+            "node": "Get a command message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open interACT Session": {
+      "main": [
+        [
+          {
+            "node": "Wait for session to be live",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute an async command1": {
+      "main": [
+        [
+          {
+            "node": "Interrupt a command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for session to be live": {
+      "main": [
+        [
+          {
+            "node": "Execute a command",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute an async command",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute an async command1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Close a session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1082,7 +2110,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "70b49415-4944-4ba3-acd9-8377b1a4c648",
+  "versionId": "d73d30d6-9d9c-41c1-a56c-91418d8c29c0",
   "triggerCount": 0,
   "shared": [
     {
@@ -1108,7 +2136,7 @@
             "projectId": "llHxnpzVncfHqefW",
             "user": {
               "createdAt": "2025-05-26T10:21:01.143Z",
-              "updatedAt": "2025-07-26T16:44:54.000Z",
+              "updatedAt": "2025-07-26T21:20:09.000Z",
               "id": "5f63a800-7f35-4ceb-b857-df8cc34579ab",
               "email": "emre@binalyze.com",
               "firstName": "Emre",

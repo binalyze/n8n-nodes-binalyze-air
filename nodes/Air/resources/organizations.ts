@@ -25,6 +25,8 @@ import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import { api as organizationsApi, Organization, CreateOrganizationRequest } from '../api/organizations/organizations';
 import { api as organizationUsersApi } from '../api/organizations/users/users';
 
+
+
 export const OrganizationsOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
@@ -44,10 +46,10 @@ export const OrganizationsOperations: INodeProperties[] = [
 				action: 'Add tags to an organization',
 			},
 			{
-				name: 'Assign Users',
-				value: 'assignUsers',
-				description: 'Assign users to an organization',
-				action: 'Assign users to an organization',
+				name: 'Assign User',
+				value: 'assignUser',
+				description: 'Assign a user to an organization',
+				action: 'Assign a user to an organization',
 			},
 			{
 				name: 'Check Name Exists',
@@ -75,12 +77,6 @@ export const OrganizationsOperations: INodeProperties[] = [
 				action: 'Get many organizations',
 			},
 			{
-				name: 'Get Shareable Deployment Info',
-				value: 'getShareableDeploymentInfo',
-				description: 'Get shareable deployment information',
-				action: 'Get shareable deployment info',
-			},
-			{
 				name: 'Get Users',
 				value: 'getUsers',
 				description: 'Retrieve users assigned to an organization',
@@ -96,7 +92,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 				name: 'Remove User',
 				value: 'removeUser',
 				description: 'Remove a user from an organization',
-				action: 'Remove user from an organization',
+				action: 'Remove a user from an organization',
 			},
 			{
 				name: 'Update',
@@ -122,7 +118,7 @@ export const OrganizationsOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['get', 'getUsers', 'addTags', 'removeTags', 'assignUsers', 'removeUser', 'update', 'updateShareableDeployment'],
+				operation: ['get', 'getUsers', 'addTags', 'removeTags', 'assignUser', 'removeUser', 'update', 'updateShareableDeployment'],
 			},
 		},
 		modes: [
@@ -284,37 +280,30 @@ export const OrganizationsOperations: INodeProperties[] = [
 		description: 'Name of the organization to check for existence',
 	},
 	{
-		displayName: 'Deployment Token',
-		name: 'deploymentToken',
+		displayName: 'User ID',
+		name: 'userId',
 		type: 'string',
 		default: '',
-		placeholder: 'Enter deployment token',
+		placeholder: 'Enter user ID',
 		displayOptions: {
 			show: {
 				resource: ['organizations'],
-				operation: ['getShareableDeploymentInfo'],
+				operation: ['assignUser'],
 			},
 		},
 		required: true,
-		description: 'Deployment token for the organization',
+		description: 'The ID of the user to assign to the organization',
 		typeOptions: {
-			password: true,
+			validation: [
+				{
+					type: 'regex',
+					properties: {
+						regex: '^[a-zA-Z0-9-_]+$',
+						errorMessage: 'Not a valid user ID (must contain only letters, numbers, hyphens, and underscores)',
+					},
+				},
+			],
 		},
-	},
-	{
-		displayName: 'User IDs',
-		name: 'userIds',
-		type: 'string',
-		default: '',
-		placeholder: 'user1, user2, user3',
-		displayOptions: {
-			show: {
-				resource: ['organizations'],
-				operation: ['assignUsers'],
-			},
-		},
-		required: true,
-		description: 'Comma-separated list of user IDs to assign to the organization',
 	},
 	{
 		displayName: 'User ID',
@@ -329,7 +318,18 @@ export const OrganizationsOperations: INodeProperties[] = [
 			},
 		},
 		required: true,
-		description: 'ID of the user to remove from the organization',
+		description: 'The ID of the user to remove from the organization',
+		typeOptions: {
+			validation: [
+				{
+					type: 'regex',
+					properties: {
+						regex: '^[a-zA-Z0-9-_]+$',
+						errorMessage: 'Not a valid user ID (must contain only letters, numbers, hyphens, and underscores)',
+					},
+				},
+			],
+		},
 	},
 	{
 		displayName: 'Shareable Deployment Status',
@@ -416,32 +416,6 @@ export const OrganizationsOperations: INodeProperties[] = [
 				default: '',
 				placeholder: 'Enter a note about this organization',
 				description: 'Additional notes about the organization',
-			},
-			{
-				displayName: 'Organization Name',
-				name: 'name',
-				type: 'string',
-				default: '',
-				placeholder: 'Enter organization name',
-				description: 'Name of the organization (1-50 characters)',
-				typeOptions: {
-					validation: [
-						{
-							type: 'regex',
-							properties: {
-								regex: '^(?!\\s*$).{1,50}$',
-								errorMessage: 'Organization name must be 1-50 characters and cannot be empty or only whitespace',
-							},
-						},
-					],
-				},
-			},
-			{
-				displayName: 'Shareable Deployment Enabled',
-				name: 'shareableDeploymentEnabled',
-				type: 'boolean',
-				default: false,
-				description: 'Whether shareable deployment is enabled for this organization',
 			},
 		],
 	},
@@ -1128,14 +1102,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					// Build update data based on provided fields
 					const updateData: Partial<CreateOrganizationRequest> = {};
 
-					if (updateFields.name) {
-						updateData.name = updateFields.name.trim();
-					}
-
-					if (updateFields.shareableDeploymentEnabled !== undefined) {
-						updateData.shareableDeploymentEnabled = updateFields.shareableDeploymentEnabled;
-					}
-
 					if (updateFields.note) {
 						updateData.note = updateFields.note.trim();
 					}
@@ -1199,32 +1165,6 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					break;
 				}
 
-				case 'getShareableDeploymentInfo': {
-					const deploymentToken = this.getNodeParameter('deploymentToken', i) as string;
-
-					const trimmedToken = deploymentToken.trim();
-					if (!trimmedToken) {
-						throw new NodeOperationError(this.getNode(), 'Deployment token cannot be empty', {
-							itemIndex: i,
-						});
-					}
-
-					const response = await organizationsApi.getShareableDeploymentInfo(this, credentials, trimmedToken);
-
-					if (!response.success) {
-						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to get shareable deployment info: ${errorMessage}`, {
-							itemIndex: i,
-						});
-					}
-
-					returnData.push({
-						json: response.result,
-						pairedItem: i,
-					});
-					break;
-				}
-
 				case 'updateShareableDeployment': {
 					const organizationResource = this.getNodeParameter('organizationId', i) as any;
 					const shareableDeploymentStatus = this.getNodeParameter('shareableDeploymentStatus', i) as boolean;
@@ -1275,9 +1215,9 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 				}
 
 
-				case 'assignUsers': {
+				case 'assignUser': {
 					const organizationResource = this.getNodeParameter('organizationId', i) as any;
-					const userIds = this.getNodeParameter('userIds', i) as string;
+					const userId = this.getNodeParameter('userId', i) as string;
 
 					let organizationId: string;
 
@@ -1303,19 +1243,24 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 						});
 					}
 
-					// Parse and validate user IDs
-					const userIdList = userIds.split(',').map(userId => userId.trim()).filter(userId => userId.length > 0);
-					if (userIdList.length === 0) {
-						throw new NodeOperationError(this.getNode(), 'At least one user ID must be provided', {
+					// Validate user ID
+					let validatedUserId: string;
+					try {
+						validatedUserId = normalizeAndValidateId(userId, 'User ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
 						});
 					}
+
+					// API expects an array of user IDs
+					const userIdList = [validatedUserId];
 
 					const response = await organizationUsersApi.assignUsersToOrganization(this, credentials, parseInt(organizationId), userIdList);
 
 					if (!response.success) {
 						const errorMessage = response.errors?.join(', ') || 'API request failed';
-						throw new NodeOperationError(this.getNode(), `Failed to assign users to organization: ${errorMessage}`, {
+						throw new NodeOperationError(this.getNode(), `Failed to assign user to organization: ${errorMessage}`, {
 							itemIndex: i,
 						});
 					}
@@ -1323,6 +1268,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					returnData.push({
 						json: {
 							organizationId: parseInt(organizationId),
+							assignedUserId: validatedUserId,
 							success: response.success,
 							statusCode: response.statusCode,
 						},
@@ -1359,14 +1305,20 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 						});
 					}
 
-					const trimmedUserId = userId.trim();
-					if (!trimmedUserId) {
-						throw new NodeOperationError(this.getNode(), 'User ID cannot be empty', {
+					// Validate user ID
+					let validatedUserId: string;
+					try {
+						validatedUserId = normalizeAndValidateId(userId, 'User ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
 							itemIndex: i,
 						});
 					}
 
-					const response = await organizationUsersApi.removeUserFromOrganization(this, credentials, parseInt(organizationId), trimmedUserId);
+					// API expects an array of user IDs
+					const userIdList = [validatedUserId];
+
+					const response = await organizationUsersApi.removeUserFromOrganization(this, credentials, parseInt(organizationId), userIdList);
 
 					if (!response.success) {
 						const errorMessage = response.errors?.join(', ') || 'API request failed';
@@ -1378,7 +1330,7 @@ export async function executeOrganizations(this: IExecuteFunctions): Promise<INo
 					returnData.push({
 						json: {
 							organizationId: parseInt(organizationId),
-							removedUserId: trimmedUserId,
+							removedUserId: validatedUserId,
 							success: response.success,
 							statusCode: response.statusCode,
 						},
@@ -1505,7 +1457,7 @@ function enrichOrganizationEntity(organization: any, instanceUrl: string): any {
 	// Add deploymentPackages property with download links for all platforms and architectures
 	if (organization.deploymentToken) {
 		try {
-			const organizationId = extractEntityId(organization, 'organization');
+			const organizationId = extractOrganizationId(organization);
 			processedOrg.deploymentPackages = generateDeploymentPackages(
 				organizationId,
 				organization.deploymentToken,

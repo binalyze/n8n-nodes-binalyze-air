@@ -3,16 +3,44 @@ import {
 	INodeExecutionData,
 	NodeOperationError,
 	INodeProperties,
+	ILoadOptionsFunctions,
+	INodeListSearchResult,
 } from 'n8n-workflow';
 
 import {
 	getAirCredentials,
 	handleExecuteError,
+	createListSearchResults,
+	catchAndFormatError,
 } from '../utils/helpers';
 
 import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import { api as interactApi } from '../api/interact/interact';
 import { findOrganizationByName } from './organizations';
+import { api as casesApi } from '../api/cases/cases';
+import { api as assetsApi } from '../api/assets/assets';
+
+// Helper function to check if a case is valid
+function isValidCase(entity: any): boolean {
+	return entity && entity._id && typeof entity._id === 'string';
+}
+
+// Helper function to extract case ID
+function extractCaseId(entity: any): string {
+	if (!entity) return '';
+	return entity._id || '';
+}
+
+// Helper function to check if an asset is valid
+function isValidAsset(entity: any): boolean {
+	return entity && entity._id && typeof entity._id === 'string';
+}
+
+// Helper function to extract asset ID
+function extractAssetId(entity: any): string {
+	if (!entity) return '';
+	return entity._id || '';
+}
 
 export const InterACTOperations: INodeProperties[] = [
 	{
@@ -27,16 +55,16 @@ export const InterACTOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Assign InterACT Task',
-				value: 'assignTask',
-				description: 'Assign an InterACT shell task to endpoints',
-				action: 'Assign an interact task',
-			},
-			{
 				name: 'Close Session',
 				value: 'closeSession',
 				description: 'Close an InterACT session',
 				action: 'Close a session',
+			},
+			{
+				name: 'Create InterACT Session',
+				value: 'createSession',
+				description: 'Create a new InterACT shell session for an asset',
+				action: 'Create an interact session',
 			},
 			{
 				name: 'Execute Async Command',
@@ -62,8 +90,151 @@ export const InterACTOperations: INodeProperties[] = [
 				description: 'Interrupt a running command',
 				action: 'Interrupt a command',
 			},
+			{
+				name: 'Wait for Session to Be Live',
+				value: 'waitForSession',
+				description: 'Wait for an InterACT session to become live by polling with pwd command',
+				action: 'Wait for session to be live',
+			},
 		],
-		default: 'executeCommand',
+		default: 'createSession',
+	},
+
+	// Organization field for createSession
+	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['interact'],
+				operation: ['createSession'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a positive number)',
+						},
+					},
+				],
+				placeholder: 'Enter Organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization that the asset belongs to',
+	},
+
+	// Case field for createSession (optional)
+	{
+		displayName: 'Case',
+		name: 'caseId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select a case...',
+		displayOptions: {
+			show: {
+				resource: ['interact'],
+				operation: ['createSession'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select a case...',
+				typeOptions: {
+					searchListMethod: 'getCasesByOrganization',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid case ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter case ID',
+			},
+		],
+		description: 'The case to associate with the InterACT session (optional)',
+	},
+
+	// Asset field for createSession
+	{
+		displayName: 'Asset',
+		name: 'assetId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an asset...',
+		displayOptions: {
+			show: {
+				resource: ['interact'],
+				operation: ['createSession'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an asset...',
+				typeOptions: {
+					searchListMethod: 'getAssetsByOrganizationForInteract',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid asset ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter asset ID',
+			},
+		],
+		required: true,
+		description: 'The asset to create the InterACT session for',
 	},
 
 	// Session ID field
@@ -76,7 +247,7 @@ export const InterACTOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['interact'],
-				operation: ['executeCommand', 'executeAsyncCommand', 'closeSession', 'getCommandMessage', 'interruptCommand'],
+				operation: ['executeCommand', 'executeAsyncCommand', 'closeSession', 'getCommandMessage', 'interruptCommand', 'waitForSession'],
 			},
 		},
 		required: true,
@@ -117,43 +288,12 @@ export const InterACTOperations: INodeProperties[] = [
 		description: 'The command to execute in the InterACT session',
 	},
 
-	// Session Type field for task assignment
+	// Response Type field
 	{
-		displayName: 'Session Type',
-		name: 'sessionType',
+		displayName: 'Response Type',
+		name: 'responseType',
 		type: 'options',
-		default: 'shell',
-		displayOptions: {
-			show: {
-				resource: ['interact'],
-				operation: ['assignTask'],
-			},
-		},
-		options: [
-			{
-				name: 'Shell',
-				value: 'shell',
-			},
-			{
-				name: 'PowerShell',
-				value: 'powershell',
-			},
-			{
-				name: 'Command Prompt',
-				value: 'cmd',
-			},
-		],
-		required: true,
-		description: 'The type of InterACT session to create',
-	},
-
-	// Additional Fields for command execution
-	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		placeholder: 'Add Field',
-		default: {},
+		default: 'json',
 		displayOptions: {
 			show: {
 				resource: ['interact'],
@@ -162,266 +302,38 @@ export const InterACTOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Timeout (Seconds)',
-				name: 'timeout',
-				type: 'number',
-				default: 300,
-				description: 'Command execution timeout in seconds',
-				typeOptions: {
-					minValue: 1,
-					maxValue: 3600,
-				},
+				name: 'JSON',
+				value: 'json',
+				description: 'Return response as JSON',
 			},
 			{
-				displayName: 'Working Directory',
-				name: 'workingDirectory',
-				type: 'string',
-				default: '',
-				description: 'Working directory for command execution',
-			},
-			{
-				displayName: 'Environment Variables',
-				name: 'environment',
-				type: 'json',
-				default: '{}',
-				description: 'Environment variables for command execution (JSON format)',
+				name: 'Text',
+				value: 'text',
+				description: 'Return response as plain text',
 			},
 		],
+		description: 'The format of the command response',
 	},
 
-	// Filter fields for task assignment
+	// Timeout field for waitForSession
 	{
-		displayName: 'Filter',
-		name: 'filter',
-		type: 'collection',
-		placeholder: 'Add Filter',
-		default: {},
+		displayName: 'Timeout (Seconds)',
+		name: 'timeout',
+		type: 'number',
+		default: 60,
+		placeholder: 'Enter timeout in seconds',
 		displayOptions: {
 			show: {
 				resource: ['interact'],
-				operation: ['assignTask'],
+				operation: ['waitForSession'],
 			},
 		},
-		options: [
-			{
-				displayName: 'Asset Name',
-				name: 'name',
-				type: 'string',
-				default: '',
-				description: 'Filter by asset name',
-			},
-			{
-				displayName: 'Excluded Endpoint IDs',
-				name: 'excludedEndpointIds',
-				type: 'string',
-				default: '',
-				description: 'Specific endpoint IDs to exclude (comma-separated)',
-			},
-			{
-				displayName: 'Group Full Path',
-				name: 'groupFullPath',
-				type: 'string',
-				default: '',
-				description: 'Filter by group full path',
-			},
-			{
-				displayName: 'Group ID',
-				name: 'groupId',
-				type: 'string',
-				default: '',
-				description: 'Filter by group ID',
-			},
-			{
-				displayName: 'Included Endpoint IDs',
-				name: 'includedEndpointIds',
-				type: 'string',
-				default: '',
-				description: 'Specific endpoint IDs to include (comma-separated)',
-			},
-			{
-				displayName: 'IP Address',
-				name: 'ipAddress',
-				type: 'string',
-				default: '',
-				description: 'Filter by IP address',
-			},
-			{
-				displayName: 'Isolation Status',
-				name: 'isolationStatus',
-				type: 'multiOptions',
-				default: [],
-				description: 'Filter by isolation status',
-				options: [
-					{
-						name: 'Isolated',
-						value: 'isolated',
-					},
-					{
-						name: 'Not Isolated',
-						value: 'not_isolated',
-					},
-				],
-			},
-			{
-				displayName: 'Managed Status',
-				name: 'managedStatus',
-				type: 'multiOptions',
-				default: ['managed'],
-				description: 'Filter by managed status',
-				options: [
-					{
-						name: 'Managed',
-						value: 'managed',
-					},
-					{
-						name: 'Unmanaged',
-						value: 'unmanaged',
-					},
-				],
-			},
-			{
-				displayName: 'Online Status',
-				name: 'onlineStatus',
-				type: 'multiOptions',
-				default: ['online'],
-				description: 'Filter by online status',
-				options: [
-					{
-						name: 'Offline',
-						value: 'offline',
-					},
-					{
-						name: 'Online',
-						value: 'online',
-					},
-				],
-			},
-			{
-				displayName: 'Organization',
-				name: 'organizationIds',
-				type: 'resourceLocator',
-				default: { mode: 'id', value: '0' },
-				placeholder: 'Select an organization...',
-				description: 'Organization to filter by. Use "0" for all organizations.',
-				modes: [
-					{
-						displayName: 'From List',
-						name: 'list',
-						type: 'list',
-						placeholder: 'Select an organization...',
-						typeOptions: {
-							searchListMethod: 'getOrganizations',
-							searchable: true,
-						},
-					},
-					{
-						displayName: 'By ID',
-						name: 'id',
-						type: 'string',
-						validation: [
-							{
-								type: 'regex',
-								properties: {
-									regex: '^[0-9]+$',
-									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
-								},
-							},
-						],
-						placeholder: 'Enter Organization ID (0 for default organization)',
-					},
-					{
-						displayName: 'By Name',
-						name: 'name',
-						type: 'string',
-						placeholder: 'Enter organization name',
-					},
-				],
-			},
-			{
-				displayName: 'Platform',
-				name: 'platform',
-				type: 'multiOptions',
-				default: [],
-				description: 'Filter by platform',
-				options: [
-					{
-						name: 'Linux',
-						value: 'linux',
-					},
-					{
-						name: 'macOS',
-						value: 'darwin',
-					},
-					{
-						name: 'Windows',
-						value: 'windows',
-					},
-				],
-			},
-			{
-				displayName: 'Policy',
-				name: 'policy',
-				type: 'string',
-				default: '',
-				description: 'Filter by policy',
-			},
-			{
-				displayName: 'Search Term',
-				name: 'searchTerm',
-				type: 'string',
-				default: '',
-				description: 'Search term to filter endpoints',
-			},
-			{
-				displayName: 'Tags',
-				name: 'tags',
-				type: 'string',
-				default: '',
-				description: 'Filter by tags (comma-separated)',
-			},
-			{
-				displayName: 'Version',
-				name: 'version',
-				type: 'string',
-				default: '',
-				description: 'Filter by agent version',
-			},
-		],
-	},
-
-	// Additional Fields for task assignment
-	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		placeholder: 'Add Field',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['interact'],
-				operation: ['assignTask'],
-			},
+		required: true,
+		description: 'Maximum time to wait for the session to become live (in seconds)',
+		typeOptions: {
+			minValue: 10,
+			maxValue: 600,
 		},
-		options: [
-			{
-				displayName: 'Commands',
-				name: 'commands',
-				type: 'string',
-				default: '',
-				description: 'Commands to execute in the session (comma-separated)',
-			},
-			{
-				displayName: 'Timeout (Seconds)',
-				name: 'timeout',
-				type: 'number',
-				default: 300,
-				description: 'Session timeout in seconds',
-				typeOptions: {
-					minValue: 1,
-					maxValue: 3600,
-				},
-			},
-		],
 	},
 ];
 
@@ -439,6 +351,9 @@ export async function executeInterACT(this: IExecuteFunctions): Promise<INodeExe
 				let responseData: any;
 
 				switch (operation) {
+					case 'createSession':
+						responseData = await handleCreateInterACTSession(this, credentials, i);
+						break;
 					case 'executeCommand':
 						responseData = await handleExecuteCommand(this, credentials, i);
 						break;
@@ -454,8 +369,8 @@ export async function executeInterACT(this: IExecuteFunctions): Promise<INodeExe
 					case 'getCommandMessage':
 						responseData = await handleGetCommandMessage(this, credentials, i);
 						break;
-					case 'assignTask':
-						responseData = await handleAssignInterACTTask(this, credentials, i);
+					case 'waitForSession':
+						responseData = await handleWaitForSession(this, credentials, i);
 						break;
 					default:
 						throw new NodeOperationError(this.getNode(), `The operation '${operation}' is not supported`);
@@ -479,30 +394,76 @@ export async function executeInterACT(this: IExecuteFunctions): Promise<INodeExe
 }
 
 // Individual operation handlers
+async function handleCreateInterACTSession(context: IExecuteFunctions, credentials: AirCredentials, itemIndex: number): Promise<any> {
+	const organizationIdParam = context.getNodeParameter('organizationId', itemIndex) as any;
+	const caseIdParam = context.getNodeParameter('caseId', itemIndex, '') as any;
+	const assetIdParam = context.getNodeParameter('assetId', itemIndex) as any;
+
+	// Handle organization ID - not used in the request but needed for validation
+	if (typeof organizationIdParam === 'object' && organizationIdParam.mode === 'name') {
+		const orgResult = await findOrganizationByName(context, credentials, organizationIdParam.value);
+		if (!orgResult) {
+			throw new NodeOperationError(context.getNode(), 'Organization not found');
+		}
+	}
+
+	// Handle case ID
+	let caseId: string | null = null;
+	if (caseIdParam) {
+		if (typeof caseIdParam === 'object' && caseIdParam.value) {
+			caseId = caseIdParam.value;
+		} else if (typeof caseIdParam === 'string' && caseIdParam) {
+			caseId = caseIdParam;
+		}
+	}
+
+	// Handle asset ID
+	let assetId: string;
+	if (typeof assetIdParam === 'object' && assetIdParam.value) {
+		assetId = assetIdParam.value;
+	} else if (typeof assetIdParam === 'string') {
+		assetId = assetIdParam;
+	} else {
+		throw new NodeOperationError(context.getNode(), 'Asset ID is required');
+	}
+
+	// Create the request body
+	const data = {
+		assetId: assetId,
+		caseId: caseId,
+		taskConfig: {
+			choice: 'use-policy'
+		}
+	};
+
+	const response = await interactApi.createInterACTSession(context, credentials, data);
+
+	// Extract session ID from the response
+	if (response.result && response.result.data) {
+		const result = response.result;
+		return {
+			sessionId: result.data.sessionId,
+			assetId: result.assetId || assetId,
+			taskId: result.id,
+			type: result.type,
+			loginUrl: result.loginUrl,
+			shellUrl: result.shellUrl,
+			reportUrl: result.reportUrl
+		};
+	} else {
+		throw new NodeOperationError(context.getNode(), 'Failed to create InterACT session');
+	}
+}
+
 async function handleExecuteCommand(context: IExecuteFunctions, credentials: AirCredentials, itemIndex: number): Promise<any> {
 	const sessionId = context.getNodeParameter('sessionId', itemIndex) as string;
 	const command = context.getNodeParameter('command', itemIndex) as string;
-	const additionalFields = context.getNodeParameter('additionalFields', itemIndex) as any;
+	const responseType = context.getNodeParameter('responseType', itemIndex) as string;
 
 	const data: any = {
 		command,
+		accept: responseType, // Map responseType to accept for the API
 	};
-
-	if (additionalFields.timeout) {
-		data.timeout = additionalFields.timeout;
-	}
-
-	if (additionalFields.workingDirectory) {
-		data.workingDirectory = additionalFields.workingDirectory;
-	}
-
-	if (additionalFields.environment) {
-		try {
-			data.environment = JSON.parse(additionalFields.environment);
-		} catch (error) {
-			throw new NodeOperationError(context.getNode(), 'Invalid JSON in environment field');
-		}
-	}
 
 	const response = await interactApi.executeCommand(context, credentials, sessionId, data);
 	return response.result;
@@ -511,27 +472,12 @@ async function handleExecuteCommand(context: IExecuteFunctions, credentials: Air
 async function handleExecuteAsyncCommand(context: IExecuteFunctions, credentials: AirCredentials, itemIndex: number): Promise<any> {
 	const sessionId = context.getNodeParameter('sessionId', itemIndex) as string;
 	const command = context.getNodeParameter('command', itemIndex) as string;
-	const additionalFields = context.getNodeParameter('additionalFields', itemIndex) as any;
+	const responseType = context.getNodeParameter('responseType', itemIndex) as string;
 
 	const data: any = {
 		command,
+		accept: responseType, // Map responseType to accept for the API
 	};
-
-	if (additionalFields.timeout) {
-		data.timeout = additionalFields.timeout;
-	}
-
-	if (additionalFields.workingDirectory) {
-		data.workingDirectory = additionalFields.workingDirectory;
-	}
-
-	if (additionalFields.environment) {
-		try {
-			data.environment = JSON.parse(additionalFields.environment);
-		} catch (error) {
-			throw new NodeOperationError(context.getNode(), 'Invalid JSON in environment field');
-		}
-	}
 
 	const response = await interactApi.executeAsyncCommand(context, credentials, sessionId, data);
 	return response.result;
@@ -542,7 +488,26 @@ async function handleInterruptCommand(context: IExecuteFunctions, credentials: A
 	const messageId = context.getNodeParameter('messageId', itemIndex) as string;
 
 	const response = await interactApi.interruptCommand(context, credentials, sessionId, messageId);
-	return response.result;
+
+	// Handle the case where result is null (which is the successful response)
+	if (response.success && response.result === null) {
+		return {
+			success: true,
+			messageId: messageId,
+			sessionId: sessionId,
+			status: 'interrupted',
+			message: 'Command interrupted successfully'
+		};
+	}
+
+	// If result is not null, return it
+	return response.result || {
+		success: response.success,
+		messageId: messageId,
+		sessionId: sessionId,
+		status: 'interrupted',
+		message: 'Command interrupted'
+	};
 }
 
 async function handleCloseSession(context: IExecuteFunctions, credentials: AirCredentials, itemIndex: number): Promise<any> {
@@ -560,64 +525,162 @@ async function handleGetCommandMessage(context: IExecuteFunctions, credentials: 
 	return response.result;
 }
 
-async function handleAssignInterACTTask(context: IExecuteFunctions, credentials: AirCredentials, itemIndex: number): Promise<any> {
-	const sessionType = context.getNodeParameter('sessionType', itemIndex) as string;
-	const filter = context.getNodeParameter('filter', itemIndex) as any;
-	const additionalFields = context.getNodeParameter('additionalFields', itemIndex) as any;
+async function handleWaitForSession(context: IExecuteFunctions, credentials: AirCredentials, itemIndex: number): Promise<any> {
+	const sessionId = context.getNodeParameter('sessionId', itemIndex) as string;
+	const timeout = context.getNodeParameter('timeout', itemIndex) as number;
 
-	const data: any = {
-		sessionType,
-		filter: {},
-	};
+	const startTime = Date.now();
+	const endTime = startTime + timeout * 1000;
+	const pollInterval = 10000; // 10 seconds
 
-	// Build filter object
-	if (filter.searchTerm) data.filter.searchTerm = filter.searchTerm;
-	if (filter.name) data.filter.name = filter.name;
-	if (filter.ipAddress) data.filter.ipAddress = filter.ipAddress;
-	if (filter.groupId) data.filter.groupId = filter.groupId;
-	if (filter.groupFullPath) data.filter.groupFullPath = filter.groupFullPath;
-	if (filter.managedStatus) data.filter.managedStatus = filter.managedStatus;
-	if (filter.isolationStatus) data.filter.isolationStatus = filter.isolationStatus;
-	if (filter.platform) data.filter.platform = filter.platform;
-	if (filter.onlineStatus) data.filter.onlineStatus = filter.onlineStatus;
-	if (filter.version) data.filter.version = filter.version;
-	if (filter.policy) data.filter.policy = filter.policy;
+	while (Date.now() < endTime) {
+		try {
+			// Execute pwd command to check if session is live
+			const data = {
+				command: 'pwd',
+				accept: 'json',
+			};
 
-	if (filter.tags) {
-		data.filter.tags = filter.tags.split(',').map((tag: string) => tag.trim());
-	}
+			const response = await interactApi.executeCommand(context, credentials, sessionId, data);
+			
+			// Based on the actual response structure, the result should have these properties directly
+			// The actual response structure is: { messageId, session, exitCode, cwd, body }
+			const result = response.result as any;
 
-	if (filter.includedEndpointIds) {
-		data.filter.includedEndpointIds = filter.includedEndpointIds.split(',').map((id: string) => id.trim());
-	}
-
-	if (filter.excludedEndpointIds) {
-		data.filter.excludedEndpointIds = filter.excludedEndpointIds.split(',').map((id: string) => id.trim());
-	}
-
-	// Handle organization
-	if (filter.organizationIds) {
-		let organizationId = filter.organizationIds;
-		if (typeof organizationId === 'object' && organizationId.mode === 'name') {
-			const orgResult = await findOrganizationByName(context, credentials, organizationId.value);
-			organizationId = orgResult ? [parseInt(orgResult)] : [0];
-		} else if (typeof organizationId === 'object') {
-			organizationId = [parseInt(organizationId.value) || 0];
-		} else {
-			organizationId = [parseInt(organizationId) || 0];
+			// Check if we got a successful response
+			if (result && 'exitCode' in result && result.exitCode === 0 && result.body) {
+				// Session is live, return the response data
+				return {
+					sessionId: sessionId,
+					status: 'live',
+					message: 'Session is ready',
+					workingDirectory: result.cwd || result.body,
+					messageId: result.messageId,
+					exitCode: result.exitCode,
+					body: result.body
+				};
+			}
+		} catch (error) {
+			// Session might not be ready yet, continue polling
+			// Log the error for debugging but don't throw
+			console.log(`Session ${sessionId} not ready yet: ${error instanceof Error ? error.message : String(error)}`);
 		}
-		data.filter.organizationIds = organizationId;
+
+		// Wait for the poll interval before trying again
+		const remainingTime = endTime - Date.now();
+		if (remainingTime > pollInterval) {
+			await new Promise(resolve => setTimeout(resolve, pollInterval));
+		} else if (remainingTime > 0) {
+			// Wait for the remaining time if it's less than poll interval
+			await new Promise(resolve => setTimeout(resolve, remainingTime));
+		}
 	}
 
-	// Add additional fields
-	if (additionalFields.commands) {
-		data.commands = additionalFields.commands.split(',').map((cmd: string) => cmd.trim());
-	}
+	// Timeout reached
+	throw new NodeOperationError(context.getNode(), `Session ${sessionId} did not become live within ${timeout} seconds`);
+}
 
-	if (additionalFields.timeout) {
-		data.timeout = additionalFields.timeout;
-	}
+// Context-aware search functions for resource locators
 
-	const response = await interactApi.assignInterACTTask(context, credentials, data);
-	return response.result;
+/**
+ * Get cases by organization for InterACT (context-aware)
+ */
+export async function getCasesByOrganization(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+
+		// Try to get the organization from the current node parameters
+		let organizationId = '0'; // Default to all organizations
+		try {
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.organizationId) {
+				const orgResource = currentParams.organizationId as any;
+				if (typeof orgResource === 'object') {
+					if (orgResource.mode === 'id' || orgResource.mode === 'list') {
+						organizationId = orgResource.value || '0';
+					}
+					// Skip name resolution for ILoadOptionsFunctions context
+				} else if (typeof orgResource === 'string') {
+					organizationId = orgResource;
+				}
+			}
+		} catch (error) {
+			// If we can't get the current parameters, fall back to default
+		}
+
+		// Get cases for the organization
+		const additionalParams: any = {};
+		if (searchTerm) {
+			additionalParams.searchTerm = searchTerm;
+		}
+
+		const response = await casesApi.getCases(this, credentials, organizationId, additionalParams);
+		const cases = response.result?.entities || [];
+
+		return createListSearchResults(
+			cases,
+			isValidCase,
+			(caseItem) => ({
+				name: caseItem.name || `Case ${caseItem._id}`,
+				value: extractCaseId(caseItem),
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		throw catchAndFormatError(error, 'loading cases');
+	}
+}
+
+/**
+ * Get assets by organization for InterACT (context-aware)
+ */
+export async function getAssetsByOrganizationForInteract(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+
+		// Try to get the organization from the current node parameters
+		let organizationId = '0'; // Default to all organizations
+		try {
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.organizationId) {
+				const orgResource = currentParams.organizationId as any;
+				if (typeof orgResource === 'object') {
+					if (orgResource.mode === 'id' || orgResource.mode === 'list') {
+						organizationId = orgResource.value || '0';
+					}
+					// Skip name resolution for ILoadOptionsFunctions context
+				} else if (typeof orgResource === 'string') {
+					organizationId = orgResource;
+				}
+			}
+		} catch (error) {
+			// If we can't get the current parameters, fall back to default
+		}
+
+		// Get assets for the organization
+		const queryParams: any = {
+			// Only show online, managed assets for InterACT
+			'filter[onlineStatus]': 'online',
+			'filter[managedStatus]': 'managed',
+		};
+
+		if (searchTerm) {
+			queryParams['filter[searchTerm]'] = searchTerm;
+		}
+
+		const response = await assetsApi.getAssets(this, credentials, organizationId, queryParams);
+		const assets = response.result?.entities || [];
+
+		return createListSearchResults(
+			assets,
+			isValidAsset,
+			(asset) => ({
+				name: `${asset.name} (${asset.ipAddress || 'No IP'})`,
+				value: extractAssetId(asset),
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		throw catchAndFormatError(error, 'loading assets');
+	}
 }

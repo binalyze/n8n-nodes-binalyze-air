@@ -495,17 +495,41 @@ export function handleExecuteError(
 	returnData: INodeExecutionData[]
 ): void {
 	if (context.continueOnFail()) {
+		// Ensure we have a proper error message even if error is null/undefined
+		let errorMessage = 'Unknown error occurred';
+		let errorDetails: any = undefined;
+
+		if (error) {
+			if (error instanceof Error) {
+				errorMessage = error.message;
+				if (error instanceof NodeOperationError) {
+					errorDetails = {
+						type: 'NodeOperationError',
+						cause: error.cause,
+					};
+				}
+			} else if (typeof error === 'string') {
+				errorMessage = error;
+			} else if (typeof error === 'object') {
+				errorMessage = error.message || error.error || JSON.stringify(error);
+			}
+		}
+
 		returnData.push({
 			json: {
-				error: error instanceof Error ? error.message : 'Unknown error occurred',
-				errorDetails: error instanceof NodeOperationError ? {
-					type: 'NodeOperationError',
-					cause: error.cause,
-				} : undefined,
+				error: errorMessage,
+				errorDetails: errorDetails,
 			},
 			pairedItem: itemIndex,
 		});
 	} else {
+		// If error is null/undefined, create a proper error object
+		if (!error) {
+			throw new NodeOperationError(context.getNode(), 'An unknown error occurred', {
+				itemIndex,
+			});
+		}
+
 		throw error instanceof NodeOperationError ? error : new NodeOperationError(context.getNode(), error as Error, {
 			itemIndex,
 		});

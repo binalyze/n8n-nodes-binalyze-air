@@ -120,7 +120,7 @@ export const api = {
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
     organizationId: number | string,
-    userId: string
+    userIds: string[]
   ): Promise<{
     success: boolean;
     result: null;
@@ -130,10 +130,11 @@ export const api = {
     const requestOptions = buildRequestOptionsWithErrorHandling(
       credentials,
       'DELETE',
-      `/api/public/organizations/${organizationId}/remove-user/${userId}`
+      `/api/public/organizations/${organizationId}/remove-users`
     );
+    requestOptions.body = { userIds };
 
-    const response = await makeApiRequestWithErrorHandling<{ success: boolean; result: null; statusCode: number; errors: string[]; }>(context, requestOptions, `remove user ${userId} from organization ${organizationId}`);
+    const response = await makeApiRequestWithErrorHandling<{ success: boolean; result: null; statusCode: number; errors: string[]; }>(context, requestOptions, `remove users from organization ${organizationId}`);
     return response;
   }
 };

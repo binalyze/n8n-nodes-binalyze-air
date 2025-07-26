@@ -13,7 +13,6 @@ This is an n8n community node that integrates with Binalyze AIR (Automated Incid
   - [Assets](#assets)
   - [Baselines](#baselines)
   - [Cases](#cases)
-  - [Evidence](#evidence)
   - [InterACT](#interact)
   - [Organizations](#organizations)
   - [Repositories](#repositories)
@@ -182,22 +181,38 @@ Manage incident response cases, notes, and activities.
   - Select from a searchable list of cases (filtered by selected organization)
   - Enter the case ID directly
 
-### Evidence
-Download and manage evidence files and reports.
-
-**Operations:**
-- `downloadPpc` - Download endpoint PPC file
-- `downloadReport` - Download endpoint task report
-- `getPpcInfo` - Get endpoint PPC file information
-
 ### InterACT
 Execute commands and interact with endpoints remotely.
 
 **Operations:**
-- `assignTask` - Assign an InterACT shell task to endpoints
+- `createSession` - Create a new InterACT shell session for an asset
+  - **Enhanced Features:**
+    - **Organization Selection:** Select the organization that the asset belongs to
+    - **Case Selection (Optional):** Optionally associate the session with a case
+      - Cases are automatically filtered based on the selected organization
+    - **Asset Selection:** Select the asset to create the session for
+      - Assets are automatically filtered based on the selected organization
+      - Only online, managed assets are shown
+    - **Automatic Configuration:** Uses policy-based task configuration automatically
+    - **Response Data:** Returns session ID, asset ID, organization ID, and task ID
+- `waitForSession` - Wait for an InterACT session to become live
+  - **Enhanced Features:**
+    - **Session Polling:** Automatically polls the session by executing `pwd` command every 10 seconds
+    - **Configurable Timeout:** Set custom timeout (10-600 seconds, default 60 seconds)
+    - **Session Validation:** Ensures the session is ready before proceeding
+    - **Pass-through Output:** Returns the session ID for chaining with other InterACT operations
+    - **Working Directory Info:** Returns the current working directory when session becomes live
 - `closeSession` - Close an InterACT session
 - `executeCommand` - Execute a command in an InterACT session
+  - **Additional Fields:**
+    - Timeout (seconds)
+    - Working directory
+    - Environment variables (JSON format)
 - `executeAsyncCommand` - Execute an asynchronous command in an InterACT session
+  - **Additional Fields:**
+    - Timeout (seconds)
+    - Working directory
+    - Environment variables (JSON format)
 - `getCommandMessage` - Get the result of a command execution
 - `interruptCommand` - Interrupt a running command
 
@@ -206,12 +221,11 @@ Manage organizations and their users.
 
 **Operations:**
 - `addTags` - Add tags to an organization
-- `assignUsers` - Assign users to an organization
+- `assignUser` - Assign a user to an organization
 - `checkNameExists` - Check if an organization name already exists
 - `create` - Create a new organization
 - `get` - Retrieve a specific organization
 - `getAll` - Retrieve many organizations
-- `getShareableDeploymentInfo` - Get shareable deployment information
 - `getUsers` - Retrieve users assigned to an organization
 - `removeTags` - Remove tags from an organization
 - `removeUser` - Remove a user from an organization
@@ -248,11 +262,9 @@ Create and manage triage rules for automated analysis.
 **Operations:**
 - `assignTask` - Assign a triage task
 - `create` - Create a new triage rule
-- `createTag` - Create a new rule tag
 - `delete` - Delete a triage rule
 - `get` - Retrieve a specific triage rule
 - `getAll` - Retrieve many triage rules
-- `getRuleTags` - Retrieve rule tags
 - `update` - Update a triage rule
 - `validate` - Validate a triage rule
 

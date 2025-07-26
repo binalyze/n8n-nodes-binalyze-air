@@ -64,10 +64,17 @@ export interface ExecuteCommandResponse {
   success: boolean;
   result: {
     messageId: string;
-    command: string;
-    status: string;
+    command?: string;
+    status?: string;
     output?: string;
     error?: string;
+    // Additional properties from actual API response
+    session?: {
+      id: string;
+    };
+    exitCode?: number;
+    cwd?: string;
+    body?: string;
   };
   statusCode: number;
   errors: string[];
@@ -151,6 +158,14 @@ export interface AssignInterACTTaskRequest {
   };
 }
 
+export interface CreateInterACTSessionRequest {
+  assetId: string;
+  caseId?: string | null;
+  taskConfig: {
+    choice: string;
+  };
+}
+
 export interface AssignInterACTTaskResponse {
   success: boolean;
   result: Array<{
@@ -159,7 +174,30 @@ export interface AssignInterACTTaskResponse {
     sessionId: string;
     endpointId: string;
     organizationId: number;
+    loginUrl?: string;
+    shellUrl?: string;
+    reportUrl?: string;
   }>;
+  statusCode: number;
+  errors: string[];
+}
+
+export interface CreateInterACTSessionResponse {
+  success: boolean;
+  result: {
+    id: string;
+    type: string;
+    data: {
+      sessionId: string;
+      idleTimeout: number;
+      config: any;
+      privileges: string[];
+    };
+    assetId: string;
+    loginUrl: string;
+    shellUrl: string;
+    reportUrl: string;
+  };
   statusCode: number;
   errors: string[];
 }
@@ -215,8 +253,24 @@ export const api = {
       `/api/public/interact/shell/sessions/${sessionId}/messages/${messageId}/interrupt-command`
     );
 
-    const response = await makeApiRequestWithErrorHandling<InterruptCommandResponse>(context, requestOptions, `interrupt command ${messageId} in session ${sessionId}`);
-    return response;
+    const response = await makeApiRequestWithErrorHandling<any>(context, requestOptions, `interrupt command ${messageId} in session ${sessionId}`);
+
+    // The API returns result: null on success, so we need to handle this case
+    if (response && response.success === true && response.result === null) {
+      return {
+        success: true,
+        result: {
+          messageId: messageId,
+          status: 'interrupted',
+          message: 'Command interrupted successfully'
+        },
+        statusCode: response.statusCode || 200,
+        errors: response.errors || []
+      };
+    }
+
+    // If the response has a non-null result, return it as is
+    return response as InterruptCommandResponse;
   },
 
   async closeSession(
@@ -230,8 +284,26 @@ export const api = {
       `/api/public/interact/shell/sessions/${sessionId}/close`
     );
 
-    const response = await makeApiRequestWithErrorHandling<CloseSessionResponse>(context, requestOptions, `close session ${sessionId}`);
-    return response;
+    // The close session endpoint returns void/empty response, so we need to handle it differently
+    try {
+      await context.helpers.httpRequest(requestOptions);
+
+      // If the request succeeds (no exception), return a success response
+      return {
+        success: true,
+        result: {
+          sessionId: sessionId,
+          status: 'closed',
+          message: 'Session closed successfully'
+        },
+        statusCode: 200,
+        errors: []
+      };
+    } catch (error) {
+      // If there's an error, wrap it in our standard error format
+      const errorMessage = error instanceof Error ? error.message : 'Failed to close session';
+      throw new Error(`Failed to close session ${sessionId}: ${errorMessage}`);
+    }
   },
 
   async getCommandMessage(
@@ -265,6 +337,22 @@ export const api = {
     requestOptions.body = data;
 
     const response = await makeApiRequestWithErrorHandling<AssignInterACTTaskResponse>(context, requestOptions, 'assign InterACT shell task');
+    return response;
+  },
+
+  async createInterACTSession(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    data: CreateInterACTSessionRequest
+  ): Promise<CreateInterACTSessionResponse> {
+    const requestOptions = buildRequestOptionsWithErrorHandling(
+      credentials,
+      'POST',
+      '/api/public/interact/shell/assign-task'
+    );
+    requestOptions.body = data;
+
+    const response = await makeApiRequestWithErrorHandling<CreateInterACTSessionResponse>(context, requestOptions, 'create InterACT session');
     return response;
   }
 };

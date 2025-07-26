@@ -50,12 +50,6 @@ export const TriageRulesOperations: INodeProperties[] = [
 				action: 'Create a triage rule',
 			},
 			{
-				name: 'Create Triage Rule Tag',
-				value: 'createTag',
-				description: 'Create a new rule tag',
-				action: 'Create a tag',
-			},
-			{
 				name: 'Delete Triage Rule',
 				value: 'delete',
 				description: 'Delete a triage rule',
@@ -72,12 +66,6 @@ export const TriageRulesOperations: INodeProperties[] = [
 				value: 'getAll',
 				description: 'Retrieve many triage rules',
 				action: 'Get many triage rules',
-			},
-			{
-				name: 'Get Triage Rule Tags',
-				value: 'getRuleTags',
-				description: 'Retrieve rule tags',
-				action: 'Get rule tags',
 			},
 			{
 				name: 'Update Triage Rule',
@@ -764,141 +752,6 @@ export const TriageRulesOperations: INodeProperties[] = [
 			},
 		],
 	},
-	{
-		displayName: 'Tag Name',
-		name: 'tagName',
-		type: 'string',
-		default: '',
-		placeholder: 'Enter tag name',
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['createTag'],
-			},
-		},
-		required: true,
-		description: 'Name of the tag to create',
-	},
-	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		placeholder: 'Add Field',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['createTag'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Organization',
-				name: 'tagOrganizationId',
-				type: 'resourceLocator',
-				default: { mode: 'id', value: '0' },
-				placeholder: 'Select an organization...',
-				description: 'Organization for the tag (use 0 for all organizations)',
-				modes: [
-					{
-						displayName: 'From List',
-						name: 'list',
-						type: 'list',
-						placeholder: 'Select an organization...',
-						typeOptions: {
-							searchListMethod: 'getOrganizations',
-							searchable: true,
-						},
-					},
-					{
-						displayName: 'By ID',
-						name: 'id',
-						type: 'string',
-						validation: [
-							{
-								type: 'regex',
-								properties: {
-									regex: '^[0-9]+$',
-									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
-								},
-							},
-						],
-						placeholder: 'Enter Organization ID (0 for default organization)',
-					},
-					{
-						displayName: 'By Name',
-						name: 'name',
-						type: 'string',
-						placeholder: 'Enter organization name',
-					},
-				],
-			},
-		],
-	},
-
-	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		placeholder: 'Add Field',
-		default: {},
-		displayOptions: {
-			show: {
-				resource: ['triagerules'],
-				operation: ['getRuleTags'],
-			},
-		},
-		options: [
-			{
-				displayName: 'Organization',
-				name: 'organizationId',
-				type: 'resourceLocator',
-				default: { mode: 'id', value: '0' },
-				placeholder: 'Select an organization...',
-				description: 'Organization to filter rule tags by. Use 0 to retrieve tags that are visible to all organizations.',
-				modes: [
-					{
-						displayName: 'From List',
-						name: 'list',
-						type: 'list',
-						placeholder: 'Select an organization...',
-						typeOptions: {
-							searchListMethod: 'getOrganizations',
-							searchable: true,
-						},
-					},
-					{
-						displayName: 'By ID',
-						name: 'id',
-						type: 'string',
-						validation: [
-							{
-								type: 'regex',
-								properties: {
-									regex: '^[0-9]+$',
-									errorMessage: 'Not a valid organization ID (must be a positive number or 0 for default organization)',
-								},
-							},
-						],
-						placeholder: 'Enter Organization ID (0 for default organization)',
-					},
-					{
-						displayName: 'By Name',
-						name: 'name',
-						type: 'string',
-						placeholder: 'Enter organization name',
-					},
-				],
-			},
-			{
-				displayName: 'Filter: Search Term',
-				name: 'searchTerm',
-				type: 'string',
-				default: '',
-				description: 'Search term to filter rule tags',
-			},
-		],
-	},
 ];
 
 export function extractTriageRuleId(triageRule: any): string {
@@ -909,27 +762,7 @@ export function isValidTriageRule(triageRule: any): boolean {
 	return isValidEntity(triageRule, ['_id']);
 }
 
-export function extractTriageTagId(triageTag: any): string {
-	return extractEntityId(triageTag, '_id');
-}
 
-export function isValidTriageTag(triageTag: any): boolean {
-	return isValidEntity(triageTag, ['name']);
-}
-
-export async function fetchAllTriageTags(
-	context: ILoadOptionsFunctions | IExecuteFunctions,
-	credentials: AirCredentials,
-	organizationId: string = '0',
-	searchFilter?: string
-): Promise<any[]> {
-	try {
-		const response = await triageRulesApi.getTriageTags(context, credentials, organizationId, searchFilter);
-		return response.result || [];
-	} catch (error) {
-		throw catchAndFormatError(error, 'Failed to fetch triage tags');
-	}
-}
 
 export async function fetchAllTriageRules(
 	context: ILoadOptionsFunctions | IExecuteFunctions,
@@ -1075,80 +908,7 @@ export async function getTriageRulesOptions(this: ILoadOptionsFunctions): Promis
 	}
 }
 
-export async function getTriageTags(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
-	try {
-		const credentials = await getAirCredentials(this);
 
-		// Get organization ID from current node parameters if available, default to '0'
-		let organizationId = '0';
-		try {
-			const currentNodeParameters = this.getCurrentNodeParameters();
-			const organizationResource = currentNodeParameters?.organizationId as any;
-			if (organizationResource) {
-				if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-					organizationId = organizationResource.value;
-				} else if (organizationResource.mode === 'name') {
-					// For name mode, fallback to default since we can't resolve names in load options context
-					organizationId = '0';
-				}
-
-				// Validate the organization ID
-				try {
-					organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
-				} catch (error) {
-					// If validation fails, use default
-					organizationId = '0';
-				}
-			}
-		} catch (error) {
-			// If we can't get the current node parameters, use default
-			organizationId = '0';
-		}
-
-		const response = await triageRulesApi.getTriageTags(this, credentials, organizationId, searchTerm);
-		const tags = response.result || [];
-
-		return createListSearchResults(
-			tags,
-			(tag: any) => tag && typeof tag === 'object' && tag._id && tag.name,
-			(tag: any) => ({
-				name: tag.name,
-				value: tag._id
-			}),
-			searchTerm
-		);
-	} catch (error) {
-		throw catchAndFormatError(error, 'Failed to load triage tags for selection');
-	}
-}
-
-export async function getTriageTagsOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-	try {
-		const credentials = await getAirCredentials(this);
-
-		// Use default organization ID for all tags
-		const organizationId = '0';
-
-		const response = await triageRulesApi.getTriageTags(this, credentials, organizationId);
-		const tags = response.result || [];
-
-		return createLoadOptions(
-			tags,
-			isValidTriageTag,
-			(tag) => {
-				const tagId = extractTriageTagId(tag);
-				const name = tag.name || tag._id || `Tag ${tagId || 'Unknown'}`;
-
-				return {
-					name,
-					value: tagId,
-				};
-			}
-		);
-	} catch (error) {
-		throw catchAndFormatError(error, 'Failed to load triage tags options');
-	}
-}
 
 export async function executeTriageRules(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
@@ -1589,107 +1349,7 @@ export async function executeTriageRules(this: IExecuteFunctions): Promise<INode
 					break;
 				}
 
-				case 'createTag': {
-					const tagName = this.getNodeParameter('tagName', i) as string;
-					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
 
-					// Validate required fields
-					if (!tagName) {
-						throw new NodeOperationError(this.getNode(), 'Tag name cannot be empty', {
-							itemIndex: i,
-						});
-					}
-
-					// Handle organization resource locator from additional fields
-					let organizationId: string = '0'; // Default to all organizations
-
-					if (additionalFields.tagOrganizationId) {
-						const tagOrganizationResource = additionalFields.tagOrganizationId;
-						let orgIdString: string;
-
-						if (tagOrganizationResource.mode === 'list' || tagOrganizationResource.mode === 'id') {
-							orgIdString = tagOrganizationResource.value;
-						} else if (tagOrganizationResource.mode === 'name') {
-							try {
-								orgIdString = await findOrganizationByName(this, credentials, tagOrganizationResource.value);
-							} catch (error) {
-								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-							}
-						} else {
-							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-								itemIndex: i,
-							});
-						}
-
-						// Validate and convert organization ID
-						try {
-							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, {
-								itemIndex: i,
-							});
-						}
-					}
-
-					// Convert to number for API compatibility
-					const tagOrganizationId = parseInt(organizationId, 10);
-
-					// Use the new API method
-					const responseData = await triageRulesApi.createTriageTag(this, credentials, tagName, tagOrganizationId);
-
-					returnData.push({
-						json: responseData.result as any,
-						pairedItem: i,
-					});
-					break;
-				}
-
-				case 'getRuleTags': {
-					const additionalFields = this.getNodeParameter('additionalFields', i) as any;
-
-					// Handle organization resource locator from additional fields
-					let organizationId: string = '0'; // Default to all organizations
-
-					if (additionalFields.organizationId) {
-						const organizationResource = additionalFields.organizationId;
-						let orgIdString: string;
-
-						if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
-							orgIdString = organizationResource.value;
-						} else if (organizationResource.mode === 'name') {
-							try {
-								orgIdString = await findOrganizationByName(this, credentials, organizationResource.value);
-							} catch (error) {
-								throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
-							}
-						} else {
-							throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', {
-								itemIndex: i,
-							});
-						}
-
-						// Validate and convert organization ID
-						try {
-							organizationId = normalizeAndValidateId(orgIdString, 'Organization ID');
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), error.message, {
-								itemIndex: i,
-							});
-						}
-					}
-
-					// Get searchTerm from additionalFields
-					const searchTerm = additionalFields.searchTerm || undefined;
-
-					// Use the new API method
-					const responseData = await triageRulesApi.getTriageTags(this, credentials, organizationId, searchTerm);
-
-					const entities = responseData.result || [];
-
-					// Process entities (NO PAGINATION in this API endpoint)
-					processApiResponseEntities(entities, returnData, i);
-					break;
-				}
 
 				case 'validate': {
 					const rule = this.getNodeParameter('rule', i) as string;

@@ -276,33 +276,6 @@ export const api = {
     }
   },
 
-  async getShareableDeploymentInfo(
-    context: IExecuteFunctions | ILoadOptionsFunctions,
-    credentials: AirCredentials,
-    deploymentToken: string
-  ): Promise<{
-    success: boolean;
-    result: {
-      organizationId: number;
-      consoleAddress: string;
-      agentVersion: string;
-    };
-    statusCode: number;
-    errors: string[]
-  }> {
-    try {
-      const requestOptions = buildRequestOptionsWithErrorHandling(
-        credentials,
-        'GET',
-        `/api/public/organizations/shareable-deployment-info/${deploymentToken}`
-      );
-
-      return await makeApiRequestWithErrorHandling<any>(context, requestOptions, 'fetch shareable deployment info');
-    } catch (error) {
-      throw new Error(`Failed to fetch shareable deployment info: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  },
-
   async updateOrganizationShareableDeployment(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
