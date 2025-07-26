@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-25T16:25:11.284Z",
-  "updatedAt": "2025-07-26T21:23:30.000Z",
+  "updatedAt": "2025-07-26T21:24:24.000Z",
   "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
@@ -1414,8 +1414,8 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -2848,
-        1328
+        -2928,
+        1344
       ],
       "id": "1c3a3fad-854e-4d3d-8726-6b7d3abdce2f",
       "name": "Execute a command",
@@ -1436,7 +1436,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -2864,
+        -2928,
         1536
       ],
       "id": "1ab82866-c700-49c0-bbc9-6d784844d2ca",
@@ -1458,7 +1458,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -2544,
+        -2704,
         1536
       ],
       "id": "8f377116-a2af-438b-a5b9-6d2745076f68",
@@ -1583,7 +1583,7 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        -3168,
+        -3152,
         1632
       ],
       "id": "190961f5-5f38-4684-8bbe-a17c571eb624",
@@ -2110,7 +2110,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "d73d30d6-9d9c-41c1-a56c-91418d8c29c0",
+  "versionId": "dce29ba2-10d2-46d1-98f1-303c287cee8c",
   "triggerCount": 0,
   "shared": [
     {
