@@ -181,6 +181,59 @@ export const CasesOperations: INodeProperties[] = [
 		description: 'The ID of the case to retrieve',
 	},
 	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'id', value: '0' },
+		placeholder: 'Select organization...',
+		displayOptions: {
+			show: {
+				resource: ['cases'],
+				operation: [
+					'getActivities',
+					'getEndpoints',
+					'getTasks',
+					'getUsers',
+				],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9,\\s]+$',
+							errorMessage: 'Organization IDs must be comma-separated numbers. Use "0" for all organizations.',
+						},
+					},
+				],
+				placeholder: 'Enter organization IDs (comma-separated) or "0" for all',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'Organization to filter cases',
+	},
+	{
 		displayName: 'Case',
 		name: 'caseId',
 		type: 'resourceLocator',
@@ -1650,4 +1703,3 @@ async function executeImportTaskAssignments(
 
 	return response;
 }
-
