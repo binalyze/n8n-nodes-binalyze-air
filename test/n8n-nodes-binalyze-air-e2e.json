@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-25T16:25:11.284Z",
-  "updatedAt": "2025-07-26T21:24:24.000Z",
+  "updatedAt": "2025-07-27T17:28:59.000Z",
   "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
@@ -1594,6 +1594,31 @@
           "name": "Binalyze AIR account"
         }
       }
+    },
+    {
+      "parameters": {
+        "eventTypes": [
+          "CaseClosedEvent",
+          "TaskCompletedEvent",
+          "CaseCreatedEvent"
+        ],
+        "bearerToken": "abc"
+      },
+      "type": "n8n-nodes-binalyze-air.airTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1872,
+        2000
+      ],
+      "id": "f2502354-ebd7-4d24-8c38-19660549d729",
+      "name": "AIR Trigger",
+      "webhookId": "823243e9-69a2-46b8-b5e6-f13f4ddfa34f",
+      "credentials": {
+        "airApi": {
+          "id": "4WhN1HxJfr6jqfmn",
+          "name": "dev-air.com"
+        }
+      }
     }
   ],
   "connections": {
@@ -2110,7 +2135,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "dce29ba2-10d2-46d1-98f1-303c287cee8c",
+  "versionId": "0d5d2799-8a34-483b-acaa-a089bac9c3f4",
   "triggerCount": 0,
   "shared": [
     {
@@ -2136,7 +2161,7 @@
             "projectId": "llHxnpzVncfHqefW",
             "user": {
               "createdAt": "2025-05-26T10:21:01.143Z",
-              "updatedAt": "2025-07-26T21:20:09.000Z",
+              "updatedAt": "2025-07-27T17:28:41.000Z",
               "id": "5f63a800-7f35-4ceb-b857-df8cc34579ab",
               "email": "emre@binalyze.com",
               "firstName": "Emre",
@@ -2158,7 +2183,7 @@
               "role": "global:owner",
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2025-07-26",
+              "lastActiveAt": "2025-07-27",
               "isPending": false
             }
           }
