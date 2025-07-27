@@ -43,7 +43,7 @@ export class AirTrigger implements INodeType {
 		],
 		properties: [
 			{
-				displayName: 'Event Types Names or IDs',
+				displayName: 'Event Names or IDs',
 				name: 'eventTypes',
 				type: 'multiOptions',
 				required: true,
