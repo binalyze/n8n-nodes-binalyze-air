@@ -182,14 +182,14 @@ The On AIR Event-Trigger node allows you to trigger workflows based on AIR event
 
 ### Supported Event Types
 
-The trigger node dynamically loads available event types from your AIR instance, which may include:
+The trigger node dynamically loads available [event types](https://kb.binalyze.com/air/features/event-subscription) from your AIR instance, which may include:
 - TaskProcessingCompletedEvent
 - TaskProcessingFailedEvent
 - TaskCompletedEvent
 - TaskFailedEvent
 - CaseClosedEvent
 - EndpointRegisteredEvent
-- And many more...
+- ...  
 
 ### Event Data Structure
 

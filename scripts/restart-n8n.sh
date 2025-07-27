@@ -76,6 +76,7 @@ start_n8n() {
     # Set up environment variables
     export N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
     export N8N_RUNNERS_ENABLED=true
+    export NODE_TLS_REJECT_UNAUTHORIZED=0
 
     if [ "$DEBUG_MODE" = true ]; then
         echo -e "${YELLOW}🐛 Enabling comprehensive debug logging...${NC}"
@@ -89,6 +90,7 @@ start_n8n() {
         echo -e "${YELLOW}  N8N_LOG_OUTPUT=console${NC}"
         echo -e "${YELLOW}  DEBUG=n8n*,n8n-nodes-*${NC}"
         echo -e "${YELLOW}  N8N_DETAILED_ERROR_OUTPUT=true${NC}"
+        echo -e "${YELLOW}  NODE_TLS_REJECT_UNAUTHORIZED=0${NC}"
     fi
 
     # Check if n8n is installed globally
