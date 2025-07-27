@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-07-25T16:25:11.284Z",
-  "updatedAt": "2025-07-27T17:28:59.000Z",
+  "updatedAt": "2025-07-27T18:23:28.000Z",
   "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
@@ -1607,8 +1607,8 @@
       "type": "n8n-nodes-binalyze-air.airTrigger",
       "typeVersion": 1,
       "position": [
-        -1872,
-        2000
+        -2240,
+        2016
       ],
       "id": "f2502354-ebd7-4d24-8c38-19660549d729",
       "name": "AIR Trigger",
@@ -1619,6 +1619,74 @@
           "name": "dev-air.com"
         }
       }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.eventName }}",
+                    "rightValue": "CaseCreatedEvent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e2f3dcaa-26d4-404c-ba6e-fc98469563d9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Case Created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cfea2861-d2ef-4941-bd88-96e657ceda6b",
+                    "leftValue": "={{ $json.eventName }}",
+                    "rightValue": "CaseClosedEvent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Case Closed"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1984,
+        2000
+      ],
+      "id": "53879bfa-5ea0-433f-87dc-bc9a07283bb2",
+      "name": "Switch"
     }
   ],
   "connections": {
@@ -2125,6 +2193,17 @@
           }
         ]
       ]
+    },
+    "AIR Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -2135,7 +2214,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "0d5d2799-8a34-483b-acaa-a089bac9c3f4",
+  "versionId": "2eefffae-b358-40f5-9e2d-74b5337e0aae",
   "triggerCount": 0,
   "shared": [
     {
