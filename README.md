@@ -72,7 +72,10 @@ Manage endpoints and their associated tasks, tags, and status.
 - `get` - Retrieve a specific asset
 - `getAssetTasks` - Get tasks for a specific asset
 - `getAll` - Retrieve many assets
+- `reboot` - Reboot assets by filter
 - `removeTags` - Remove tags from assets by filter
+- `setIsolation` - Set isolation status on assets by filter
+- `shutdown` - Shutdown assets by filter
 
 ### Baselines
 Acquire and compare system baselines.

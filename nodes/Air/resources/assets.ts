@@ -62,10 +62,28 @@ export const AssetsOperations: INodeProperties[] = [
 				action: 'Get many assets',
 			},
 			{
+				name: 'Reboot',
+				value: 'reboot',
+				description: 'Reboot assets by filter',
+				action: 'Reboot assets',
+			},
+			{
 				name: 'Remove Tags',
 				value: 'removeTags',
 				description: 'Remove tags from assets by filter',
 				action: 'Remove tags from assets',
+			},
+			{
+				name: 'Set Isolation',
+				value: 'setIsolation',
+				description: 'Set isolation status on assets by filter',
+				action: 'Set isolation on assets',
+			},
+			{
+				name: 'Shutdown',
+				value: 'shutdown',
+				description: 'Shutdown assets by filter',
+				action: 'Shutdown assets',
 			},
 		],
 		default: 'getAll',
@@ -593,6 +611,209 @@ export const AssetsOperations: INodeProperties[] = [
 			},
 		],
 	},
+
+	// Organization for device action operations (reboot, shutdown, set isolation)
+	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['reboot', 'shutdown', 'setIsolation'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a number)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization to perform the action in',
+	},
+
+	// Isolation enabled field for set isolation operation
+	{
+		displayName: 'Isolation Enabled',
+		name: 'isolationEnabled',
+		type: 'boolean',
+		default: true,
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['setIsolation'],
+			},
+		},
+		required: true,
+		description: 'Whether to enable or disable isolation on the selected assets',
+	},
+
+	// Endpoint filters for device action operations
+	{
+		displayName: 'Endpoint Filters',
+		name: 'endpointFilters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['reboot', 'shutdown', 'setIsolation'],
+			},
+		},
+		description: 'Filter assets to perform the action on. At least one filter should be specified.',
+		options: [
+			{
+				displayName: 'Case ID',
+				name: 'caseId',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter case ID',
+				description: 'Filter by case ID',
+			},
+			{
+				displayName: 'Excluded Asset IDs',
+				name: 'excludedEndpointIds',
+				type: 'string',
+				default: '',
+				placeholder: 'asset1,asset2,asset3',
+				description: 'Specific asset IDs to exclude (comma-separated)',
+			},
+			{
+				displayName: 'Filter By Asset Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter asset name',
+			},
+			{
+				displayName: 'Filter By IP Address',
+				name: 'ipAddress',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter IP address',
+			},
+			{
+				displayName: 'Filter By Isolation Status',
+				name: 'isolationStatus',
+				type: 'multiOptions',
+				default: [],
+				options: [
+					{
+						name: 'Isolated',
+						value: 'isolated',
+					},
+					{
+						name: 'Not Isolated',
+						value: 'not_isolated',
+					},
+				],
+			},
+			{
+				displayName: 'Filter By Label',
+				name: 'label',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter label',
+			},
+			{
+				displayName: 'Filter By Managed Status',
+				name: 'managedStatus',
+				type: 'multiOptions',
+				default: [],
+				options: [
+					{
+						name: 'Managed',
+						value: 'managed',
+					},
+					{
+						name: 'Unmanaged',
+						value: 'unmanaged',
+					},
+				],
+			},
+			{
+				displayName: 'Filter By Platform',
+				name: 'platform',
+				type: 'multiOptions',
+				default: [],
+				options: [
+					{
+						name: 'Windows',
+						value: 'windows',
+					},
+					{
+						name: 'macOS',
+						value: 'darwin',
+					},
+					{
+						name: 'Linux',
+						value: 'linux',
+					},
+				],
+			},
+			{
+				displayName: 'Filter By Search Term',
+				name: 'searchTerm',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter search term',
+			},
+			{
+				displayName: 'Filter By Tags',
+				name: 'tags',
+				type: 'string',
+				default: '',
+				placeholder: 'tag1,tag2,tag3',
+				description: 'Filter by tags (comma-separated)',
+			},
+			{
+				displayName: 'Included Asset IDs',
+				name: 'includedEndpointIds',
+				type: 'string',
+				default: '',
+				placeholder: 'asset1,asset2,asset3',
+				description: 'Specific asset IDs to include (comma-separated)',
+			},
+			{
+				displayName: 'Is Server',
+				name: 'isServer',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to filter only server assets',
+			},
+		],
+	},
 ];
 
 // ===== HELPER FUNCTIONS =====
@@ -767,6 +988,64 @@ function validateTags(tags: string[]): { valid: boolean; invalidTags: string[] }
 		valid: invalidTags.length === 0,
 		invalidTags
 	};
+}
+
+// Helper function to build device action filter from endpoint filters
+function buildDeviceActionFilter(endpointFilters: any, organizationId: number): any {
+	const filter: any = {
+		organizationIds: [organizationId], // Required field
+	};
+
+	// Add optional filters only if they have values
+	if (endpointFilters.searchTerm) {
+		filter.searchTerm = endpointFilters.searchTerm;
+	}
+
+	if (endpointFilters.name) {
+		filter.name = endpointFilters.name;
+	}
+
+	if (endpointFilters.ipAddress) {
+		filter.ipAddress = endpointFilters.ipAddress;
+	}
+
+	if (endpointFilters.label) {
+		filter.label = endpointFilters.label;
+	}
+
+	if (endpointFilters.managedStatus && endpointFilters.managedStatus.length > 0) {
+		filter.managedStatus = endpointFilters.managedStatus;
+	}
+
+	if (endpointFilters.isolationStatus && endpointFilters.isolationStatus.length > 0) {
+		filter.isolationStatus = endpointFilters.isolationStatus;
+	}
+
+	if (endpointFilters.platform && endpointFilters.platform.length > 0) {
+		filter.platform = endpointFilters.platform;
+	}
+
+	if (endpointFilters.tags) {
+		filter.tags = endpointFilters.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0);
+	}
+
+	if (endpointFilters.includedEndpointIds) {
+		filter.includedEndpointIds = endpointFilters.includedEndpointIds.split(',').map((id: string) => id.trim()).filter((id: string) => id.length > 0);
+	}
+
+	if (endpointFilters.excludedEndpointIds) {
+		filter.excludedEndpointIds = endpointFilters.excludedEndpointIds.split(',').map((id: string) => id.trim()).filter((id: string) => id.length > 0);
+	}
+
+	if (endpointFilters.caseId) {
+		filter.caseId = endpointFilters.caseId;
+	}
+
+	if (typeof endpointFilters.isServer === 'boolean') {
+		filter.isServer = endpointFilters.isServer;
+	}
+
+	return filter;
 }
 
 // ===== LOAD OPTIONS METHODS =====
@@ -1118,6 +1397,194 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						json: responseData as any,
 						pairedItem: i,
 					});
+					break;
+				}
+
+				case 'reboot': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const endpointFilters = this.getNodeParameter('endpointFilters', i) as any;
+
+					// Handle organization ID from resource locator
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
+							itemIndex: i,
+						});
+					}
+
+					// Build filter from endpoint filters
+					const filter = buildDeviceActionFilter(endpointFilters, orgIdNumber);
+
+					// Build the request data
+					const requestData = {
+						filter,
+					};
+
+					// Use the API method
+					const responseData = await assetsApi.rebootAssets(this, credentials, requestData);
+
+					// Process the result - each task is returned as a separate item
+					if (responseData.result && responseData.result.length > 0) {
+						responseData.result.forEach((task: any) => {
+							returnData.push({
+								json: task,
+								pairedItem: i,
+							});
+						});
+					} else {
+						// Return empty result if no tasks were created
+						returnData.push({
+							json: {},
+							pairedItem: i,
+						});
+					}
+					break;
+				}
+
+				case 'shutdown': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const endpointFilters = this.getNodeParameter('endpointFilters', i) as any;
+
+					// Handle organization ID from resource locator
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
+							itemIndex: i,
+						});
+					}
+
+					// Build filter from endpoint filters
+					const filter = buildDeviceActionFilter(endpointFilters, orgIdNumber);
+
+					// Build the request data
+					const requestData = {
+						filter,
+					};
+
+					// Use the API method
+					const responseData = await assetsApi.shutdownAssets(this, credentials, requestData);
+
+					// Process the result - each task is returned as a separate item
+					if (responseData.result && responseData.result.length > 0) {
+						responseData.result.forEach((task: any) => {
+							returnData.push({
+								json: task,
+								pairedItem: i,
+							});
+						});
+					} else {
+						// Return empty result if no tasks were created
+						returnData.push({
+							json: {},
+							pairedItem: i,
+						});
+					}
+					break;
+				}
+
+				case 'setIsolation': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const isolationEnabled = this.getNodeParameter('isolationEnabled', i) as boolean;
+					const endpointFilters = this.getNodeParameter('endpointFilters', i) as any;
+
+					// Handle organization ID from resource locator
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
+							itemIndex: i,
+						});
+					}
+
+					// Build filter from endpoint filters
+					const filter = buildDeviceActionFilter(endpointFilters, orgIdNumber);
+
+					// Build the request data
+					const requestData = {
+						enabled: isolationEnabled,
+						filter,
+					};
+
+					// Use the API method
+					const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
+
+					// Process the result - each task is returned as a separate item
+					if (responseData.result && responseData.result.length > 0) {
+						responseData.result.forEach((task: any) => {
+							returnData.push({
+								json: task,
+								pairedItem: i,
+							});
+						});
+					} else {
+						// Return empty result if no tasks were created
+						returnData.push({
+							json: {},
+							pairedItem: i,
+						});
+					}
 					break;
 				}
 

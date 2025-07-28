@@ -187,6 +187,57 @@ export interface TagsOperationResponse {
   errors: string[];
 }
 
+// ===== DEVICE ACTION INTERFACES =====
+
+export interface DeviceActionFilter {
+  searchTerm?: string;
+  name?: string;
+  ipAddress?: string;
+  label?: string;
+  managedStatus?: string[];
+  isolationStatus?: string[];
+  platform?: string[];
+  tags?: string[];
+  includedEndpointIds?: string[];
+  organizationIds: number[]; // Required field
+  caseId?: string;
+  isServer?: boolean;
+}
+
+export interface RebootRequest {
+  filter: DeviceActionFilter;
+}
+
+export interface ShutdownRequest {
+  filter: DeviceActionFilter;
+}
+
+export interface IsolationRequest {
+  enabled: boolean;
+  filter: DeviceActionFilter;
+}
+
+export interface DeviceActionTask {
+  _id: string;
+  taskId: string;
+  name: string;
+  type: string;
+  endpointId: string;
+  endpointName: string;
+  organizationId: number;
+  status: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+}
+
+export interface DeviceActionResponse {
+  success: boolean;
+  result: DeviceActionTask[];
+  statusCode: number;
+  errors: string[];
+}
+
 // ===== API METHODS =====
 
 export const api = {
@@ -246,5 +297,35 @@ export const api = {
     const options = buildRequestOptionsWithErrorHandling(credentials, 'DELETE', '/api/public/assets/tags');
     options.body = data;
     return makeApiRequestWithErrorHandling<TagsOperationResponse>(context, options, 'remove tags from assets');
+  },
+
+  async rebootAssets(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    data: RebootRequest
+  ): Promise<DeviceActionResponse> {
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'POST', '/api/public/assets/tasks/reboot');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<DeviceActionResponse>(context, options, 'reboot assets');
+  },
+
+  async shutdownAssets(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    data: ShutdownRequest
+  ): Promise<DeviceActionResponse> {
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'POST', '/api/public/assets/tasks/shutdown');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<DeviceActionResponse>(context, options, 'shutdown assets');
+  },
+
+  async setIsolationOnAssets(
+    context: IExecuteFunctions | ILoadOptionsFunctions,
+    credentials: AirCredentials,
+    data: IsolationRequest
+  ): Promise<DeviceActionResponse> {
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'POST', '/api/public/assets/tasks/isolation');
+    options.body = data;
+    return makeApiRequestWithErrorHandling<DeviceActionResponse>(context, options, 'set isolation on assets');
   }
 };
