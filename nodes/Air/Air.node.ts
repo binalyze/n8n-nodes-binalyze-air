@@ -59,7 +59,8 @@ import {
 	AssetsOperations,
 	getAssets,
 	getAssetsOptions,
-	executeAssets
+	executeAssets,
+	getAssetsByOrganizationForDeviceActions
 } from './resources/assets';
 import {
 	AcquisitionsOperations,
@@ -215,6 +216,9 @@ export class Air implements INodeType {
 			// Import list search methods from Assets for resource locators
 			async getAssets(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
 				return getAssets.call(this, filter);
+			},
+			async getAssetsByOrganizationForDeviceActions(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				return getAssetsByOrganizationForDeviceActions.call(this, filter);
 			},
 			// Import context-aware list search methods from Baselines for resource locators
 			async getAssetsByOrganization(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
