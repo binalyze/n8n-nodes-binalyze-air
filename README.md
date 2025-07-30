@@ -72,10 +72,10 @@ Manage endpoints and their associated tasks, tags, and status.
 - `get` - Retrieve a specific asset
 - `getAssetTasks` - Get tasks for a specific asset
 - `getAll` - Retrieve many assets
-- `reboot` - Assign reboot task to a specific asset
+- `reboot` - Assign reboot task to a specific asset (checks for existing assigned tasks first)
 - `removeTags` - Remove tags from assets by filter
-- `setIsolation` - Assign isolation task to a specific asset
-- `shutdown` - Assign shutdown task to a specific asset
+- `setIsolation` - Assign isolation task to a specific asset (checks for existing assigned tasks and current isolation status first)
+- `shutdown` - Assign shutdown task to a specific asset (checks for existing assigned tasks first)
 
 ### Baselines
 Acquire and compare system baselines.

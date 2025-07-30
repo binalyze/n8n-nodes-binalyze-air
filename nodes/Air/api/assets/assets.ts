@@ -273,9 +273,24 @@ export const api = {
   async getAssetTasks(
     context: IExecuteFunctions | ILoadOptionsFunctions,
     credentials: AirCredentials,
-    id: string
+    id: string,
+    queryParams?: Record<string, string | number | string[]>
   ): Promise<AssetTasksResponse> {
-    const options = buildRequestOptionsWithErrorHandling(credentials, 'GET', `/api/public/assets/${id}/tasks`);
+    const qs: Record<string, string | number> = {};
+
+    if (queryParams) {
+      // Handle array parameters for filters
+      Object.entries(queryParams).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          // Convert array to comma-separated string for query params
+          qs[key] = value.join(',');
+        } else {
+          qs[key] = value;
+        }
+      });
+    }
+
+    const options = buildRequestOptionsWithErrorHandling(credentials, 'GET', `/api/public/assets/${id}/tasks`, qs);
     return makeApiRequestWithErrorHandling<AssetTasksResponse>(context, options, `fetch tasks for asset ${id}`);
   },
 

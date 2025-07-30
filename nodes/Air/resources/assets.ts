@@ -25,6 +25,45 @@ import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import { api as assetsApi } from '../api/assets/assets';
 import { findOrganizationByName } from './organizations';
 
+// ===== HELPER FUNCTIONS =====
+
+/**
+ * Check if an asset has an existing task of the specified type in 'assigned' status
+ * @param context - The execution context
+ * @param credentials - The API credentials
+ * @param assetId - The asset ID to check
+ * @param taskType - The type of task to check for
+ * @returns The existing task if found, null otherwise
+ */
+async function checkExistingTask(
+	context: IExecuteFunctions,
+	credentials: AirCredentials,
+	assetId: string,
+	taskType: 'shutdown' | 'reboot' | 'isolation'
+): Promise<any | null> {
+	try {
+		// Get tasks for the asset with filters
+		const queryParams = {
+			'filter[type]': taskType,
+			'filter[status]': 'assigned'
+		};
+
+		const tasksResponse = await assetsApi.getAssetTasks(context, credentials, assetId, queryParams);
+
+		// Check if there are any tasks in 'assigned' status
+		if (tasksResponse.result && tasksResponse.result.entities && tasksResponse.result.entities.length > 0) {
+			// Return the first matching task
+			return tasksResponse.result.entities[0];
+		}
+
+		return null;
+	} catch (error) {
+		// If there's an error checking for existing tasks, we'll proceed with creating a new one
+		console.error(`Error checking existing tasks: ${error.message}`);
+		return null;
+	}
+}
+
 export const AssetsOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
@@ -1535,34 +1574,46 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						});
 					}
 
-					// Build filter with only the selected asset ID
-					const filter = {
-						organizationIds: [orgIdNumber],
-						includedEndpointIds: [assetId],
-					};
+					// Check for existing reboot task in 'assigned' status
+					const existingTask = await checkExistingTask(this, credentials, assetId, 'reboot');
 
-					// Build the request data
-					const requestData = {
-						filter,
-					};
-
-					// Use the API method
-					const responseData = await assetsApi.rebootAssets(this, credentials, requestData);
-
-					// Process the result - each task is returned as a separate item
-					if (responseData.result && responseData.result.length > 0) {
-						responseData.result.forEach((task: any) => {
-							returnData.push({
-								json: task,
-								pairedItem: i,
-							});
-						});
-					} else {
-						// Return empty result if no tasks were created
+					if (existingTask) {
+						// Return the existing task
 						returnData.push({
-							json: {},
+							json: existingTask,
 							pairedItem: i,
 						});
+					} else {
+						// No existing task, create a new one
+						// Build filter with only the selected asset ID
+						const filter = {
+							organizationIds: [orgIdNumber],
+							includedEndpointIds: [assetId],
+						};
+
+						// Build the request data
+						const requestData = {
+							filter,
+						};
+
+						// Use the API method
+						const responseData = await assetsApi.rebootAssets(this, credentials, requestData);
+
+						// Process the result - each task is returned as a separate item
+						if (responseData.result && responseData.result.length > 0) {
+							responseData.result.forEach((task: any) => {
+								returnData.push({
+									json: task,
+									pairedItem: i,
+								});
+							});
+						} else {
+							// Return empty result if no tasks were created
+							returnData.push({
+								json: {},
+								pairedItem: i,
+							});
+						}
 					}
 					break;
 				}
@@ -1619,34 +1670,46 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						});
 					}
 
-					// Build filter with only the selected asset ID
-					const filter = {
-						organizationIds: [orgIdNumber],
-						includedEndpointIds: [assetId],
-					};
+					// Check for existing shutdown task in 'assigned' status
+					const existingTask = await checkExistingTask(this, credentials, assetId, 'shutdown');
 
-					// Build the request data
-					const requestData = {
-						filter,
-					};
-
-					// Use the API method
-					const responseData = await assetsApi.shutdownAssets(this, credentials, requestData);
-
-					// Process the result - each task is returned as a separate item
-					if (responseData.result && responseData.result.length > 0) {
-						responseData.result.forEach((task: any) => {
-							returnData.push({
-								json: task,
-								pairedItem: i,
-							});
-						});
-					} else {
-						// Return empty result if no tasks were created
+					if (existingTask) {
+						// Return the existing task
 						returnData.push({
-							json: {},
+							json: existingTask,
 							pairedItem: i,
 						});
+					} else {
+						// No existing task, create a new one
+						// Build filter with only the selected asset ID
+						const filter = {
+							organizationIds: [orgIdNumber],
+							includedEndpointIds: [assetId],
+						};
+
+						// Build the request data
+						const requestData = {
+							filter,
+						};
+
+						// Use the API method
+						const responseData = await assetsApi.shutdownAssets(this, credentials, requestData);
+
+						// Process the result - each task is returned as a separate item
+						if (responseData.result && responseData.result.length > 0) {
+							responseData.result.forEach((task: any) => {
+								returnData.push({
+									json: task,
+									pairedItem: i,
+								});
+							});
+						} else {
+							// Return empty result if no tasks were created
+							returnData.push({
+								json: {},
+								pairedItem: i,
+							});
+						}
 					}
 					break;
 				}
@@ -1704,35 +1767,72 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						});
 					}
 
-					// Build filter with only the selected asset ID
-					const filter = {
-						organizationIds: [orgIdNumber],
-						includedEndpointIds: [assetId],
-					};
+					// Check for existing isolation task in 'assigned' status
+					const existingTask = await checkExistingTask(this, credentials, assetId, 'isolation');
 
-					// Build the request data
-					const requestData = {
-						enabled: isolationEnabled,
-						filter,
-					};
-
-					// Use the API method
-					const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
-
-					// Process the result - each task is returned as a separate item
-					if (responseData.result && responseData.result.length > 0) {
-						responseData.result.forEach((task: any) => {
-							returnData.push({
-								json: task,
-								pairedItem: i,
-							});
-						});
-					} else {
-						// Return empty result if no tasks were created
+					if (existingTask) {
+						// Return the existing task
 						returnData.push({
-							json: {},
+							json: existingTask,
 							pairedItem: i,
 						});
+					} else {
+						// No existing task, check the asset's current isolation status
+						try {
+							const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
+							if (assetResponse.result) {
+								const asset = assetResponse.result;
+								const currentlyIsolated = asset.isolationStatus === 'isolated';
+
+								// Check if the asset is already in the desired state
+								if (currentlyIsolated === isolationEnabled) {
+									// Asset is already in the desired isolation state
+									returnData.push({
+										json: {
+											message: `Asset is already ${isolationEnabled ? 'isolated' : 'unisolated'}`,
+											asset: asset,
+										},
+										pairedItem: i,
+									});
+									break;
+								}
+							}
+						} catch (error) {
+							// If we can't fetch the asset, proceed with creating the task
+							console.error(`Error fetching asset details: ${error.message}`);
+						}
+
+						// Asset is not in the desired state, create a new task
+						// Build filter with only the selected asset ID
+						const filter = {
+							organizationIds: [orgIdNumber],
+							includedEndpointIds: [assetId],
+						};
+
+						// Build the request data
+						const requestData = {
+							enabled: isolationEnabled,
+							filter,
+						};
+
+						// Use the API method
+						const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
+
+						// Process the result - each task is returned as a separate item
+						if (responseData.result && responseData.result.length > 0) {
+							responseData.result.forEach((task: any) => {
+								returnData.push({
+									json: task,
+									pairedItem: i,
+								});
+							});
+						} else {
+							// Return empty result if no tasks were created
+							returnData.push({
+								json: {},
+								pairedItem: i,
+							});
+						}
 					}
 					break;
 				}
