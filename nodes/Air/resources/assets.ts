@@ -1574,13 +1574,32 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						});
 					}
 
+					// First, fetch the asset details
+					let asset: any = null;
+					let assetFetchError: string | null = null;
+					try {
+						const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
+						if (assetResponse.result) {
+							asset = assetResponse.result;
+						}
+					} catch (error) {
+						assetFetchError = error.message || 'Failed to fetch asset details';
+						console.error(`Error fetching asset details: ${assetFetchError}`);
+					}
+
 					// Check for existing reboot task in 'assigned' status
 					const existingTask = await checkExistingTask(this, credentials, assetId, 'reboot');
 
 					if (existingTask) {
-						// Return the existing task
+						// Return the existing task with standardized response
 						returnData.push({
-							json: existingTask,
+							json: {
+								success: true,
+								message: 'Reboot task already assigned and waiting to be processed',
+								asset: asset,
+								task: existingTask,
+								error: assetFetchError,
+							},
 							pairedItem: i,
 						});
 					} else {
@@ -1597,20 +1616,44 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						};
 
 						// Use the API method
-						const responseData = await assetsApi.rebootAssets(this, credentials, requestData);
+						try {
+							const responseData = await assetsApi.rebootAssets(this, credentials, requestData);
 
-						// Process the result - each task is returned as a separate item
-						if (responseData.result && responseData.result.length > 0) {
-							responseData.result.forEach((task: any) => {
+							// Process the result
+							if (responseData.result && responseData.result.length > 0) {
+								const newTask = responseData.result[0];
 								returnData.push({
-									json: task,
+									json: {
+										success: true,
+										message: 'Reboot task created successfully',
+										asset: asset,
+										task: newTask,
+										error: assetFetchError,
+									},
 									pairedItem: i,
 								});
-							});
-						} else {
-							// Return empty result if no tasks were created
+							} else {
+								// Return result even if no tasks were created
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create reboot task',
+										asset: asset,
+										task: null,
+										error: assetFetchError || 'No tasks were created by the server',
+									},
+									pairedItem: i,
+								});
+							}
+						} catch (error) {
 							returnData.push({
-								json: {},
+								json: {
+									success: false,
+									message: 'Failed to create reboot task',
+									asset: asset,
+									task: null,
+									error: error.message || 'Unknown error occurred',
+								},
 								pairedItem: i,
 							});
 						}
@@ -1670,13 +1713,32 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						});
 					}
 
+					// First, fetch the asset details
+					let asset: any = null;
+					let assetFetchError: string | null = null;
+					try {
+						const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
+						if (assetResponse.result) {
+							asset = assetResponse.result;
+						}
+					} catch (error) {
+						assetFetchError = error.message || 'Failed to fetch asset details';
+						console.error(`Error fetching asset details: ${assetFetchError}`);
+					}
+
 					// Check for existing shutdown task in 'assigned' status
 					const existingTask = await checkExistingTask(this, credentials, assetId, 'shutdown');
 
 					if (existingTask) {
-						// Return the existing task
+						// Return the existing task with standardized response
 						returnData.push({
-							json: existingTask,
+							json: {
+								success: true,
+								message: 'Shutdown task already assigned and waiting to be processed',
+								asset: asset,
+								task: existingTask,
+								error: assetFetchError,
+							},
 							pairedItem: i,
 						});
 					} else {
@@ -1693,20 +1755,44 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						};
 
 						// Use the API method
-						const responseData = await assetsApi.shutdownAssets(this, credentials, requestData);
+						try {
+							const responseData = await assetsApi.shutdownAssets(this, credentials, requestData);
 
-						// Process the result - each task is returned as a separate item
-						if (responseData.result && responseData.result.length > 0) {
-							responseData.result.forEach((task: any) => {
+							// Process the result
+							if (responseData.result && responseData.result.length > 0) {
+								const newTask = responseData.result[0];
 								returnData.push({
-									json: task,
+									json: {
+										success: true,
+										message: 'Shutdown task created successfully',
+										asset: asset,
+										task: newTask,
+										error: assetFetchError,
+									},
 									pairedItem: i,
 								});
-							});
-						} else {
-							// Return empty result if no tasks were created
+							} else {
+								// Return result even if no tasks were created
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create shutdown task',
+										asset: asset,
+										task: null,
+										error: assetFetchError || 'No tasks were created by the server',
+									},
+									pairedItem: i,
+								});
+							}
+						} catch (error) {
 							returnData.push({
-								json: {},
+								json: {
+									success: false,
+									message: 'Failed to create shutdown task',
+									asset: asset,
+									task: null,
+									error: error.message || 'Unknown error occurred',
+								},
 								pairedItem: i,
 							});
 						}
@@ -1767,42 +1853,109 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						});
 					}
 
+															// First, fetch the asset details
+					let asset: any = null;
+					let assetFetchError: string | null = null;
+					try {
+						const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
+						if (assetResponse.result) {
+							asset = assetResponse.result;
+						}
+					} catch (error) {
+						assetFetchError = error.message || 'Failed to fetch asset details';
+						console.error(`Error fetching asset details: ${assetFetchError}`);
+					}
+
 					// Check for existing isolation task in 'assigned' status
 					const existingTask = await checkExistingTask(this, credentials, assetId, 'isolation');
 
 					if (existingTask) {
-						// Return the existing task
+						// Case 3: Isolation task assigned but not yet processed
 						returnData.push({
-							json: existingTask,
+							json: {
+								success: true,
+								message: `Isolation task already assigned and waiting to be processed`,
+								asset: asset,
+								task: existingTask,
+								error: assetFetchError,
+							},
 							pairedItem: i,
 						});
-					} else {
-						// No existing task, check the asset's current isolation status
-						try {
-							const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
-							if (assetResponse.result) {
-								const asset = assetResponse.result;
-								const currentlyIsolated = asset.isolationStatus === 'isolated';
+					} else if (asset) {
+						const currentlyIsolated = asset.isolationStatus === 'isolated';
 
-								// Check if the asset is already in the desired state
-								if (currentlyIsolated === isolationEnabled) {
-									// Asset is already in the desired isolation state
+						// Check if the asset is already in the desired state
+						if (currentlyIsolated === isolationEnabled) {
+							// Case 1 or 2: Asset is already in the desired isolation state
+							returnData.push({
+								json: {
+									success: true,
+									message: `Asset is already ${isolationEnabled ? 'isolated' : 'unisolated'}`,
+									asset: asset,
+									task: null,
+									error: null,
+								},
+								pairedItem: i,
+							});
+						} else {
+							// Asset is not in the desired state, create a new task
+							// Build filter with only the selected asset ID
+							const filter = {
+								organizationIds: [orgIdNumber],
+								includedEndpointIds: [assetId],
+							};
+
+							// Build the request data
+							const requestData = {
+								enabled: isolationEnabled,
+								filter,
+							};
+
+							// Use the API method
+							try {
+								const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
+
+								// Process the result
+								if (responseData.result && responseData.result.length > 0) {
+									const newTask = responseData.result[0];
 									returnData.push({
 										json: {
-											message: `Asset is already ${isolationEnabled ? 'isolated' : 'unisolated'}`,
+											success: true,
+											message: `Isolation task created to ${isolationEnabled ? 'isolate' : 'unisolate'} the asset`,
 											asset: asset,
+											task: newTask,
+											error: null,
 										},
 										pairedItem: i,
 									});
-									break;
+								} else {
+									// Return result even if no tasks were created
+									returnData.push({
+										json: {
+											success: false,
+											message: 'Failed to create isolation task',
+											asset: asset,
+											task: null,
+											error: 'No tasks were created by the server',
+										},
+										pairedItem: i,
+									});
 								}
+							} catch (error) {
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create isolation task',
+										asset: asset,
+										task: null,
+										error: error.message || 'Unknown error occurred',
+									},
+									pairedItem: i,
+								});
 							}
-						} catch (error) {
-							// If we can't fetch the asset, proceed with creating the task
-							console.error(`Error fetching asset details: ${error.message}`);
 						}
-
-						// Asset is not in the desired state, create a new task
+					} else {
+						// Could not fetch asset details, but try to create the task anyway
 						// Build filter with only the selected asset ID
 						const filter = {
 							organizationIds: [orgIdNumber],
@@ -1816,20 +1969,44 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						};
 
 						// Use the API method
-						const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
+						try {
+							const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
 
-						// Process the result - each task is returned as a separate item
-						if (responseData.result && responseData.result.length > 0) {
-							responseData.result.forEach((task: any) => {
+							// Process the result
+							if (responseData.result && responseData.result.length > 0) {
+								const newTask = responseData.result[0];
 								returnData.push({
-									json: task,
+									json: {
+										success: true,
+										message: `Isolation task created to ${isolationEnabled ? 'isolate' : 'unisolate'} the asset`,
+										asset: null,
+										task: newTask,
+										error: assetFetchError,
+									},
 									pairedItem: i,
 								});
-							});
-						} else {
-							// Return empty result if no tasks were created
+							} else {
+								// Return result even if no tasks were created
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create isolation task',
+										asset: null,
+										task: null,
+										error: assetFetchError || 'No tasks were created by the server',
+									},
+									pairedItem: i,
+								});
+							}
+						} catch (error) {
 							returnData.push({
-								json: {},
+								json: {
+									success: false,
+									message: 'Failed to create isolation task',
+									asset: null,
+									task: null,
+									error: error.message || 'Unknown error occurred',
+								},
 								pairedItem: i,
 							});
 						}
