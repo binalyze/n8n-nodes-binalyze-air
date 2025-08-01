@@ -72,7 +72,10 @@ Manage endpoints and their associated tasks, tags, and status.
 - `get` - Retrieve a specific asset
 - `getAssetTasks` - Get tasks for a specific asset
 - `getAll` - Retrieve many assets
+- `reboot` - Assign reboot task to a specific asset (returns standardized response with success status, message, asset details, task, and error information)
 - `removeTags` - Remove tags from assets by filter
+- `setIsolation` - Assign isolation task to a specific asset (checks for existing tasks and current isolation status, returns standardized response)
+- `shutdown` - Assign shutdown task to a specific asset (returns standardized response with success status, message, asset details, task, and error information)
 
 ### Baselines
 Acquire and compare system baselines.
@@ -313,5 +316,5 @@ node test/e2e.js download --file my-workflow.json
 
 
 ## TODO
-- Add Asset isolation, shutdown, and reboot
 - Add interACT Library related operations
+- Improve interACT Wait for Session to be live to use Task status (not pwd command) - increase timeout

@@ -25,6 +25,45 @@ import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import { api as assetsApi } from '../api/assets/assets';
 import { findOrganizationByName } from './organizations';
 
+// ===== HELPER FUNCTIONS =====
+
+/**
+ * Check if an asset has an existing task of the specified type in 'assigned' status
+ * @param context - The execution context
+ * @param credentials - The API credentials
+ * @param assetId - The asset ID to check
+ * @param taskType - The type of task to check for
+ * @returns The existing task if found, null otherwise
+ */
+async function checkExistingTask(
+	context: IExecuteFunctions,
+	credentials: AirCredentials,
+	assetId: string,
+	taskType: 'shutdown' | 'reboot' | 'isolation'
+): Promise<any | null> {
+	try {
+		// Get tasks for the asset with filters
+		const queryParams = {
+			'filter[type]': taskType,
+			'filter[status]': 'assigned'
+		};
+
+		const tasksResponse = await assetsApi.getAssetTasks(context, credentials, assetId, queryParams);
+
+		// Check if there are any tasks in 'assigned' status
+		if (tasksResponse.result && tasksResponse.result.entities && tasksResponse.result.entities.length > 0) {
+			// Return the first matching task
+			return tasksResponse.result.entities[0];
+		}
+
+		return null;
+	} catch (error) {
+		// If there's an error checking for existing tasks, we'll proceed with creating a new one
+		console.error(`Error checking existing tasks: ${error.message}`);
+		return null;
+	}
+}
+
 export const AssetsOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
@@ -44,22 +83,40 @@ export const AssetsOperations: INodeProperties[] = [
 				action: 'Add tags to assets',
 			},
 			{
+				name: 'Assign Isolation Task',
+				value: 'setIsolation',
+				description: 'Assign isolation task to an asset',
+				action: 'Assign isolation task to an asset',
+			},
+			{
+				name: 'Assign Reboot Task',
+				value: 'reboot',
+				description: 'Assign reboot task to an asset',
+				action: 'Assign reboot task to assets',
+			},
+			{
+				name: 'Assign Shutdown Task',
+				value: 'shutdown',
+				description: 'Assign shutdown task to an asset',
+				action: 'Assign shutdown task to asset',
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				description: 'Retrieve a specific asset',
 				action: 'Get an asset',
 			},
 			{
-				name: 'Get Asset Tasks',
-				value: 'getAssetTasks',
-				description: 'Get tasks for a specific asset',
-				action: 'Get asset tasks',
-			},
-			{
 				name: 'Get Many',
 				value: 'getAll',
 				description: 'Retrieve many assets',
 				action: 'Get many assets',
+			},
+			{
+				name: 'Get Tasks',
+				value: 'getAssetTasks',
+				description: 'Get tasks for a specific asset',
+				action: 'Get asset tasks',
 			},
 			{
 				name: 'Remove Tags',
@@ -593,6 +650,306 @@ export const AssetsOperations: INodeProperties[] = [
 			},
 		],
 	},
+
+	// Organization for reboot operation
+	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['reboot'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a number)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization that contains the asset',
+	},
+
+	// Asset for reboot operation
+	{
+		displayName: 'Asset',
+		name: 'assetId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an asset...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['reboot'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an asset...',
+				typeOptions: {
+					searchListMethod: 'getAssetsByOrganizationForDeviceActions',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid asset ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter asset ID',
+			},
+		],
+		required: true,
+		description: 'The asset to reboot',
+	},
+
+	// Organization for shutdown operation
+	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['shutdown'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a number)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization that contains the asset',
+	},
+
+	// Asset for shutdown operation
+	{
+		displayName: 'Asset',
+		name: 'assetId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an asset...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['shutdown'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an asset...',
+				typeOptions: {
+					searchListMethod: 'getAssetsByOrganizationForDeviceActions',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid asset ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter asset ID',
+			},
+		],
+		required: true,
+		description: 'The asset to shutdown',
+	},
+
+	// Organization for assign isolation task operation
+	{
+		displayName: 'Organization',
+		name: 'organizationId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an organization...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['setIsolation'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an organization...',
+				typeOptions: {
+					searchListMethod: 'getOrganizations',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[0-9]+$',
+							errorMessage: 'Not a valid organization ID (must be a number)',
+						},
+					},
+				],
+				placeholder: 'Enter organization ID',
+			},
+			{
+				displayName: 'By Name',
+				name: 'name',
+				type: 'string',
+				placeholder: 'Enter organization name',
+			},
+		],
+		required: true,
+		description: 'The organization that contains the asset',
+	},
+
+	// Asset for assign isolation task operation
+	{
+		displayName: 'Asset',
+		name: 'assetId',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		placeholder: 'Select an asset...',
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['setIsolation'],
+			},
+		},
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				placeholder: 'Select an asset...',
+				typeOptions: {
+					searchListMethod: 'getAssetsByOrganizationForDeviceActions',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				validation: [
+					{
+						type: 'regex',
+						properties: {
+							regex: '^[a-zA-Z0-9-_]+$',
+							errorMessage: 'Not a valid asset ID (must contain only letters, numbers, hyphens, and underscores)',
+						},
+					},
+				],
+				placeholder: 'Enter asset ID',
+			},
+		],
+		required: true,
+		description: 'The asset to assign isolation task to',
+	},
+
+	// Isolation enabled field for assign isolation task operation
+	{
+		displayName: 'Isolation Enabled',
+		name: 'isolationEnabled',
+		type: 'boolean',
+		default: true,
+		displayOptions: {
+			show: {
+				resource: ['assets'],
+				operation: ['setIsolation'],
+			},
+		},
+		required: true,
+		description: 'Whether to enable or disable isolation on the selected assets',
+	},
+
+
 ];
 
 // ===== HELPER FUNCTIONS =====
@@ -769,12 +1126,56 @@ function validateTags(tags: string[]): { valid: boolean; invalidTags: string[] }
 	};
 }
 
+
+
 // ===== LOAD OPTIONS METHODS =====
 
 export async function getAssets(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
 	try {
 		const credentials = await getAirCredentials(this);
 		const assets = await fetchAllAssets(this, credentials, '0', searchTerm);
+
+		return createListSearchResults(
+			assets,
+			isValidAsset,
+			(asset) => ({
+				name: `${asset.name} (${asset.ipAddress})`,
+				value: extractAssetId(asset),
+			}),
+			searchTerm
+		);
+	} catch (error) {
+		throw catchAndFormatError(error, 'loading assets');
+	}
+}
+
+/**
+ * Get assets for a specific organization (context-aware for device action operations)
+ */
+export async function getAssetsByOrganizationForDeviceActions(this: ILoadOptionsFunctions, searchTerm?: string): Promise<INodeListSearchResult> {
+	try {
+		const credentials = await getAirCredentials(this);
+
+		// Try to get the organization from the current node parameters
+		let organizationId = '0'; // Default to all organizations
+		try {
+			const currentParams = this.getCurrentNodeParameters();
+			if (currentParams && currentParams.organizationId) {
+				const orgResource = currentParams.organizationId as any;
+				if (typeof orgResource === 'object') {
+					if (orgResource.mode === 'id' || orgResource.mode === 'list') {
+						organizationId = orgResource.value || '0';
+					}
+					// Skip name resolution for ILoadOptionsFunctions context
+				} else if (typeof orgResource === 'string') {
+					organizationId = orgResource;
+				}
+			}
+		} catch (error) {
+			// If we can't get the current parameters, fall back to default
+		}
+
+		const assets = await fetchAllAssets(this, credentials, organizationId, searchTerm);
 
 		return createListSearchResults(
 			assets,
@@ -1118,6 +1519,498 @@ export async function executeAssets(this: IExecuteFunctions): Promise<INodeExecu
 						json: responseData as any,
 						pairedItem: i,
 					});
+					break;
+				}
+
+				case 'reboot': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const assetResource = this.getNodeParameter('assetId', i) as any;
+
+					// Handle organization ID from resource locator
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
+							itemIndex: i,
+						});
+					}
+
+					// Handle asset ID from resource locator
+					let assetId: string;
+					if (assetResource.mode === 'list' || assetResource.mode === 'id') {
+						assetId = assetResource.value;
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid asset selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate asset ID
+					try {
+						assetId = normalizeAndValidateId(assetId, 'Asset ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// First, fetch the asset details
+					let asset: any = null;
+					let assetFetchError: string | null = null;
+					try {
+						const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
+						if (assetResponse.result) {
+							asset = assetResponse.result;
+						}
+					} catch (error) {
+						assetFetchError = error.message || 'Failed to fetch asset details';
+						console.error(`Error fetching asset details: ${assetFetchError}`);
+					}
+
+					// Check for existing reboot task in 'assigned' status
+					const existingTask = await checkExistingTask(this, credentials, assetId, 'reboot');
+
+					if (existingTask) {
+						// Return the existing task with standardized response
+						returnData.push({
+							json: {
+								success: true,
+								message: 'Reboot task already assigned and waiting to be processed',
+								asset: asset,
+								task: existingTask,
+								error: assetFetchError,
+							},
+							pairedItem: i,
+						});
+					} else {
+						// No existing task, create a new one
+						// Build filter with only the selected asset ID
+						const filter = {
+							organizationIds: [orgIdNumber],
+							includedEndpointIds: [assetId],
+						};
+
+						// Build the request data
+						const requestData = {
+							filter,
+						};
+
+						// Use the API method
+						try {
+							const responseData = await assetsApi.rebootAssets(this, credentials, requestData);
+
+							// Process the result
+							if (responseData.result && responseData.result.length > 0) {
+								const newTask = responseData.result[0];
+								returnData.push({
+									json: {
+										success: true,
+										message: 'Reboot task created successfully',
+										asset: asset,
+										task: newTask,
+										error: assetFetchError,
+									},
+									pairedItem: i,
+								});
+							} else {
+								// Return result even if no tasks were created
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create reboot task',
+										asset: asset,
+										task: null,
+										error: assetFetchError || 'No tasks were created by the server',
+									},
+									pairedItem: i,
+								});
+							}
+						} catch (error) {
+							returnData.push({
+								json: {
+									success: false,
+									message: 'Failed to create reboot task',
+									asset: asset,
+									task: null,
+									error: error.message || 'Unknown error occurred',
+								},
+								pairedItem: i,
+							});
+						}
+					}
+					break;
+				}
+
+				case 'shutdown': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const assetResource = this.getNodeParameter('assetId', i) as any;
+
+					// Handle organization ID from resource locator
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
+							itemIndex: i,
+						});
+					}
+
+					// Handle asset ID from resource locator
+					let assetId: string;
+					if (assetResource.mode === 'list' || assetResource.mode === 'id') {
+						assetId = assetResource.value;
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid asset selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate asset ID
+					try {
+						assetId = normalizeAndValidateId(assetId, 'Asset ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// First, fetch the asset details
+					let asset: any = null;
+					let assetFetchError: string | null = null;
+					try {
+						const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
+						if (assetResponse.result) {
+							asset = assetResponse.result;
+						}
+					} catch (error) {
+						assetFetchError = error.message || 'Failed to fetch asset details';
+						console.error(`Error fetching asset details: ${assetFetchError}`);
+					}
+
+					// Check for existing shutdown task in 'assigned' status
+					const existingTask = await checkExistingTask(this, credentials, assetId, 'shutdown');
+
+					if (existingTask) {
+						// Return the existing task with standardized response
+						returnData.push({
+							json: {
+								success: true,
+								message: 'Shutdown task already assigned and waiting to be processed',
+								asset: asset,
+								task: existingTask,
+								error: assetFetchError,
+							},
+							pairedItem: i,
+						});
+					} else {
+						// No existing task, create a new one
+						// Build filter with only the selected asset ID
+						const filter = {
+							organizationIds: [orgIdNumber],
+							includedEndpointIds: [assetId],
+						};
+
+						// Build the request data
+						const requestData = {
+							filter,
+						};
+
+						// Use the API method
+						try {
+							const responseData = await assetsApi.shutdownAssets(this, credentials, requestData);
+
+							// Process the result
+							if (responseData.result && responseData.result.length > 0) {
+								const newTask = responseData.result[0];
+								returnData.push({
+									json: {
+										success: true,
+										message: 'Shutdown task created successfully',
+										asset: asset,
+										task: newTask,
+										error: assetFetchError,
+									},
+									pairedItem: i,
+								});
+							} else {
+								// Return result even if no tasks were created
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create shutdown task',
+										asset: asset,
+										task: null,
+										error: assetFetchError || 'No tasks were created by the server',
+									},
+									pairedItem: i,
+								});
+							}
+						} catch (error) {
+							returnData.push({
+								json: {
+									success: false,
+									message: 'Failed to create shutdown task',
+									asset: asset,
+									task: null,
+									error: error.message || 'Unknown error occurred',
+								},
+								pairedItem: i,
+							});
+						}
+					}
+					break;
+				}
+
+				case 'setIsolation': {
+					const organizationResource = this.getNodeParameter('organizationId', i) as any;
+					const assetResource = this.getNodeParameter('assetId', i) as any;
+					const isolationEnabled = this.getNodeParameter('isolationEnabled', i) as boolean;
+
+					// Handle organization ID from resource locator
+					let organizationId: string;
+					if (organizationResource.mode === 'list' || organizationResource.mode === 'id') {
+						organizationId = organizationResource.value;
+					} else if (organizationResource.mode === 'name') {
+						try {
+							organizationId = await findOrganizationByName(this, credentials, organizationResource.value);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid organization selection mode', { itemIndex: i });
+					}
+
+					// Validate organization ID
+					try {
+						organizationId = normalizeAndValidateId(organizationId, 'Organization ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					}
+
+					// Convert organization ID to number
+					const orgIdNumber = parseInt(organizationId, 10);
+					if (isNaN(orgIdNumber)) {
+						throw new NodeOperationError(this.getNode(), 'Organization ID must be a valid number', {
+							itemIndex: i,
+						});
+					}
+
+					// Handle asset ID from resource locator
+					let assetId: string;
+					if (assetResource.mode === 'list' || assetResource.mode === 'id') {
+						assetId = assetResource.value;
+					} else {
+						throw new NodeOperationError(this.getNode(), 'Invalid asset selection mode', {
+							itemIndex: i,
+						});
+					}
+
+					// Validate asset ID
+					try {
+						assetId = normalizeAndValidateId(assetId, 'Asset ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+															// First, fetch the asset details
+					let asset: any = null;
+					let assetFetchError: string | null = null;
+					try {
+						const assetResponse = await assetsApi.getAssetById(this, credentials, assetId);
+						if (assetResponse.result) {
+							asset = assetResponse.result;
+						}
+					} catch (error) {
+						assetFetchError = error.message || 'Failed to fetch asset details';
+						console.error(`Error fetching asset details: ${assetFetchError}`);
+					}
+
+					// Check for existing isolation task in 'assigned' status
+					const existingTask = await checkExistingTask(this, credentials, assetId, 'isolation');
+
+					if (existingTask) {
+						// Case 3: Isolation task assigned but not yet processed
+						returnData.push({
+							json: {
+								success: true,
+								message: `Isolation task already assigned and waiting to be processed`,
+								asset: asset,
+								task: existingTask,
+								error: assetFetchError,
+							},
+							pairedItem: i,
+						});
+					} else if (asset) {
+						const currentlyIsolated = asset.isolationStatus === 'isolated';
+
+						// Check if the asset is already in the desired state
+						if (currentlyIsolated === isolationEnabled) {
+							// Case 1 or 2: Asset is already in the desired isolation state
+							returnData.push({
+								json: {
+									success: true,
+									message: `Asset is already ${isolationEnabled ? 'isolated' : 'unisolated'}`,
+									asset: asset,
+									task: null,
+									error: null,
+								},
+								pairedItem: i,
+							});
+						} else {
+							// Asset is not in the desired state, create a new task
+							// Build filter with only the selected asset ID
+							const filter = {
+								organizationIds: [orgIdNumber],
+								includedEndpointIds: [assetId],
+							};
+
+							// Build the request data
+							const requestData = {
+								enabled: isolationEnabled,
+								filter,
+							};
+
+							// Use the API method
+							try {
+								const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
+
+								// Process the result
+								if (responseData.result && responseData.result.length > 0) {
+									const newTask = responseData.result[0];
+									returnData.push({
+										json: {
+											success: true,
+											message: `Isolation task created to ${isolationEnabled ? 'isolate' : 'unisolate'} the asset`,
+											asset: asset,
+											task: newTask,
+											error: null,
+										},
+										pairedItem: i,
+									});
+								} else {
+									// Return result even if no tasks were created
+									returnData.push({
+										json: {
+											success: false,
+											message: 'Failed to create isolation task',
+											asset: asset,
+											task: null,
+											error: 'No tasks were created by the server',
+										},
+										pairedItem: i,
+									});
+								}
+							} catch (error) {
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create isolation task',
+										asset: asset,
+										task: null,
+										error: error.message || 'Unknown error occurred',
+									},
+									pairedItem: i,
+								});
+							}
+						}
+					} else {
+						// Could not fetch asset details, but try to create the task anyway
+						// Build filter with only the selected asset ID
+						const filter = {
+							organizationIds: [orgIdNumber],
+							includedEndpointIds: [assetId],
+						};
+
+						// Build the request data
+						const requestData = {
+							enabled: isolationEnabled,
+							filter,
+						};
+
+						// Use the API method
+						try {
+							const responseData = await assetsApi.setIsolationOnAssets(this, credentials, requestData);
+
+							// Process the result
+							if (responseData.result && responseData.result.length > 0) {
+								const newTask = responseData.result[0];
+								returnData.push({
+									json: {
+										success: true,
+										message: `Isolation task created to ${isolationEnabled ? 'isolate' : 'unisolate'} the asset`,
+										asset: null,
+										task: newTask,
+										error: assetFetchError,
+									},
+									pairedItem: i,
+								});
+							} else {
+								// Return result even if no tasks were created
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Failed to create isolation task',
+										asset: null,
+										task: null,
+										error: assetFetchError || 'No tasks were created by the server',
+									},
+									pairedItem: i,
+								});
+							}
+						} catch (error) {
+							returnData.push({
+								json: {
+									success: false,
+									message: 'Failed to create isolation task',
+									asset: null,
+									task: null,
+									error: error.message || 'Unknown error occurred',
+								},
+								pairedItem: i,
+							});
+						}
+					}
 					break;
 				}
 
