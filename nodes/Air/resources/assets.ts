@@ -263,6 +263,13 @@ export const AssetsOperations: INodeProperties[] = [
 				],
 			},
 			{
+				displayName: 'Filter By Label',
+				name: 'label',
+				type: 'string',
+				default: '',
+				placeholder: 'Enter label',
+			},
+			{
 				displayName: 'Filter By Managed Status',
 				name: 'managedStatus',
 				type: 'multiOptions',
@@ -1003,6 +1010,11 @@ export function buildAssetQueryParams(organizationIds: string, additionalFields:
 	// Add IP address filter if provided
 	if (additionalFields.ipAddress) {
 		queryParams['filter[ipAddress]'] = additionalFields.ipAddress;
+	}
+
+	// Add label filter if provided
+	if (additionalFields.label) {
+		queryParams['filter[label]'] = additionalFields.label;
 	}
 
 	// Add platform filter if provided

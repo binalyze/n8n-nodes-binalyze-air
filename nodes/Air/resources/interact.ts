@@ -730,8 +730,7 @@ export async function getAssetsByOrganizationForInteract(this: ILoadOptionsFunct
 
 		// Get assets for the organization
 		const queryParams: any = {
-			// Only show online, managed assets for InterACT
-			'filter[onlineStatus]': 'online',
+			// Show all assets (online, and offline)
 			'filter[managedStatus]': 'managed',
 		};
 
@@ -746,7 +745,7 @@ export async function getAssetsByOrganizationForInteract(this: ILoadOptionsFunct
 			assets,
 			isValidAsset,
 			(asset) => ({
-				name: `${asset.name} (${asset.ipAddress || 'No IP'})`,
+				name: `${asset.name} (${asset.onlineStatus || 'Unknown'} - ${asset.ipAddress || 'No IP'})`,
 				value: extractAssetId(asset),
 			}),
 			searchTerm
