@@ -458,14 +458,16 @@ async function handleCreateInterACTSession(context: IExecuteFunctions, credentia
 	// Extract session ID from the response
 	if (response.result && response.result.data) {
 		const result = response.result;
+		// Prefix relative URLs with the instanceUrl to make them clickable
+		const baseUrl = credentials.instanceUrl.replace(/\/$/, '');
 		return {
 			sessionId: result.data.sessionId,
 			assetId: result.assetId || assetId,
 			taskId: result.id,
 			type: result.type,
-			loginUrl: result.loginUrl,
-			shellUrl: result.shellUrl,
-			reportUrl: result.reportUrl
+			loginUrl: baseUrl + result.loginUrl,
+			shellUrl: baseUrl + result.shellUrl,
+			reportUrl: baseUrl + result.reportUrl
 		};
 	} else {
 		throw new NodeOperationError(context.getNode(), 'Failed to create InterACT session');
