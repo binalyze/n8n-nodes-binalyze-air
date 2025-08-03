@@ -105,7 +105,7 @@ Execute commands and interact with endpoints remotely.
 
 **Operations:**
 - `createSession` - Create a new InterACT shell session for an asset
-- `waitForSession` - Wait for an InterACT session to become live
+- `waitForSession` - Wait for an InterACT session to become live by monitoring task status (supports indefinite wait with timeout=0)
 - `closeSession` - Close an InterACT session
 - `executeCommand` - Execute a command in an InterACT session
 - `executeAsyncCommand` - Execute an asynchronous command in an InterACT session
@@ -146,6 +146,7 @@ Manage and monitor tasks and assignments.
 - `get` - Retrieve a specific task
 - `getAll` - Retrieve many tasks
 - `getTaskAssignments` - Retrieve assignments for a specific task
+- `waitForCompletion` - Wait for a task to complete with polling
 
 ### Triage Rules
 Create and manage triage rules for automated analysis.
@@ -317,4 +318,3 @@ node test/e2e.js download --file my-workflow.json
 
 ## TODO
 - Add interACT Library related operations
-- Improve interACT Wait for Session to be live to use Task status (not pwd command) - increase timeout

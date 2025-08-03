@@ -56,6 +56,12 @@ export const TasksOperations: INodeProperties[] = [
 				description: 'Retrieve assignments for a specific task',
 				action: 'Get task assignments',
 			},
+			{
+				name: 'Wait for Completion',
+				value: 'waitForCompletion',
+				description: 'Wait for a task to complete with polling',
+				action: 'Wait for task completion',
+			},
 		],
 		default: 'getAll',
 	},
@@ -68,11 +74,29 @@ export const TasksOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['tasks'],
-				operation: ['get', 'getTaskAssignments'],
+				operation: ['get', 'getTaskAssignments', 'waitForCompletion'],
 			},
 		},
 		required: true,
 		description: 'The ID of the task',
+	},
+	{
+		displayName: 'Timeout (Seconds)',
+		name: 'timeout',
+		type: 'number',
+		default: 300,
+		placeholder: '300',
+		displayOptions: {
+			show: {
+				resource: ['tasks'],
+				operation: ['waitForCompletion'],
+			},
+		},
+		required: true,
+		description: 'Maximum time to wait for completion in seconds. Set to 0 to wait indefinitely.',
+		typeOptions: {
+			minValue: 0,
+		},
 	},
 	{
 		displayName: 'Organization',
@@ -571,6 +595,117 @@ export async function executeTasks(this: IExecuteFunctions): Promise<INodeExecut
 						paginationData: paginationInfo,
 						excludeFields: ['sortables', 'filters'], // Exclude for simplified pagination
 					});
+					break;
+				}
+
+				case 'waitForCompletion': {
+					const taskId = this.getNodeParameter('taskId', i) as string;
+					const timeout = this.getNodeParameter('timeout', i) as number;
+
+					// Validate task ID
+					try {
+						normalizeAndValidateId(taskId, 'Task ID');
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), error.message, {
+							itemIndex: i,
+						});
+					}
+
+					// Set polling interval based on timeout
+					const pollingInterval = timeout === 0 ? 300000 : 60000; // 5 minutes if indefinite, otherwise 1 minute
+					const startTime = Date.now();
+					let taskCompleted = false;
+
+					// Polling loop
+					while (!taskCompleted) {
+						try {
+							const response = await tasksApi.getTaskById(this, credentials, taskId);
+
+							if (!response.success) {
+								const errorMessage = response.errors?.join(', ') || 'Failed to get task status';
+								throw new NodeOperationError(this.getNode(), errorMessage, {
+									itemIndex: i,
+								});
+							}
+
+							if (!response.result) {
+								throw new NodeOperationError(this.getNode(), 'Task not found', {
+									itemIndex: i,
+								});
+							}
+
+							const task = response.result;
+
+							// Check if task is completed
+							if (task.status === 'completed') {
+								taskCompleted = true;
+								returnData.push({
+									json: {
+										success: true,
+										message: 'Task completed successfully',
+										status: task.status,
+										task: task,
+									},
+									pairedItem: i,
+								});
+								break;
+							}
+
+							// Check if task failed or was cancelled
+							if (task.status === 'cancelled') {
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Task was cancelled',
+										status: task.status,
+										error: 'Task was cancelled before completion',
+										task: task,
+									},
+									pairedItem: i,
+								});
+								break;
+							}
+
+							if (task.status === 'failed') {
+								returnData.push({
+									json: {
+										success: false,
+										message: 'Task failed',
+										status: task.status,
+										error: 'Task failed during execution',
+										task: task,
+									},
+									pairedItem: i,
+								});
+								break;
+							}
+
+							// Check timeout (skip if timeout is 0 for indefinite wait)
+							if (timeout > 0) {
+								const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+								if (elapsedTime >= timeout) {
+									returnData.push({
+										json: {
+											success: false,
+											message: `Task did not complete within ${timeout} seconds`,
+											status: task.status,
+											error: `Timeout exceeded. Task is still in status: ${task.status}`,
+											task: task,
+										},
+										pairedItem: i,
+									});
+									break;
+								}
+							}
+
+							// Wait before next poll
+							await new Promise(resolve => setTimeout(resolve, pollingInterval));
+
+						} catch (error) {
+							// Re-throw the error to be handled by the outer try-catch
+							throw error;
+						}
+					}
 					break;
 				}
 

@@ -16,6 +16,7 @@ import {
 
 import { AirCredentials } from '../../../credentials/AirApi.credentials';
 import { api as interactApi } from '../api/interact/interact';
+import { api as tasksApi } from '../api/tasks/tasks'; // Add tasks API import
 import { findOrganizationByName } from './organizations';
 import { api as casesApi } from '../api/cases/cases';
 import { api as assetsApi } from '../api/assets/assets';
@@ -79,10 +80,10 @@ export const InterACTOperations: INodeProperties[] = [
 				action: 'Execute a command',
 			},
 			{
-				name: 'Get Command Message',
+				name: 'Get Command Response',
 				value: 'getCommandMessage',
 				description: 'Get the result of a command execution',
-				action: 'Get a command message',
+				action: 'Get a command response',
 			},
 			{
 				name: 'Interrupt Command',
@@ -93,7 +94,7 @@ export const InterACTOperations: INodeProperties[] = [
 			{
 				name: 'Wait for Session to Be Live',
 				value: 'waitForSession',
-				description: 'Wait for an InterACT session to become live by polling with pwd command',
+				description: 'Wait for an InterACT session to become live by monitoring task status',
 				action: 'Wait for session to be live',
 			},
 		],
@@ -254,6 +255,23 @@ export const InterACTOperations: INodeProperties[] = [
 		description: 'The InterACT session ID',
 	},
 
+	// Task ID field for waitForSession
+	{
+		displayName: 'Task ID',
+		name: 'taskId',
+		type: 'string',
+		default: '',
+		placeholder: 'Enter task ID',
+		displayOptions: {
+			show: {
+				resource: ['interact'],
+				operation: ['waitForSession'],
+			},
+		},
+		required: true,
+		description: 'The InterACT session task ID to monitor for status changes',
+	},
+
 	// Message ID field
 	{
 		displayName: 'Message ID',
@@ -329,10 +347,9 @@ export const InterACTOperations: INodeProperties[] = [
 			},
 		},
 		required: true,
-		description: 'Maximum time to wait for the session to become live (in seconds)',
+		description: 'Maximum time to wait for the session to become live (in seconds). Set to 0 to wait indefinitely.',
 		typeOptions: {
-			minValue: 10,
-			maxValue: 600,
+			minValue: 0,
 		},
 	},
 ];
@@ -527,57 +544,111 @@ async function handleGetCommandMessage(context: IExecuteFunctions, credentials: 
 
 async function handleWaitForSession(context: IExecuteFunctions, credentials: AirCredentials, itemIndex: number): Promise<any> {
 	const sessionId = context.getNodeParameter('sessionId', itemIndex) as string;
+	const taskId = context.getNodeParameter('taskId', itemIndex) as string;
 	const timeout = context.getNodeParameter('timeout', itemIndex) as number;
 
 	const startTime = Date.now();
-	const endTime = startTime + timeout * 1000;
-	const pollInterval = 10000; // 10 seconds
+	const pollInterval = 60000; // 1 minute polling interval
 
-	while (Date.now() < endTime) {
+	while (true) {
 		try {
-			// Execute pwd command to check if session is live
-			const data = {
-				command: 'pwd',
-				accept: 'json',
-			};
+			// Get the task status using the tasks API
+			const taskResponse = await tasksApi.getTaskById(context, credentials, taskId);
+			const task = taskResponse.result;
 
-			const response = await interactApi.executeCommand(context, credentials, sessionId, data);
-			
-			// Based on the actual response structure, the result should have these properties directly
-			// The actual response structure is: { messageId, session, exitCode, cwd, body }
-			const result = response.result as any;
-
-			// Check if we got a successful response
-			if (result && 'exitCode' in result && result.exitCode === 0 && result.body) {
-				// Session is live, return the response data
-				return {
-					sessionId: sessionId,
-					status: 'live',
-					message: 'Session is ready',
-					workingDirectory: result.cwd || result.body,
-					messageId: result.messageId,
-					exitCode: result.exitCode,
-					body: result.body
-				};
+			// Check if the task type is interact-shell and status is processing
+			if (task && task.type === 'interact-shell') {
+				if (task.status === 'processing') {
+					// Task is now processing, which means the InterACT session is live
+					return {
+						sessionId: sessionId,
+						taskId: taskId,
+						status: 'live',
+						message: 'InterACT session is ready - task is processing',
+						taskStatus: task.status,
+						taskType: task.type,
+						organizationId: task.organizationId,
+						createdAt: task.createdAt,
+						updatedAt: task.updatedAt
+					};
+				} else if (task.status === 'completed') {
+					// Task completed, but this might mean session ended
+					return {
+						sessionId: sessionId,
+						taskId: taskId,
+						status: 'completed',
+						message: 'InterACT session task completed',
+						taskStatus: task.status,
+						taskType: task.type,
+						organizationId: task.organizationId,
+						createdAt: task.createdAt,
+						updatedAt: task.updatedAt
+					};
+				} else if (task.status === 'cancelled') {
+					// Task was cancelled
+					return {
+						sessionId: sessionId,
+						taskId: taskId,
+						status: 'cancelled',
+						message: 'InterACT session task was cancelled',
+						error: 'Task was cancelled before becoming live',
+						taskStatus: task.status,
+						taskType: task.type,
+						organizationId: task.organizationId,
+						createdAt: task.createdAt,
+						updatedAt: task.updatedAt
+					};
+				} else if (task.status === 'failed') {
+					// Task failed
+					return {
+						sessionId: sessionId,
+						taskId: taskId,
+						status: 'failed',
+						message: 'InterACT session task failed',
+						error: 'Task failed during execution',
+						taskStatus: task.status,
+						taskType: task.type,
+						organizationId: task.organizationId,
+						createdAt: task.createdAt,
+						updatedAt: task.updatedAt
+					};
+				}
+				// Task is still in 'assigned' or 'scheduled' status, continue polling
+			} else {
+				// Task not found or wrong type
+				throw new NodeOperationError(
+					context.getNode(),
+					`Invalid task: Task ID ${taskId} is not an InterACT session task or was not found`
+				);
 			}
 		} catch (error) {
-			// Session might not be ready yet, continue polling
-			// Log the error for debugging but don't throw
-			console.log(`Session ${sessionId} not ready yet: ${error instanceof Error ? error.message : String(error)}`);
+			// If it's a NodeOperationError, re-throw it
+			if (error instanceof NodeOperationError) {
+				throw error;
+			}
+			// For other errors, log but continue polling (task might not be ready yet)
+			console.log(`Task ${taskId} status check failed: ${error instanceof Error ? error.message : String(error)}`);
+		}
+
+		// Check timeout (skip if timeout is 0 for indefinite wait)
+		if (timeout > 0) {
+			const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+			if (elapsedTime >= timeout) {
+				// Timeout reached
+				return {
+					sessionId: sessionId,
+					taskId: taskId,
+					status: 'timeout',
+					message: `InterACT session did not become live within ${timeout} seconds`,
+					error: `Timeout exceeded. Task is still waiting to become live`,
+					taskStatus: 'unknown'
+				};
+			}
 		}
 
 		// Wait for the poll interval before trying again
-		const remainingTime = endTime - Date.now();
-		if (remainingTime > pollInterval) {
-			await new Promise(resolve => setTimeout(resolve, pollInterval));
-		} else if (remainingTime > 0) {
-			// Wait for the remaining time if it's less than poll interval
-			await new Promise(resolve => setTimeout(resolve, remainingTime));
-		}
+		await new Promise(resolve => setTimeout(resolve, pollInterval));
 	}
-
-	// Timeout reached
-	throw new NodeOperationError(context.getNode(), `Session ${sessionId} did not become live within ${timeout} seconds`);
 }
 
 // Context-aware search functions for resource locators
