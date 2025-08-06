@@ -743,7 +743,7 @@
             "projectId": "ruqBk4A4CrNidITj",
             "user": {
               "createdAt": "2025-05-28T13:26:44.706Z",
-              "updatedAt": "2025-08-03T18:16:44.000Z",
+              "updatedAt": "2025-08-04T15:10:29.000Z",
               "id": "39c4a85b-f852-44a1-8e02-2deeaa8d667a",
               "email": "emre@binalyze.com",
               "firstName": "Emre",
@@ -764,7 +764,7 @@
               "role": "global:owner",
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2025-08-03",
+              "lastActiveAt": "2025-08-04",
               "isPending": false
             }
           }
