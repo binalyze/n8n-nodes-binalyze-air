@@ -1,378 +1,93 @@
 {
-  "createdAt": "2025-07-16T21:13:12.601Z",
-  "updatedAt": "2025-08-03T17:01:54.000Z",
-  "id": "I516Z0dNYsF7bzWM",
+  "createdAt": "2025-07-25T16:25:11.284Z",
+  "updatedAt": "2025-08-06T15:19:43.000Z",
+  "id": "2ijKwO3bfGHSaKwY",
   "name": "n8n-nodes-binalyze-air-e2e",
   "active": false,
-  "isArchived": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -224,
-        912
+        -3600,
+        2016
       ],
-      "id": "90012b14-1b1d-4581-8693-cc8d2bee9735",
+      "id": "94fd90e3-840d-42dd-b049-ee058ea47035",
       "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {
-        "resource": "autoassettags"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        0,
-        1008
-      ],
-      "id": "dcedf3f1-3a18-4210-b8fe-cb9030956199",
-      "name": "Asset Tags / Get Many",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "autoassettags"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        224,
-        912
-      ],
-      "id": "2c04df98-3728-47da-8647-da15d18580a3",
-      "name": "Asset Tags / Get By ID",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "autoassettags"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        224,
-        1104
-      ],
-      "id": "607fba69-9e0f-47df-812b-009b2f96b29a",
-      "name": "Asset Tags / Get By Name",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "cases",
-        "operation": "get",
-        "caseId": "={{ $json._id }}"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        448,
-        608
-      ],
-      "id": "f3df302f-2a90-4ad0-956a-287b1bff128d",
-      "name": "Case / Get By ID",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "cases",
-        "operation": "checkName",
-        "caseName": "={{ $json.name }}"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        448,
-        800
-      ],
-      "id": "764e30b5-68aa-4687-975f-c21414f798da",
-      "name": "Case / Check Name",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "cases",
-        "operation": "create",
-        "caseName": "n8n Test Case",
-        "organizationId": {
+        "resource": "acquisitions",
+        "organizationIdForGet": {
           "__rl": true,
-          "mode": "id",
-          "value": "0"
-        },
-        "ownerUserId": {
-          "__rl": true,
-          "value": "78cf7ecd-2273-4001-9e20-7e281dd66403",
+          "value": "0",
           "mode": "list",
-          "cachedResultName": "admin@binalyze.com"
-        }
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        0,
-        704
-      ],
-      "id": "d13bbf3f-7777-43eb-badb-97093962ec3e",
-      "name": "Case Create",
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "delete"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        448,
-        0
-      ],
-      "id": "7ae07f92-a2d3-4105-b674-1e45f19639cd",
-      "name": "Organization / Delete",
-      "alwaysOutputData": false,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "checkNameExists",
-        "nameToCheck": "=n8n Test"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        0,
-        0
-      ],
-      "id": "6316d7a7-acc8-4a5e-98cc-d710b5dca148",
-      "name": "Orgnization / Check Name",
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "406ca7c2-7970-49f8-b5e2-5b7a0b9595a0",
-              "leftValue": "={{ $json.exists }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
+          "cachedResultName": "Binalyze (Default)"
         },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        224,
-        0
-      ],
-      "id": "9e66a724-ae05-44c1-9b96-b5bb737a47e2",
-      "name": "If"
-    },
-    {
-      "parameters": {
-        "operation": "create",
-        "name": "n8n Test",
-        "shareableDeploymentEnabled": true,
-        "contactName": "n8n.test@binalyze.com",
-        "contactEmail": "n8n.test@binalyze.com",
-        "additionalFields": {
-          "contactMobile": "+123456789",
-          "contactPhone": "+123456789",
-          "contactTitle": "Automata",
-          "note": "Created by n8n workflow"
+        "acquisitionProfileId": {
+          "__rl": true,
+          "value": "baseline-acquisition-for-comparison",
+          "mode": "list",
+          "cachedResultName": "Baseline Acquisition for Comparison"
         }
       },
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        0,
-        208
+        -2688,
+        -192
       ],
-      "id": "ef73700d-69c7-4623-b182-0b462504d0b6",
-      "name": "Organization / Create",
+      "id": "87c1b533-62c4-405c-8c65-a24a592d89f5",
+      "name": "Get an acquisition profile",
       "credentials": {
         "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
         }
       }
     },
     {
       "parameters": {
-        "operation": "addTags",
+        "resource": "acquisitions",
+        "operation": "assignEvidenceTask",
         "organizationId": {
           "__rl": true,
-          "value": "={{ $json._id }}",
-          "mode": "id"
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
         },
-        "tags": "org-tag-1, org-tag-2, org-tag-3"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        224,
-        208
-      ],
-      "id": "367aea77-1556-4db5-aa16-094150a4ef73",
-      "name": "Organization / Add Tags",
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "removeTags",
-        "organizationId": {
+        "caseId": {
           "__rl": true,
-          "value": "={{ $json._id }}",
-          "mode": "id"
+          "value": "C-2025-0002",
+          "mode": "list",
+          "cachedResultName": "n8n Test Case"
         },
-        "tags": "org-tag-2, org-tag-3"
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        448,
-        208
-      ],
-      "id": "f54f5990-76e9-48a2-9438-6e9a86af8f2e",
-      "name": "Organization / Remove Tags",
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        0,
-        400
-      ],
-      "id": "f56077bc-4e5b-4f6b-8c23-18e341b8167c",
-      "name": "Organization / Get Many",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "organizationId": {
+        "acquisitionProfileIdForTask": {
           "__rl": true,
-          "value": "={{ $json.name }}",
-          "mode": "name"
-        }
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        224,
-        400
-      ],
-      "id": "d53c47a7-5277-417b-b741-f4c94515411a",
-      "name": "Organization / Get By Name",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "getUsers",
-        "organizationId": {
-          "__rl": true,
-          "value": "={{ $json.name }}",
-          "mode": "name"
+          "value": "baseline-acquisition-for-comparison",
+          "mode": "list",
+          "cachedResultName": "Baseline Acquisition for Comparison"
         },
-        "additionalFields": {}
+        "taskName": "n8n Test Task",
+        "enableDrone": false,
+        "endpointFilters": {
+          "assetName": "WORKSTATION-4"
+        }
       },
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        448,
-        400
+        -2464,
+        -192
       ],
-      "id": "43a840eb-44e2-4339-8560-4c7254b76df4",
-      "name": "Organization / Get Users",
+      "id": "5b9122b7-0200-4118-b0cd-db7d60c1b8cc",
+      "name": "Assign an evidence acquisition task",
       "credentials": {
         "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
         }
       }
     },
@@ -381,24 +96,28 @@
         "resource": "assets",
         "organizationId": {
           "__rl": true,
+          "value": "0",
           "mode": "list",
-          "value": ""
+          "cachedResultName": "Binalyze (Default)"
         },
-        "additionalFields": {}
+        "additionalFields": {
+          "platform": [
+            "linux"
+          ]
+        }
       },
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        0,
-        1312
+        -1360,
+        2480
       ],
-      "id": "a26caddd-1530-4659-a2a3-334d220e905b",
-      "name": "Asset / Get Many",
-      "executeOnce": true,
+      "id": "98f78da9-968a-4c99-b93e-a03e846198a6",
+      "name": "Get many assets",
       "credentials": {
         "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
         }
       }
     },
@@ -415,58 +134,24 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        224,
-        1312
+        -960,
+        2416
       ],
-      "id": "14479f89-24b3-457c-80af-62558d8a52a5",
-      "name": "Asset / Get By ID",
+      "id": "a74f640a-ac70-4154-9adc-79f3b5b82dc8",
+      "name": "Get an asset",
       "executeOnce": true,
       "credentials": {
         "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
         }
       }
     },
     {
       "parameters": {
-        "resource": "acquisitions",
-        "organizationIdForGet": {
-          "__rl": true,
-          "mode": "list",
-          "value": ""
-        },
-        "acquisitionProfileId": {
-          "__rl": true,
-          "mode": "list",
-          "value": ""
-        }
-      },
-      "type": "n8n-nodes-binalyze-air.air",
-      "typeVersion": 1,
-      "position": [
-        0,
-        1504
-      ],
-      "id": "49b4e4c8-922f-4c81-a363-1f78ad285144",
-      "name": "Acquisition / Get Many",
-      "executeOnce": true,
-      "credentials": {
-        "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "acquisitions",
-        "organizationIdForGet": {
-          "__rl": true,
-          "mode": "list",
-          "value": ""
-        },
-        "acquisitionProfileId": {
+        "resource": "assets",
+        "operation": "getAssetTasks",
+        "assetId": {
           "__rl": true,
           "value": "={{ $json._id }}",
           "mode": "id"
@@ -475,62 +160,1804 @@
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        224,
-        1504
+        -736,
+        2320
       ],
-      "id": "3b19b8f7-3a56-40de-a1a3-c0d166448653",
-      "name": "Acquisition / Get Profile",
-      "executeOnce": true,
+      "id": "bdc05928-26ae-434f-9997-69503fcdcc21",
+      "name": "Get asset tasks",
+      "executeOnce": false,
       "credentials": {
         "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
         }
       }
     },
     {
       "parameters": {
-        "resource": "channel",
-        "operation": "archive",
-        "channelId": {
+        "resource": "assets",
+        "operation": "addTags",
+        "tags": "=asset-tag-1,asset-tag-2",
+        "organizationId": {
           "__rl": true,
+          "value": "0",
           "mode": "list",
-          "value": ""
+          "cachedResultName": "Binalyze",
+          "cachedResultUrl": "b28890fcb2744fad"
+        },
+        "filterOptions": {
+          "name": "={{ $json.name }}"
         }
       },
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.3,
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
       "position": [
-        -656,
-        160
+        -736,
+        2512
       ],
-      "id": "8a699149-3139-4afd-a18b-e1552e69183c",
-      "name": "Slack",
-      "webhookId": "cd5e81a2-d32c-4b45-bed8-970d7cb3695e"
+      "id": "95b83112-96b7-42f5-abe4-0ad22fa0f8e3",
+      "name": "Add tags to assets",
+      "executeOnce": false,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
     },
     {
       "parameters": {
-        "resource": "cases",
+        "resource": "assets",
+        "operation": "removeTags",
+        "tags": "asset-tag-1",
         "organizationId": {
           "__rl": true,
-          "mode": "id",
-          "value": "0"
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze",
+          "cachedResultUrl": "b28890fcb2744fad"
+        },
+        "filterOptions": {
+          "tags": "asset-tag-1"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        2512
+      ],
+      "id": "01521ad0-30e2-4fd3-baf5-5609dfdfb953",
+      "name": "Remove tags from assets",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "repositories",
+        "operation": "getAll",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
         },
         "additionalFields": {}
       },
       "type": "n8n-nodes-binalyze-air.air",
       "typeVersion": 1,
       "position": [
-        224,
-        704
+        -1008,
+        1200
       ],
-      "id": "6e87cd08-f57f-4c62-80f3-a46f6d343123",
-      "name": "Case / Get Many",
+      "id": "6868f25a-3e00-4eb9-8b95-8f379164a063",
+      "name": "Get many repositories",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "repositories",
+        "repositoryId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        1200
+      ],
+      "id": "b1d431d0-43da-4cf9-a2d3-9a2c0985b147",
+      "name": "Get a repository",
       "executeOnce": true,
       "credentials": {
         "airApi": {
-          "id": "mpKcggaZCzUQJe4v",
-          "name": "Binalyze AIR account"
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "users",
+        "organizationId": {
+          "__rl": true,
+          "value": "23",
+          "mode": "list",
+          "cachedResultName": "Some other organization"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        4128
+      ],
+      "id": "d5925c74-f54e-4be5-898b-0c41dc73f566",
+      "name": "Get many users",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "users",
+        "operation": "get",
+        "userId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        4128
+      ],
+      "id": "e9ec5228-05c9-4646-8fd2-b8def3fa5aa8",
+      "name": "Get a user",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "tasks",
+        "organizationIds": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "additionalFields": {
+          "name": "n8n"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        1808
+      ],
+      "id": "7e91601b-751c-4516-b07b-5f9614bcf0b5",
+      "name": "Get many tasks",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "tasks",
+        "operation": "get",
+        "taskId": "={{ $json._id }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        1808
+      ],
+      "id": "3051574e-d629-4e57-a877-943136d11b27",
+      "name": "Get a task",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "tasks",
+        "operation": "getTaskAssignments",
+        "taskId": "={{ $json._id }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        1808
+      ],
+      "id": "69a6f6eb-2728-47d3-88fb-b976179f3691",
+      "name": "Get task assignments",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "baselines",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "C-2025-0016",
+          "mode": "list",
+          "cachedResultName": "DRONE Test"
+        },
+        "endpointFilters": {
+          "searchTerm": "WORKSTATION-4"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        3792
+      ],
+      "id": "cd855917-ff89-4a7d-bad9-b68d3dba3cdc",
+      "name": "Acquire a baseline",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "baselines",
+        "operation": "compareBaseline",
+        "taskName": "Test",
+        "organizationIdForCompare": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "assetIdForCompare": {
+          "__rl": true,
+          "value": "44e93561-7558-499d-ae32-d191a057ab4f",
+          "mode": "list",
+          "cachedResultName": "WORKSTATION-4 (20.162.22.194)"
+        },
+        "baseline1TaskId": {
+          "__rl": true,
+          "value": "dc75002d-f465-4ae1-81fb-35d2433d46c5",
+          "mode": "list",
+          "cachedResultName": "DRONE Test Baseline Acquisition 002 (baseline-acquisition)"
+        },
+        "baseline2TaskId": {
+          "__rl": true,
+          "value": "a486898f-1d72-41cb-9eb2-80d6e676d78a",
+          "mode": "list",
+          "cachedResultName": "DRONE Test Baseline Acquisition 003 (baseline-acquisition)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        3792
+      ],
+      "id": "987ee17b-7d5e-4d6c-ba83-a4718d5afac5",
+      "name": "Compare baselines",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "baselines",
+        "operation": "getComparisonReport",
+        "organizationIdForReport": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "assetIdForReport": {
+          "__rl": true,
+          "value": "44e93561-7558-499d-ae32-d191a057ab4f",
+          "mode": "list",
+          "cachedResultName": "WORKSTATION-4 (20.162.22.194)"
+        },
+        "comparisonTaskId": {
+          "__rl": true,
+          "value": "f008e17d-95fc-4d46-b792-29235b50ef40",
+          "mode": "list",
+          "cachedResultName": "Baseline Comparison 002 (baseline-comparison)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        192,
+        3792
+      ],
+      "id": "94feb7ea-5af3-4d83-87ac-055025aa2d74",
+      "name": "Get comparison report",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        624
+      ],
+      "id": "85b96f26-3162-41f8-b31e-b63a1b5b38b0",
+      "name": "Get many cases",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "get",
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        624
+      ],
+      "id": "8d9a528e-3a61-46c4-b167-adf68ca67ff7",
+      "name": "Get a case",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "checkName",
+        "caseName": "={{ $json.name }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        144
+      ],
+      "id": "33139a76-eb5a-4b31-8613-d7deeb08b23b",
+      "name": "Check case name availability",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getActivities",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        336
+      ],
+      "id": "b4332d2e-8ef8-452d-8784-89ef6bbb7fab",
+      "name": "Get case activities",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getEndpoints",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        720
+      ],
+      "id": "75a44ef3-54f6-4553-9a32-1f589c26bcb8",
+      "name": "Get case endpoints",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getUsers",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        912
+      ],
+      "id": "b16ef5d7-522e-427b-9fe4-889e4e3a7f3b",
+      "name": "Get case users",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "getTasks",
+        "organizationId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "0"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        1104
+      ],
+      "id": "dace831f-955a-468b-9fc9-2c1345972068",
+      "name": "Get case tasks",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "create",
+        "caseName": "=n8n Test Case {{ $now.format('yyyyMMdd hhmmss') }}",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "ownerUserId": {
+          "__rl": true,
+          "value": "78cf7ecd-2273-4001-9e20-7e281dd66403",
+          "mode": "list",
+          "cachedResultName": "admin@binalyze.com"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        528
+      ],
+      "id": "f1a7f819-29e9-4f1d-bf28-cf39191b2cf7",
+      "name": "Create a case",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "closeCase",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        320,
+        528
+      ],
+      "id": "68f86358-0b1e-423f-9b80-33be6164a140",
+      "name": "Close a case",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "cases",
+        "operation": "changeOwner",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json.organizationId }}",
+          "mode": "id"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "newOwnerUserId": {
+          "__rl": true,
+          "value": "6f04ba7b-c253-4d8d-847c-607370f8be11",
+          "mode": "list",
+          "cachedResultName": "n8n.test@binalyze.com"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        96,
+        528
+      ],
+      "id": "b1248ff6-54dd-42a5-8758-36a9a0d6d19b",
+      "name": "Change case owner",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "additionalFields": {
+          "name": "binalyze"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        240,
+        2000
+      ],
+      "id": "a2d7a2c2-8b07-4e43-b76f-b66561a616fb",
+      "name": "Get many organizations",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        464,
+        2000
+      ],
+      "id": "9b3e0c06-e523-49ca-b855-4c87aab52c4e",
+      "name": "Get an organization",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "checkNameExists",
+        "nameToCheck": "={{ $json.name }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        464,
+        1520
+      ],
+      "id": "848965ff-b824-42e5-a9a4-e0fefd588828",
+      "name": "Check if organization name exists",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addTags",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "tags": "org-tag-1, org-tag-2"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        688,
+        1808
+      ],
+      "id": "8d2dc302-a8f0-4e5f-a03a-0e2370e6e411",
+      "name": "Add tags to an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeTags",
+        "organizationId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "tags": "org-tag-1, org-tag-2"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        944,
+        1808
+      ],
+      "id": "f66bd649-f891-4559-9a45-cd0db80246f7",
+      "name": "Remove tags from an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeUser",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "userId": "5757aae0-9cca-4ff0-9775-fbcd69ede735"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        688,
+        1616
+      ],
+      "id": "900bc857-2bf6-43d0-9b1f-86e0dc887305",
+      "name": "Remove user from an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "assignUser",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "userId": "5757aae0-9cca-4ff0-9775-fbcd69ede735"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        688,
+        2000
+      ],
+      "id": "0a82a076-db4b-478b-9dc7-7c981c1d2e6d",
+      "name": "Assign a user to an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getUsers",
+        "organizationId": {
+          "__rl": true,
+          "value": "23",
+          "mode": "list",
+          "cachedResultName": "Some other organization"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        688,
+        2384
+      ],
+      "id": "055ada48-88f2-48f5-b3ad-3c5d1b846ebd",
+      "name": "Get users of an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "updateFields": {
+          "contactEmail": "contact@email.com",
+          "contactMobile": "+1234567890",
+          "contactName": "John Doe",
+          "contactPhone": "+9876543210",
+          "contactTitle": "CEO",
+          "note": "Investigation completed and report shared with the customer"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        688,
+        2192
+      ],
+      "id": "38950997-f76d-41ce-8b7f-0f98d7d4d015",
+      "name": "Update an organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "updateShareableDeployment",
+        "organizationId": {
+          "__rl": true,
+          "value": "22",
+          "mode": "list",
+          "cachedResultName": "Test Organization"
+        },
+        "shareableDeploymentStatus": true
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        688,
+        2768
+      ],
+      "id": "35d6c052-2360-4ce7-a5fd-e073f90793fc",
+      "name": "Enable shareable deployment status",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "updateShareableDeployment",
+        "organizationId": {
+          "__rl": true,
+          "value": "22",
+          "mode": "list",
+          "cachedResultName": "Test Organization"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        688,
+        2576
+      ],
+      "id": "fdc3048c-cef7-4e05-887c-1d619f9bdab7",
+      "name": "Disable shareable deployment status",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "organizationId": {
+          "__rl": true,
+          "value": "22",
+          "mode": "list",
+          "cachedResultName": "Test Organization"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        464,
+        2672
+      ],
+      "id": "74d81cd1-502c-4801-9bfc-36edc8bc8e7f",
+      "name": "Get test organization",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "additionalFields": {
+          "organizationId": {
+            "__rl": true,
+            "value": "0",
+            "mode": "list",
+            "cachedResultName": "Binalyze (Default)"
+          }
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1616,
+        3264
+      ],
+      "id": "ef1b96c2-a290-4ecf-8f4a-6a41d4ab87ca",
+      "name": "Get many triage rules",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "get",
+        "triageRuleId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        2880
+      ],
+      "id": "27231cd3-42ea-481e-a428-653187156175",
+      "name": "Get a triage rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "create",
+        "engine": "osquery",
+        "description": "Auto Generated Rule",
+        "rule": "SELECT * FROM users;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        3072
+      ],
+      "id": "445c3798-2202-48bf-bd87-517d1adfa02a",
+      "name": "Create a triage rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "delete",
+        "triageRuleId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        3072
+      ],
+      "id": "3e7b3350-6e05-4b06-b776-2a47eeca89d9",
+      "name": "Delete a triage rule",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "osquery",
+        "rule": "SELECT * FROM users;"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        3264
+      ],
+      "id": "851e2295-dd53-42bf-be34-14ead0ba4647",
+      "name": "Validate a osquery rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "rule": "rule ExampleRule\n{\n    strings:\n        $my_text_string = \"text here\"\n        $my_hex_string = { E2 34 A1 C8 23 FB }\n\n    condition:\n        $my_text_string or $my_hex_string\n}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        3456
+      ],
+      "id": "2549499c-b306-4704-afc2-bd15b2012c7b",
+      "name": "Validate a YARA rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "rule": "bad rule here"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        3456
+      ],
+      "id": "7b0a9f6c-b569-49f3-8da5-4fc77407ccfc",
+      "name": "Bad YARA rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "osquery",
+        "rule": "bad rule here"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        3264
+      ],
+      "id": "3f200559-9ad2-46eb-8926-1d05fcaf5ff9",
+      "name": "Bad osquery rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "sigma",
+        "rule": "title: LSASS Dump Detection\ndescription: LSASS memory dump creation using operating systems utilities.\nauthor: Binalyze\ndate: 2020/11/25\nmodified: 2021/06/13\ntags:\n    - attack.credential_access\nlogsource:\n    category: file_event\n    product: windows\ndetection:\n    selection:\n        TargetFilename|contains: 'lsass'\n        TargetFilename|endswith: 'dmp'\n    condition: selection\nfields:\n    - ComputerName\n    - TargetFilename\nfalsepositives:\n    - Admin activity\nlevel: high"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        3648
+      ],
+      "id": "886a7c4a-b87d-4630-b0a0-1a184e556fde",
+      "name": "Validate a Sigma rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "validate",
+        "engine": "sigma",
+        "rule": "bad rule here"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        3648
+      ],
+      "id": "2f0705a7-e365-4d8e-ac91-1d6d5dda9c99",
+      "name": "Bad Sigma rule",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "triagerules",
+        "operation": "update",
+        "triageRuleId": {
+          "__rl": true,
+          "value": "={{ $json._id }}",
+          "mode": "id"
+        },
+        "engine": "osquery",
+        "description": "={{ $json.description }} Updated",
+        "rule": "SELECT * FROM processes;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        3072
+      ],
+      "id": "03f9534f-fbe5-4650-80be-e2d8391f5744",
+      "name": "Update a triage rule",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "executeCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "command": "osquery \"SELECT * FROM users;\"",
+        "responseType": "text"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        480
+      ],
+      "id": "1c3a3fad-854e-4d3d-8726-6b7d3abdce2f",
+      "name": "Execute a command",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "executeAsyncCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "command": "volumes"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        672
+      ],
+      "id": "1ab82866-c700-49c0-bbc9-6d784844d2ca",
+      "name": "Execute an async command",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "getCommandMessage",
+        "sessionId": "={{ $json.sessionId }}",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        672
+      ],
+      "id": "8f377116-a2af-438b-a5b9-6d2745076f68",
+      "name": "Get a command message",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "C-2025-0016",
+          "mode": "list",
+          "cachedResultName": "DRONE Test"
+        },
+        "assetId": {
+          "__rl": true,
+          "value": "44e93561-7558-499d-ae32-d191a057ab4f",
+          "mode": "list",
+          "cachedResultName": "WORKSTATION-4 (20.162.22.194)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        768
+      ],
+      "id": "9de7bdbe-b4cf-4bbf-96a9-09808216c2b3",
+      "name": "Open interACT Session",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "closeSession",
+        "sessionId": "={{ $json.sessionId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        1056
+      ],
+      "id": "5333ec43-a272-43ee-9449-60d0aa69420e",
+      "name": "Close a session",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "executeAsyncCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "command": "exec sleep 30"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        864
+      ],
+      "id": "eed46d30-5072-4fff-aee6-40c1f90af416",
+      "name": "Execute an async command1",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "interruptCommand",
+        "sessionId": "={{ $json.sessionId }}",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        864
+      ],
+      "id": "c09d207f-d3dc-4510-96bf-d005c09e3186",
+      "name": "Interrupt a command",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "operation": "waitForSession",
+        "sessionId": "={{ $json.sessionId }}",
+        "taskId": "={{ $json.taskId }}"
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -2512,
+        768
+      ],
+      "id": "190961f5-5f38-4684-8bbe-a17c571eb624",
+      "name": "Wait for session to be live",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "eventTypes": [
+          "CaseClosedEvent",
+          "TaskCompletedEvent",
+          "CaseCreatedEvent"
+        ],
+        "bearerToken": "abc"
+      },
+      "type": "n8n-nodes-binalyze-air.airTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3600,
+        3056
+      ],
+      "id": "f2502354-ebd7-4d24-8c38-19660549d729",
+      "name": "AIR Trigger",
+      "webhookId": "823243e9-69a2-46b8-b5e6-f13f4ddfa34f",
+      "credentials": {
+        "airApi": {
+          "id": "4WhN1HxJfr6jqfmn",
+          "name": "dev-air.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.eventName }}",
+                    "rightValue": "CaseCreatedEvent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e2f3dcaa-26d4-404c-ba6e-fc98469563d9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Case Created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cfea2861-d2ef-4941-bd88-96e657ceda6b",
+                    "leftValue": "={{ $json.eventName }}",
+                    "rightValue": "CaseClosedEvent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Case Closed"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -3344,
+        3040
+      ],
+      "id": "53879bfa-5ea0-433f-87dc-bc9a07283bb2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "content": "## InterACT",
+        "height": 80,
+        "width": 928,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2736,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "1ddfd5d1-9d21-48cd-9e0b-d811fa6a69ef",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Repository",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1024,
+        1056
+      ],
+      "typeVersion": 1,
+      "id": "84daab88-af29-46fb-9edf-3ed24a5bd8e7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Case",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "d909bdfd-7e09-48d1-a13e-9b849866ef27",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Organization",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        1344
+      ],
+      "typeVersion": 1,
+      "id": "969a1330-d4c9-4766-b93c-0a54c668949a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Task",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1040,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "a7534ca3-138f-4f2f-8dff-3d4951d42ff9",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Acquisition",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2720,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "1e2a18ee-3d98-4a8e-9857-7925f8849600",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Asset",
+        "height": 80,
+        "width": 1040,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1376,
+        2208
+      ],
+      "typeVersion": 1,
+      "id": "aedb9561-01b1-4578-af17-bf548f1b9d09",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Baseline",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -256,
+        3648
+      ],
+      "typeVersion": 1,
+      "id": "ac6e0280-159b-4824-8367-f18dcf54757f",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## User",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1456,
+        4000
+      ],
+      "typeVersion": 1,
+      "id": "d2de6f63-7371-4dc3-bbf3-0932b808a6e6",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3616,
+        2912
+      ],
+      "typeVersion": 1,
+      "id": "cc92a167-163b-42e4-9b32-a99a05384e5e",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Triage",
+        "height": 80,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1648,
+        2752
+      ],
+      "typeVersion": 1,
+      "id": "4918bb65-ba24-4685-8b9c-7225ffe9973d",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "resource": "assets",
+        "operation": "get",
+        "assetId": {
+          "__rl": true,
+          "value": "b60dc037-4bce-42f1-a0fb-53e65398322c",
+          "mode": "list",
+          "cachedResultName": "EMRETINAZTE866D (147.161.186.96)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        2640
+      ],
+      "id": "325802ee-2b4f-45d1-9515-177c2b99d476",
+      "name": "Get an asset1",
+      "executeOnce": true,
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "assets",
+        "operation": "reboot",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze",
+          "cachedResultUrl": "b28890fcb2744fad"
+        },
+        "assetId": {
+          "__rl": true,
+          "value": "b60dc037-4bce-42f1-a0fb-53e65398322c",
+          "mode": "list",
+          "cachedResultName": "EMRETINAZTE866D (185.31.92.207)"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        2880
+      ],
+      "id": "1744febd-502d-4f29-ad87-2c8ecb1eebe5",
+      "name": "Assign reboot task to assets",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interact",
+        "organizationId": {
+          "__rl": true,
+          "value": "0",
+          "mode": "list",
+          "cachedResultName": "Binalyze (Default)"
+        },
+        "caseId": {
+          "__rl": true,
+          "value": "C-2025-0002",
+          "mode": "list",
+          "cachedResultName": "Delete this case"
+        },
+        "assetId": {
+          "__rl": true,
+          "value": "={{ $json.asset._id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-binalyze-air.air",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        3104
+      ],
+      "id": "58024be9-1b17-400f-a107-b0158d307214",
+      "name": "Create an interact session",
+      "credentials": {
+        "airApi": {
+          "id": "zkdMrFV62yPoc4KE",
+          "name": "acme.us.binalyze.io"
         }
       }
     }
@@ -540,172 +1967,525 @@
       "main": [
         [
           {
-            "node": "Case Create",
+            "node": "Get an acquisition profile",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Orgnization / Check Name",
+            "node": "Get many assets",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Organization / Create",
+            "node": "Get many repositories",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Organization / Get Many",
+            "node": "Get many users",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Asset Tags / Get Many",
+            "node": "Get many tasks",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Asset / Get Many",
+            "node": "Acquire a baseline",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Acquisition / Get Many",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Asset Tags / Get Many": {
-      "main": [
-        [
-          {
-            "node": "Asset Tags / Get By ID",
+            "node": "Get many cases",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Asset Tags / Get By Name",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Case Create": {
-      "main": [
-        [
-          {
-            "node": "Case / Get Many",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Orgnization / Check Name": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Organization / Delete",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Organization / Create": {
-      "main": [
-        [
-          {
-            "node": "Organization / Add Tags",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Organization / Add Tags": {
-      "main": [
-        [
-          {
-            "node": "Organization / Remove Tags",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Organization / Get Many": {
-      "main": [
-        [
-          {
-            "node": "Organization / Get By Name",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Organization / Get By Name": {
-      "main": [
-        [
-          {
-            "node": "Organization / Get Users",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Asset / Get Many": {
-      "main": [
-        [
-          {
-            "node": "Asset / Get By ID",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Acquisition / Get Many": {
-      "main": [
-        [
-          {
-            "node": "Acquisition / Get Profile",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Case / Get Many": {
-      "main": [
-        [
-          {
-            "node": "Case / Check Name",
+            "node": "Get many organizations",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Case / Get By ID",
+            "node": "Get many triage rules",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Open interACT Session",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "Get an acquisition profile": {
+      "main": [
+        [
+          {
+            "node": "Assign an evidence acquisition task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many assets": {
+      "main": [
+        [
+          {
+            "node": "Get an asset",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get an asset1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get an asset": {
+      "main": [
+        [
+          {
+            "node": "Get asset tasks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add tags to assets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add tags to assets": {
+      "main": [
+        [
+          {
+            "node": "Remove tags from assets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign an evidence acquisition task": {
+      "main": [
+        []
+      ]
+    },
+    "Get many repositories": {
+      "main": [
+        [
+          {
+            "node": "Get a repository",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many users": {
+      "main": [
+        [
+          {
+            "node": "Get a user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many tasks": {
+      "main": [
+        [
+          {
+            "node": "Get a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a task": {
+      "main": [
+        [
+          {
+            "node": "Get task assignments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acquire a baseline": {
+      "main": [
+        [
+          {
+            "node": "Compare baselines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare baselines": {
+      "main": [
+        [
+          {
+            "node": "Get comparison report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get task assignments": {
+      "main": [
+        []
+      ]
+    },
+    "Get many cases": {
+      "main": [
+        [
+          {
+            "node": "Get a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a case": {
+      "main": [
+        [
+          {
+            "node": "Check case name availability",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case activities",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case endpoints",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case users",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get case tasks",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get case endpoints": {
+      "main": [
+        []
+      ]
+    },
+    "Create a case": {
+      "main": [
+        [
+          {
+            "node": "Change case owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Close a case": {
+      "main": [
+        []
+      ]
+    },
+    "Change case owner": {
+      "main": [
+        [
+          {
+            "node": "Close a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get asset tasks": {
+      "main": [
+        []
+      ]
+    },
+    "Get many organizations": {
+      "main": [
+        [
+          {
+            "node": "Get an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check if organization name exists",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get test organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get an organization": {
+      "main": [
+        [
+          {
+            "node": "Add tags to an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Remove user from an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Assign a user to an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get users of an organization",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update an organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add tags to an organization": {
+      "main": [
+        [
+          {
+            "node": "Remove tags from an organization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove user from an organization": {
+      "main": [
+        []
+      ]
+    },
+    "Disable shareable deployment status": {
+      "main": [
+        []
+      ]
+    },
+    "Get test organization": {
+      "main": [
+        [
+          {
+            "node": "Disable shareable deployment status",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enable shareable deployment status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many triage rules": {
+      "main": [
+        [
+          {
+            "node": "Get a triage rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a triage rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validate a osquery rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validate a YARA rule",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validate a Sigma rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a triage rule": {
+      "main": [
+        [
+          {
+            "node": "Update a triage rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate a YARA rule": {
+      "main": [
+        [
+          {
+            "node": "Bad YARA rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate a osquery rule": {
+      "main": [
+        [
+          {
+            "node": "Bad osquery rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate a Sigma rule": {
+      "main": [
+        [
+          {
+            "node": "Bad Sigma rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bad Sigma rule": {
+      "main": [
+        []
+      ]
+    },
+    "Update a triage rule": {
+      "main": [
+        [
+          {
+            "node": "Delete a triage rule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute an async command": {
+      "main": [
+        [
+          {
+            "node": "Get a command message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Open interACT Session": {
+      "main": [
+        [
+          {
+            "node": "Wait for session to be live",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute an async command1": {
+      "main": [
+        [
+          {
+            "node": "Interrupt a command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for session to be live": {
+      "main": [
+        [
+          {
+            "node": "Execute a command",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute an async command",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute an async command1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Close a session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AIR Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get an asset1": {
+      "main": [
+        []
       ]
     }
   },
@@ -717,54 +2497,59 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "75e5ed24-7a00-48ba-be22-c90af25d3161",
+  "versionId": "47f26159-6a22-406c-bfe8-b88d9d53bc97",
   "triggerCount": 0,
   "shared": [
     {
-      "createdAt": "2025-07-16T21:13:12.604Z",
-      "updatedAt": "2025-07-16T21:13:12.604Z",
+      "createdAt": "2025-07-25T16:25:11.296Z",
+      "updatedAt": "2025-07-25T16:25:11.296Z",
       "role": "workflow:owner",
-      "workflowId": "I516Z0dNYsF7bzWM",
-      "projectId": "ruqBk4A4CrNidITj",
+      "workflowId": "2ijKwO3bfGHSaKwY",
+      "projectId": "llHxnpzVncfHqefW",
       "project": {
-        "createdAt": "2025-05-28T13:26:44.924Z",
-        "updatedAt": "2025-05-28T13:27:17.681Z",
-        "id": "ruqBk4A4CrNidITj",
-        "name": "Emre TINAZTEPE <emre@binalyze.com>",
+        "createdAt": "2025-05-26T10:21:01.302Z",
+        "updatedAt": "2025-05-26T10:21:30.128Z",
+        "id": "llHxnpzVncfHqefW",
+        "name": "Emre Tinaztepe <emre@binalyze.com>",
         "type": "personal",
         "icon": null,
         "description": null,
         "projectRelations": [
           {
-            "createdAt": "2025-05-28T13:26:44.924Z",
-            "updatedAt": "2025-05-28T13:26:44.924Z",
+            "createdAt": "2025-05-26T10:21:01.302Z",
+            "updatedAt": "2025-05-26T10:21:01.302Z",
             "role": "project:personalOwner",
-            "userId": "39c4a85b-f852-44a1-8e02-2deeaa8d667a",
-            "projectId": "ruqBk4A4CrNidITj",
+            "userId": "5f63a800-7f35-4ceb-b857-df8cc34579ab",
+            "projectId": "llHxnpzVncfHqefW",
             "user": {
-              "createdAt": "2025-05-28T13:26:44.706Z",
-              "updatedAt": "2025-08-04T15:10:29.000Z",
-              "id": "39c4a85b-f852-44a1-8e02-2deeaa8d667a",
+              "createdAt": "2025-05-26T10:21:01.143Z",
+              "updatedAt": "2025-08-06T15:16:46.000Z",
+              "id": "5f63a800-7f35-4ceb-b857-df8cc34579ab",
               "email": "emre@binalyze.com",
               "firstName": "Emre",
-              "lastName": "TINAZTEPE",
+              "lastName": "Tinaztepe",
               "personalizationAnswers": {
                 "version": "v4",
-                "personalization_survey_submitted_at": "2025-05-28T13:27:26.919Z",
-                "personalization_survey_n8n_version": "1.94.1",
+                "personalization_survey_submitted_at": "2025-05-26T10:21:44.129Z",
+                "personalization_survey_n8n_version": "1.93.0",
                 "companySize": "20-99",
                 "companyType": "saas",
                 "role": "business-owner",
                 "reportedSource": "google"
               },
               "settings": {
-                "userActivated": false,
-                "easyAIWorkflowOnboarded": true
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "2ijKwO3bfGHSaKwY",
+                "userActivatedAt": 1753461200870,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1753881161436
+                }
               },
               "role": "global:owner",
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2025-08-04",
+              "lastActiveAt": "2025-08-06",
               "isPending": false
             }
           }
