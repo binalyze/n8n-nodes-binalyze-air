@@ -82,6 +82,7 @@ export function buildRequestOptions(
 			'Content-Type': 'application/json',
 		},
 		json: true,
+		disableFollowRedirect: true,
 	};
 
 	// Use n8n's built-in query parameter handling
@@ -302,6 +303,7 @@ export function buildRequestOptionsWithErrorHandling(
 		json: true,
 		// Allow handling of HTTP error status codes manually
 		ignoreHttpStatusErrors: true,
+		disableFollowRedirect: true,
 	};
 
 	// Use n8n's built-in query parameter handling

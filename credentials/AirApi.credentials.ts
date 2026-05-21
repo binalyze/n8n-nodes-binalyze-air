@@ -61,6 +61,7 @@ export class AirApi implements ICredentialType {
 		request: {
 			baseURL: '={{$credentials?.instanceUrl.trimEnd("/")}}',
 			url: '/api/public/auth/check',
+			disableFollowRedirect: true,
 		},
 	};
 }
