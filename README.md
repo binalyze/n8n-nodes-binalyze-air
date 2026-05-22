@@ -219,8 +219,31 @@ To set up the development environment:
 
 1. Clone this repository
 2. Install dependencies: `yarn install`
+
+You then have two ways to run the package against a local n8n.
+
+### Quick start (no global n8n install required)
+
+`scripts/dev-env.sh` builds the package, links it into a local n8n config, and
+starts n8n via `npx`. Useful for contributors who want to try the node without
+installing n8n globally.
+
+```bash
+./scripts/dev-env.sh up       # build, link, start n8n on http://localhost:5678
+./scripts/dev-env.sh status   # show whether n8n is running
+./scripts/dev-env.sh logs     # tail the n8n log
+./scripts/dev-env.sh down     # stop the n8n instance
+```
+
+Re-run `up` after code changes to rebuild and relink; restart n8n when needed.
+
+### Watch-mode workflow (against an existing n8n)
+
+If you already have n8n running locally (or want continuous rebuilds), use the
+existing watch-mode scripts:
+
 3. Build the project: `yarn build`
-4. Link the project using: 
+4. Link the project using:
    - `npm link`
    - `npm link n8n-nodes-binalyze-air`
 5. Start the development environment:
@@ -233,6 +256,7 @@ To set up the development environment:
 - `yarn dev` - Start development environment with file watching
 - `yarn debug` - Start development environment with debug logging enabled
 - `yarn restart:n8n` - Restart n8n without rebuilding
+- `./scripts/dev-env.sh up|down|status|logs` - One-command local n8n environment via `npx`
 
 ### Debug Mode
 
