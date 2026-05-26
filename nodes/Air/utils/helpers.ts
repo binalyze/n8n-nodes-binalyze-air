@@ -73,9 +73,12 @@ export function buildRequestOptions(
 	endpoint: string,
 	queryParams?: Record<string, string | number>
 ): IHttpRequestOptions {
+	// Remove trailing slash from instance URL if present
+	const baseUrl = credentials.instanceUrl.replace(/\/$/, '');
+	
 	const options: IHttpRequestOptions = {
 		method,
-		url: `${credentials.instanceUrl}${endpoint}`,
+		url: `${baseUrl}${endpoint}`,
 		headers: {
 			'Authorization': `Bearer ${credentials.token}`,
 			'Accept': 'application/json',
@@ -292,9 +295,12 @@ export function buildRequestOptionsWithErrorHandling(
 	endpoint: string,
 	queryParams?: Record<string, string | number>
 ): IHttpRequestOptions {
+	// Remove trailing slash from instance URL if present
+	const baseUrl = credentials.instanceUrl.replace(/\/$/, '');
+	
 	const options: IHttpRequestOptions = {
 		method,
-		url: `${credentials.instanceUrl}${endpoint}`,
+		url: `${baseUrl}${endpoint}`,
 		headers: {
 			'Authorization': `Bearer ${credentials.token}`,
 			'Accept': 'application/json',
